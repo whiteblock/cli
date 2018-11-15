@@ -8,18 +8,7 @@ import (
 	"github.com/sacOO7/gowebsocket"
 )
 
-func POST(wsaddr, msg string) {
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
-	socket := gowebsocket.New(wsaddr)
-
-	socket.Connect()
-	socket.SendText(msg)
-	socket.Close()
-}
-
-func GET(wsaddr, msg string) {
+func wsEmit(wsaddr, msg string) {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
@@ -55,6 +44,8 @@ func GET(wsaddr, msg string) {
 	}
 
 	socket.Connect()
+
+	socket.SendText(msg)
 
 	for {
 		select {

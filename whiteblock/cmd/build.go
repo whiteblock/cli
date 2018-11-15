@@ -7,9 +7,10 @@ import (
 )
 
 var (
+	blockchain string
 	image      string
 	nodes      int
-	server     int
+	server     []string
 	serverAddr string
 )
 
@@ -21,21 +22,22 @@ var buildCmd = &cobra.Command{
 	
 	image 				Specifies the docker image of the network to deploy, default 'Geth' image will be used;
 	nodes 				Number of nodes to create, 10 will be used as default;
-	server 				Number of servers to deploy network, 1 server will be used;
+	server 				Number of servers to deploy network, e.g. "alpha", "bravo", "charlie", etc.;
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println("http://localhost:8000/testnets/", "-d '{\"Servers\":\""+fmt.Sprint(server)+"\",\"Blockchain\":\"ethereum\",\"Nodes\":"+fmt.Sprintf("%d", nodes)+",\"Image\":\"ethereum:latest\"}'")
-		// fmt.Println(image, nodes, server)
+		// curlPOST(fmt.Sprint(serverAddr)+"/testnets/", "-d '{\"Servers\":\""+fmt.Sprint("%d", server)+"\",\"Blockchain\":\"ethereum\",\"Nodes\":"+fmt.Sprintf("%d", nodes)+",\"Image\":\""+fmt.Sprint(image)+"\"}'")
+		msg := "build,{\"Servers\":" + fmt.Sprintf("v", server) + ",\"Blockchain\":" + blockchain + ",\"Nodes\":" + fmt.Sprintf("%d", nodes) + ",\"Image\":" + image + "}"
 
-		curlPOST(fmt.Sprint(serverAddr)+"/testnets/", "-d '{\"Servers\":\""+fmt.Sprint("%d", server)+"\",\"Blockchain\":\"ethereum\",\"Nodes\":"+fmt.Sprintf("%d", nodes)+",\"Image\":\""+fmt.Sprint(image)+"\"}'")
+		wsEmit(serverAddr, msg)
 	},
 }
 
 func init() {
+	buildCmd.Flags().StringVarP(&blockchain, "blockc", "b", "ethereum", "blockchain")
 	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
 	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
-	buildCmd.Flags().IntVarP(&server, "server", "s", 1, "number of servers")
+	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
 	buildCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "http://localhost:8000", "server address with port 8000")
 
 	RootCmd.AddCommand(buildCmd)
