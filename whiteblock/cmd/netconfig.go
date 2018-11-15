@@ -10,9 +10,10 @@ var (
 )
 
 var netropyCmd = &cobra.Command{
-	Use:   "netropy",
-	Short: "Network conditions",
-	Long: `Netropy will introduce persisting network conditions for testing.
+	Use:     "netconfig",
+	Aliases: []string{"emulate"},
+	Short:   "Network conditions",
+	Long: `Netconfig will introduce persisting network conditions for testing.
 	
 	latency 			Specifies the latency to add [ms];
 	packetloss 			Specifies the amount of packet loss to add [%];
@@ -20,7 +21,6 @@ var netropyCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		// add curl command
-
 	},
 }
 

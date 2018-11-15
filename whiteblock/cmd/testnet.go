@@ -7,7 +7,6 @@ import (
 )
 
 var (
-	// server int
 	testNetID string
 )
 

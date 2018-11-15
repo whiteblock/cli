@@ -1,0 +1,18 @@
+/* TO DO */
+
+- list containers (docker ps -a) x
+- ssh into node (docker exec -it) 
+- emulation (net config)
+    - partitioning
+    - latency
+    - etc.
+- geth commands
+    - block height
+    - etc.
+- solc (smart contract) x
+- testnet
+    - kill - stop the network
+    - destroy - tear down network
+    - resume - start the network
+    - restart - kill + resume
+
