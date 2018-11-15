@@ -22,7 +22,6 @@ var testnetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		curlGET(fmt.Sprint(serverAddr) + "/testnets/" + fmt.Sprint(testNetID))
 		// curlGET("http://localhost:8000/testnets/" + fmt.Sprint(testNetID))
-
 	},
 }
 

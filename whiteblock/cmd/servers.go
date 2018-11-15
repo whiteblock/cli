@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +19,7 @@ var serverCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		// curlGET(fmt.Sprint(serverAddr) + "/servers/" + fmt.Sprint(servers))
-		msg := "{\"Servers\":" + fmt.Sprintf("v", server) + ",\"Blockchain\":" + blockchain + ",\"Nodes\":" + fmt.Sprintf("%d", nodes) + ",\"Image\":" + image + "}"
+		msg := "get_servers"
 
 		wsEmit(serverAddr, msg)
 	},
