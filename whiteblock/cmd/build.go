@@ -29,7 +29,7 @@ var buildCmd = &cobra.Command{
 		// curlPOST(fmt.Sprint(serverAddr)+"/testnets/", "-d '{\"Servers\":\""+fmt.Sprint("%d", server)+"\",\"Blockchain\":\"ethereum\",\"Nodes\":"+fmt.Sprintf("%d", nodes)+",\"Image\":\""+fmt.Sprint(image)+"\"}'")
 		msg := "build,{\"Servers\":" + fmt.Sprintf("v", server) + ",\"Blockchain\":" + blockchain + ",\"Nodes\":" + fmt.Sprintf("%d", nodes) + ",\"Image\":" + image + "}"
 
-		wsEmit(serverAddr, msg)
+		wsEmitListen(serverAddr, msg)
 	},
 }
 
@@ -38,7 +38,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
 	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
 	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
-	buildCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "ws://localhost:5000", "server address with port 8000")
+	buildCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "ws://localhost:5000", "server address with port 5000")
 
 	RootCmd.AddCommand(buildCmd)
 }

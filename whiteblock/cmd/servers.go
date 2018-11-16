@@ -21,7 +21,7 @@ var serverCmd = &cobra.Command{
 		// curlGET(fmt.Sprint(serverAddr) + "/servers/" + fmt.Sprint(servers))
 		msg := "get_servers"
 
-		wsEmit(serverAddr, msg)
+		wsEmitListen(serverAddr, msg)
 	},
 }
 
