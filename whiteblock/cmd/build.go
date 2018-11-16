@@ -27,7 +27,7 @@ var buildCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		// curlPOST(fmt.Sprint(serverAddr)+"/testnets/", "-d '{\"Servers\":\""+fmt.Sprint("%d", server)+"\",\"Blockchain\":\"ethereum\",\"Nodes\":"+fmt.Sprintf("%d", nodes)+",\"Image\":\""+fmt.Sprint(image)+"\"}'")
-		msg := "build,{\"Servers\":\"" + fmt.Sprintf("%s", server) + "\",\"Blockchain\":\"" + blockchain + "\",\"Nodes\":\"" + fmt.Sprintf("%d", nodes) + "\",\"Image\":\"" + image + "\"}"
+		msg := "build,{\"Servers\":" + fmt.Sprintf("%s", server) + ",\"Blockchain\":\"" + blockchain + "\",\"Nodes\":" + fmt.Sprintf("%d", nodes) + ",\"Image\":\"" + image + "\"}"
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
 		wsBuild(serverAddr, msg)
