@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/graarh/golang-socketio"
@@ -34,11 +35,12 @@ func wsBuild(wsaddr, msg string) {
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		log.Println("build_status: ", args)
+
+		if args != "Not Ready" {
+			c.Close()
+		}
 	})
 	c.Emit("build", msg)
-
-	time.Sleep(1000 * time.Second)
-	c.Close()
 
 }
 
@@ -71,6 +73,11 @@ func wsGetServers(wsaddr string) {
 
 	err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
 		log.Println("servers: ", args)
+
+		if strings.ContainsAny(args, "") {
+			c.Close()
+		}
+
 	})
 	if err != nil {
 		panic(err)
