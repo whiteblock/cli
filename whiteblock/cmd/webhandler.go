@@ -47,12 +47,14 @@ func wsEmit(wsaddr, msg string) {
 
 	socket.SendText(msg)
 
-	for {
-		select {
-		case <-interrupt:
-			log.Println("interrupt")
-			socket.Close()
-			return
-		}
-	}
+	socket.Close()
+
+	// for {
+	// 	select {
+	// 	case <-interrupt:
+	// 		log.Println("interrupt")
+	// 		socket.Close()
+	// 		return
+	// 	}
+	// }
 }
