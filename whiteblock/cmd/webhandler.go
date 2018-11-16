@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"strings"
-	"time"
 
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
@@ -74,9 +72,7 @@ func wsGetServers(wsaddr string) {
 	err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
 		log.Println("servers: ", args)
 
-		if strings.ContainsAny(args, "") {
-			c.Close()
-		}
+		c.Close()
 
 	})
 	if err != nil {
@@ -84,8 +80,5 @@ func wsGetServers(wsaddr string) {
 	}
 
 	c.Emit("get_servers", "")
-
-	time.Sleep(1000 * time.Second)
-	c.Close()
 
 }
