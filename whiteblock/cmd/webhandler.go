@@ -65,7 +65,7 @@ func wsGetServers(wsaddr string) {
 		log.Println("get_servers: ", args)
 	})
 
-	c.Emit("build", `{"Servers":[4],"Blockchain":"ethereum","Nodes":3,"Image":"ethereum:latest"}`)
+	c.Emit("get_servers", "")
 
 	time.Sleep(1000 * time.Second)
 	c.Close()
