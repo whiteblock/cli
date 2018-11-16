@@ -52,19 +52,29 @@ func wsGetServers(wsaddr string) {
 	fmt.Sprintln(gosocketio.GetUrl("localhost", 5000, false))
 
 	if err != nil {
-		log.Println(err.Error())
+		panic(err)
 	}
+
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		log.Println("Connected")
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
 		log.Fatal("Disconnected")
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
 		log.Println("servers: ", args)
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	c.Emit("get_servers", "")
 
