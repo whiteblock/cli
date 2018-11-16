@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -15,14 +17,19 @@ func wsEmitListen(wsaddr, msg string) {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	fmt.Println(wsaddr)
-
 	u := url.URL{Scheme: "ws", Host: wsaddr, Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	fmt.Println(u.String())
+
+	dialer := websocket.Dialer{
+		HandshakeTimeout: 60 * time.Second,
+		Proxy:            http.ProxyFromEnvironment,
+	}
+
+	c, resp, err := dialer.Dial(u.String(), nil)
 	if err != nil {
-		log.Fatal("dial:", err)
+		log.Printf("%d", resp.StatusCode)
 	}
 	defer c.Close()
 
@@ -34,7 +41,6 @@ func wsEmitListen(wsaddr, msg string) {
 			_, message, err := c.ReadMessage()
 			if err != nil {
 				log.Println("read:", err)
-				return
 			}
 			log.Printf("recv: %s", message)
 		}
@@ -42,52 +48,3 @@ func wsEmitListen(wsaddr, msg string) {
 
 	c.WriteMessage(websocket.TextMessage, []byte(msg))
 }
-
-// func wsEmit(wsaddr, msg string) {
-// 	interrupt := make(chan os.Signal, 1)
-// 	signal.Notify(interrupt, os.Interrupt)
-
-// 	socket := gowebsocket.New(wsaddr)
-
-// 	socket.OnConnected = func(socket gowebsocket.Socket) {
-// 		log.Println("Connected to server")
-// 	}
-
-// 	socket.OnConnectError = func(err error, socket gowebsocket.Socket) {
-// 		log.Println("Recieved connect error ", err)
-// 	}
-
-// 	socket.OnTextMessage = func(message string, socket gowebsocket.Socket) {
-// 		log.Println("Recieved message " + message)
-// 	}
-
-// 	socket.OnBinaryMessage = func(data []byte, socket gowebsocket.Socket) {
-// 		log.Println("Recieved binary data ", data)
-// 	}
-
-// 	socket.OnPingReceived = func(data string, socket gowebsocket.Socket) {
-// 		log.Println("Recieved ping " + data)
-// 	}
-
-// 	socket.OnPongReceived = func(data string, socket gowebsocket.Socket) {
-// 		log.Println("Recieved pong " + data)
-// 	}
-
-// 	socket.OnDisconnected = func(err error, socket gowebsocket.Socket) {
-// 		log.Println("Disconnected from server ")
-// 		return
-// 	}
-
-// 	socket.Connect()
-
-// 	socket.SendText(msg)
-
-// for {
-// 	select {
-// 	case <-interrupt:
-// 		log.Println("interrupt")
-// 		socket.Close()
-// 		return
-// 	}
-// }
-// }
