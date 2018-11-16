@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
-	"net/url"
 	"time"
 
 	"github.com/graarh/golang-socketio"
@@ -11,10 +11,10 @@ import (
 
 func wsBuild(wsaddr, msg string) {
 
-	u := url.URL{Scheme: "ws", Host: wsaddr, Path: "/"}
+	// fmt.Println(wsaddr)
 
 	c, err := gosocketio.Dial(
-		u.String(),
+		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
 	if err != nil {
@@ -44,12 +44,13 @@ func wsBuild(wsaddr, msg string) {
 
 func wsGetServers(wsaddr string) {
 
-	u := url.URL{Scheme: "ws", Host: wsaddr, Path: "/"}
-
 	c, err := gosocketio.Dial(
-		u.String(),
+		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
+
+	fmt.Sprintln(gosocketio.GetUrl("localhost", 5000, false))
+
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -61,8 +62,8 @@ func wsGetServers(wsaddr string) {
 		log.Fatal("Disconnected")
 	})
 
-	err = c.On("server", func(h *gosocketio.Channel, args string) {
-		log.Println("get_servers: ", args)
+	err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
+		log.Println("servers: ", args)
 	})
 
 	c.Emit("get_servers", "")

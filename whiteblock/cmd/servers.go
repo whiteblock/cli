@@ -20,6 +20,7 @@ var serverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// curlGET(fmt.Sprint(serverAddr) + "/servers/" + fmt.Sprint(servers))
 		// msg := "get_servers"
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
 		wsGetServers(serverAddr)
 	},
