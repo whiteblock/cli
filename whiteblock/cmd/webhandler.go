@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -13,6 +14,8 @@ func wsEmitListen(wsaddr, msg string) {
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
+
+	fmt.Println(wsaddr)
 
 	u := url.URL{Scheme: "ws", Host: wsaddr, Path: "/"}
 	log.Printf("connecting to %s", u.String())
