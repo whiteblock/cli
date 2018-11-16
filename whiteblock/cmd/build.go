@@ -38,7 +38,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
 	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
 	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
-	buildCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "http://localhost:8000", "server address with port 8000")
+	buildCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "ws://localhost:5000", "server address with port 8000")
 
 	RootCmd.AddCommand(buildCmd)
 }

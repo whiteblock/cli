@@ -27,7 +27,7 @@ var serverCmd = &cobra.Command{
 
 func init() {
 	serverCmd.Flags().StringVarP(&servers, "ID", "i", "", "Server ID")
-	serverCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "http://localhost:8000", "server address with port 8000")
+	serverCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "ws//localhost:5000", "server address with port 8000")
 
 	RootCmd.AddCommand(serverCmd)
 }
