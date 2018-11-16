@@ -12,7 +12,7 @@ func wsEmit(wsaddr, msg string) {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	socket := gowebsocket.New("ws://echo.websocket.org/")
+	socket := gowebsocket.New(wsaddr)
 
 	socket.OnConnected = func(socket gowebsocket.Socket) {
 		log.Println("Connected to server")
@@ -47,7 +47,7 @@ func wsEmit(wsaddr, msg string) {
 
 	socket.SendText(msg)
 
-	socket.Close()
+	return
 
 	// for {
 	// 	select {
