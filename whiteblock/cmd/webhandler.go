@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
@@ -11,7 +12,7 @@ import (
 
 func wsBuild(wsaddr, msg string) {
 
-	done := false
+	// fmt.Println(wsaddr)
 
 	c, err := gosocketio.Dial(
 		wsaddr,
@@ -36,20 +37,22 @@ func wsBuild(wsaddr, msg string) {
 		log.Println("build_status: ", args)
 
 		if args != "Not Ready" {
-			done = true
+			c.Close()
 		}
 	})
+
+	if err != nil {
+		log.Println(err.Error())
+	}
+
 	c.Emit("build", msg)
 
-	if done == true {
-		c.Close()
-	}
+	time.Sleep(1000 * time.Second)
+	c.Close()
 
 }
 
 func wsGetServers(wsaddr string) {
-
-	done := false
 
 	c, err := gosocketio.Dial(
 		wsaddr,
@@ -59,38 +62,27 @@ func wsGetServers(wsaddr string) {
 	fmt.Sprintln(gosocketio.GetUrl("localhost", 5000, false))
 
 	if err != nil {
-		panic(err)
+		log.Println(err.Error())
 	}
-
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		log.Println("Connected")
 	})
-	if err != nil {
-		panic(err)
-	}
 
 	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
 		log.Fatal("Disconnected")
 	})
-	if err != nil {
-		panic(err)
-	}
 
 	err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
 		log.Println("servers: ", args)
 
 		if strings.ContainsAny(args, "{") {
-			done = true
+			c.Close()
 		}
 	})
-	if err != nil {
-		panic(err)
-	}
 
 	c.Emit("get_servers", "")
 
-	if done == true {
-		c.Close()
-	}
+	time.Sleep(1000 * time.Second)
+	c.Close()
 
 }
