@@ -19,15 +19,13 @@ var serverCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		// curlGET(fmt.Sprint(serverAddr) + "/servers/" + fmt.Sprint(servers))
-		msg := "get_servers"
 
-		wsEmitListen(serverAddr, msg)
 	},
 }
 
 func init() {
 	serverCmd.Flags().StringVarP(&servers, "ID", "i", "", "Server ID")
-	serverCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 8000")
+	serverCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost,5000", "server address with port 8000")
 
 	RootCmd.AddCommand(serverCmd)
 }
