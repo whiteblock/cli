@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os/exec"
-
 	"github.com/spf13/cobra"
 )
 
@@ -16,16 +13,25 @@ var listNodesCmd = &cobra.Command{
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		list := "docker ps -a | awk '{print $12}'"
+		// 	list := "docker ps -a | awk '{print $12}'"
 
-		out, err := exec.Command("bash", "-c", list).Output()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("%s", out)
+		// 	fmt.Println(list)
+
+		// 	out, err := exec.Command("bash", "-c", list).Output()
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
+		// 	fmt.Printf("%s", out)
+		// },
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+
+		wsGetNodes(serverAddr)
 	},
 }
 
 func init() {
+	listNodesCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 5000")
+
 	RootCmd.AddCommand(listNodesCmd)
 }

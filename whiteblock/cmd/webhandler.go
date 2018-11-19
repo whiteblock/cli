@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -18,9 +17,14 @@ func wsBuild(wsaddr, msg string) {
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
+	defer c.Close()
+
 	if err != nil {
 		log.Println(err.Error())
 	}
+
+	// wg.Add(1)
+
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		log.Println("Connected")
 	})
@@ -37,7 +41,7 @@ func wsBuild(wsaddr, msg string) {
 		log.Println("build_status: ", args)
 
 		if args != "Not Ready" {
-			c.Close()
+			// wg.Done()
 		}
 	})
 
@@ -47,8 +51,10 @@ func wsBuild(wsaddr, msg string) {
 
 	c.Emit("build", msg)
 
-	time.Sleep(1000 * time.Second)
-	c.Close()
+	// wg.Wait()
+	// c.Close()
+
+	time.Sleep(900 * time.Second)
 
 }
 
@@ -58,8 +64,6 @@ func wsGetServers(wsaddr string) {
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
-
-	fmt.Sprintln(gosocketio.GetUrl("localhost", 5000, false))
 
 	if err != nil {
 		log.Println(err.Error())
@@ -78,9 +82,120 @@ func wsGetServers(wsaddr string) {
 		if strings.ContainsAny(args, "{") {
 			c.Close()
 		}
+
+		if strings.ContainsAny(args, "[") {
+			c.Close()
+		}
+
 	})
 
 	c.Emit("get_servers", "")
+
+	time.Sleep(1000 * time.Second)
+	c.Close()
+
+}
+
+func wsSSH(wsaddr, msg string) {
+
+	c, err := gosocketio.Dial(
+		wsaddr,
+		transport.GetDefaultWebsocketTransport(),
+	)
+
+	if err != nil {
+		log.Println(err.Error())
+	}
+	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
+		log.Println("Connected")
+	})
+
+	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
+		log.Fatal("Disconnected")
+	})
+
+	err = c.On("exec", func(h *gosocketio.Channel, args string) {
+		log.Println("output: ", args)
+
+	})
+
+	c.Emit("exec", msg)
+
+	time.Sleep(1000 * time.Second)
+	c.Close()
+
+}
+
+func wsGetNodes(wsaddr string) {
+
+	c, err := gosocketio.Dial(
+		wsaddr,
+		transport.GetDefaultWebsocketTransport(),
+	)
+
+	if err != nil {
+		log.Println(err.Error())
+	}
+	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
+		log.Println("Connected")
+	})
+
+	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
+		log.Fatal("Disconnected")
+	})
+
+	err = c.On("get_nodes", func(h *gosocketio.Channel, args string) {
+		log.Println("nodes: ", args)
+
+		if strings.ContainsAny(args, "{") {
+			c.Close()
+		}
+
+		if strings.ContainsAny(args, "[") {
+			c.Close()
+		}
+
+	})
+
+	c.Emit("get_nodes", "")
+
+	time.Sleep(1000 * time.Second)
+	c.Close()
+
+}
+
+func wsGethCmd(wsaddr, cmd string) {
+
+	c, err := gosocketio.Dial(
+		wsaddr,
+		transport.GetDefaultWebsocketTransport(),
+	)
+
+	if err != nil {
+		log.Println(err.Error())
+	}
+	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
+		log.Println("Connected")
+	})
+
+	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
+		log.Fatal("Disconnected")
+	})
+
+	err = c.On(cmd, func(h *gosocketio.Channel, args string) {
+		log.Println("Output: ", args)
+
+		if strings.ContainsAny(args, "{") {
+			c.Close()
+		}
+
+		if strings.ContainsAny(args, "[") {
+			c.Close()
+		}
+
+	})
+
+	c.Emit(cmd, "")
 
 	time.Sleep(1000 * time.Second)
 	c.Close()

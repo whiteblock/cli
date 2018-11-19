@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +17,7 @@ var gethCmd = &cobra.Command{
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if gethcommand == "" {
-
-		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 	},
 }
 
@@ -26,16 +26,26 @@ var getBlockNumberCmd = &cobra.Command{
 	Short: "Get block number",
 	Long: `Get the current highest block number of the chain
 	Response: The block number e.g. 10`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_block_number"
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getBlockCmd = &cobra.Command{
-	Use:   "get_block",
+	Use:   "get_block <block number>",
 	Short: "Get block information",
 	Long: `Get the data of a block
 	Response: JSON Representation of the block.
 	
 	Params: Block number
 	Format: <Block Number>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_block" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getAccountCmd = &cobra.Command{
@@ -43,57 +53,87 @@ var getAccountCmd = &cobra.Command{
 	Short: "Get account information",
 	Long: `Get a list of all unlocked accounts
 	Response: A JSON array of the accounts`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_accounts"
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getBalanceCmd = &cobra.Command{
-	Use:   "get_balance [address]",
+	Use:   "get_balance <address>",
 	Short: "Get account balance information",
 	Long: `Get the current balance of an account
 	Response: The integer balance of the account in wei
 	
 	Params: Account address
 	Format: <address>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_balance" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var sendTxCmd = &cobra.Command{
-	Use:   "send_transaction",
+	Use:   "send_transaction <from address> <to address> <gas> <gas price> <value to send>",
 	Short: "Sends a transaction",
 	Long: `Send a transaction between two accounts
 	Response: The transaction hash
 
 	Params: Sending account, receiving account, gas, gas price, amount to send, transaction data, nonce
-	Format: <from> <to> <gas> <gas price> <value> [data] [nonce]
+	Format: <from> <to> <gas> <gas price> <value>
 	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::send_transaction" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getTxCountCmd = &cobra.Command{
-	Use:   "get_transaction_count",
+	Use:   "get_transaction_count <address> [block number]",
 	Short: "Get transaction count",
 	Long: `Get the transaction count sent from an address, optionally by block
 	Response: The transaction count
 	
 	Params: The sender account, a block number
 	Format: <address> [block number]`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_transaction_count" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getTxCmd = &cobra.Command{
-	Use:   "get_transaction",
+	Use:   "get_transaction <hash>",
 	Short: "Get transaction information",
 	Long: `Get a transaction by its hash
 	Response: JSON representation of the transaction.
 	
 	Params: The transaction hash
 	Format: <hash>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_transaction" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getTxReceiptCmd = &cobra.Command{
-	Use:   "get_transaction_receipt",
+	Use:   "get_transaction_receipt <hash>",
 	Short: "Get transaction receipt",
 	Long: `Get the transaction receipt by the tx hash
 	Response: JSON representation of the transaction receipt.
 	
 	Params: The transaction hash
 	Format: <hash>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_transaction_receipt" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getHashRateCmd = &cobra.Command{
@@ -101,55 +141,85 @@ var getHashRateCmd = &cobra.Command{
 	Short: "Get hasg rate",
 	Long: `Get the current hash rate per node
 	Response: The hash rate of a single node in the network`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_hash_rate"
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var startTxCmd = &cobra.Command{
-	Use:   "start_transactions",
+	Use:   "start_transactions <tx/s> <value> [destination]",
 	Short: "Start transactions",
 	Long: `Start sending transactions according to the given parameters, value = -1 means randomize value.
 	
 	Params: The amount of transactions to send in a second, the value of each transaction in wei, the destination for the transaction
 	Format: <tx/s> <value> [destination]`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::start_transactions" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var stopTxCmd = &cobra.Command{
 	Use:   "stop_transactions",
 	Short: "Start transactions",
 	Long:  `Stops the sending of transactions if transactions are currently being sent`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::stop_transactions"
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var startMiningCmd = &cobra.Command{
-	Use:   "start_mining",
+	Use:   "start_mining [node 1 number] [node 2 number]...",
 	Short: "Start Mining",
 	Long: `Send the start mining signal to nodes, may take a while to take effect due to DAG generation
 	Response: The number of nodes which successfully received the signal to start mining
 	
 	Params: A list of the nodes to start mining or None for all nodes
 	Format: [node 1 number] [node 2 number]...`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::start_mining" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var stopMiningCmd = &cobra.Command{
-	Use:   "stop_mining",
+	Use:   "stop_mining [node 1 number] [node 2 number]...",
 	Short: "Stop mining",
 	Long: `Send the stop mining signal to nodes
 	Response: The number of nodes which successfully received the signal to stop mining
 	
 	Params: A list of the nodes to stop mining or None for all nodes
 	Format: [node 1 number] [node 2 number]...`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::stop_mining" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var blockListenerCmd = &cobra.Command{
-	Use:   "block_listener",
+	Use:   "block_listener [block number]",
 	Short: "Get block listener",
 	Long: `Get all blocks and continue to subscribe to new blocks
 	Response: Will emit on eth::block_listener for every block after the given block or 0 that exists/has been created
 	
 	Params: The block number to start at or None for all blocks
 	Format: [block number]`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::block_listener" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 var getRecentSentTxCmd = &cobra.Command{
-	Use:   "get_recent_sent_tx",
+	Use:   "get_recent_sent_tx [number]",
 	Short: "Get recently sent transaction",
 	Long: `Get a number of the most recent transactions sent
 	
@@ -157,13 +227,34 @@ var getRecentSentTxCmd = &cobra.Command{
 	
 	Params: The number of transactions to retrieve
 	Format: [number]`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := "eth::get_recent_sent_tx" + "," + strings.Join(args[:], ",")
+		// fmt.Println(command)
+		wsGethCmd(serverAddr, command)
+	},
 }
 
 func init() {
-	gethCmd.Flags().StringVarP(&gethcommand, "command", "c", "", "Geth command")
-	gethCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 8000")
+	// gethCmd.Flags().StringVarP(&gethcommand, "command", "c", "", "Geth command")
+	gethCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
+
+	gethCmd.AddCommand(getBlockNumberCmd)
+	gethCmd.AddCommand(getBlockCmd)
+	gethCmd.AddCommand(getAccountCmd)
+	gethCmd.AddCommand(getBalanceCmd)
+	gethCmd.AddCommand(sendTxCmd)
+	gethCmd.AddCommand(getTxCountCmd)
+	gethCmd.AddCommand(getTxCmd)
+	gethCmd.AddCommand(getTxReceiptCmd)
+	gethCmd.AddCommand(getHashRateCmd)
+	gethCmd.AddCommand(startTxCmd)
+	gethCmd.AddCommand(stopTxCmd)
+	gethCmd.AddCommand(startMiningCmd)
+	gethCmd.AddCommand(stopMiningCmd)
+	gethCmd.AddCommand(blockListenerCmd)
+	gethCmd.AddCommand(getRecentSentTxCmd)
 
 	RootCmd.AddCommand(gethCmd)
 }
