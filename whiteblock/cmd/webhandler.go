@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 	"sync"
+	"fmt"
 	"encoding/json"
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
@@ -47,7 +48,7 @@ func wsBuild(wsaddr, msg string) {
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
-		json.unmarshal(args,&status)
+		json.Unmarshal(args,&status)
 		fmt.Println("Building: %f\r",status.Progress)
 		if status.Progress == 100.0{
 			fmt.Println("\nDone")
