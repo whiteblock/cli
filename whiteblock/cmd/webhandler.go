@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -185,11 +186,8 @@ func wsGethCmd(wsaddr, cmd string) {
 	err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 		log.Println("Output: ", args)
 
-		if strings.ContainsAny(args, "{") {
-			c.Close()
-		}
-
-		if strings.ContainsAny(args, "[") {
+		match, _ := regexp.MatchString("[a-zA-Z0-9]+", args)
+		if match {
 			c.Close()
 		}
 
