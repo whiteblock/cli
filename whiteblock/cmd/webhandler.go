@@ -5,15 +5,22 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
+	"sync"
+	"encoding/json"
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
 )
 
+type BuildStatus struct {
+	Error		error	`json:"error"`
+	Progress	float64	`json:"progress"`
+}
+
 func wsBuild(wsaddr, msg string) {
 
 	// fmt.Println(wsaddr)
-
+	var mutex = &sync.Mutex{}
+	mutex.Unlock()
 	c, err := gosocketio.Dial(
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
@@ -39,10 +46,14 @@ func wsBuild(wsaddr, msg string) {
 	})
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
-		log.Println("build_status: ", args)
-
-		if args != "Not Ready" {
-			// wg.Done()
+		var status BuildStatus
+		json.unmarshal(args,&status)
+		fmt.Println("Building: %f\r",status.Progress)
+		if status.Progress == 100.0{
+			fmt.Println("\nDone")
+			mutex.Unlock()
+		}else if status.Error != nil{
+			fmt.Println(status.Error.Error())
 		}
 	})
 
@@ -51,11 +62,7 @@ func wsBuild(wsaddr, msg string) {
 	}
 
 	c.Emit("build", msg)
-
-	// wg.Wait()
-	// c.Close()
-
-	time.Sleep(900 * time.Second)
+	mutex.Lock()
 
 }
 
