@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -27,7 +28,9 @@ var getBlockNumberCmd = &cobra.Command{
 	Long: `Get the current highest block number of the chain
 	Response: The block number e.g. 10`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_block_number"
+		fmt.Println(serverAddr)
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
 	},
@@ -42,6 +45,7 @@ var getBlockCmd = &cobra.Command{
 	Params: Block number
 	Format: <Block Number>`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_block" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -54,6 +58,7 @@ var getAccountCmd = &cobra.Command{
 	Long: `Get a list of all unlocked accounts
 	Response: A JSON array of the accounts`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_accounts"
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -69,6 +74,7 @@ var getBalanceCmd = &cobra.Command{
 	Params: Account address
 	Format: <address>`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_balance" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -85,6 +91,7 @@ var sendTxCmd = &cobra.Command{
 	Format: <from> <to> <gas> <gas price> <value>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::send_transaction" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -100,6 +107,7 @@ var getTxCountCmd = &cobra.Command{
 	Params: The sender account, a block number
 	Format: <address> [block number]`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_transaction_count" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -115,6 +123,7 @@ var getTxCmd = &cobra.Command{
 	Params: The transaction hash
 	Format: <hash>`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_transaction" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -130,6 +139,7 @@ var getTxReceiptCmd = &cobra.Command{
 	Params: The transaction hash
 	Format: <hash>`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_transaction_receipt" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -142,6 +152,7 @@ var getHashRateCmd = &cobra.Command{
 	Long: `Get the current hash rate per node
 	Response: The hash rate of a single node in the network`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_hash_rate"
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -156,6 +167,7 @@ var startTxCmd = &cobra.Command{
 	Params: The amount of transactions to send in a second, the value of each transaction in wei, the destination for the transaction
 	Format: <tx/s> <value> [destination]`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::start_transactions" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -167,6 +179,7 @@ var stopTxCmd = &cobra.Command{
 	Short: "Start transactions",
 	Long:  `Stops the sending of transactions if transactions are currently being sent`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::stop_transactions"
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -182,6 +195,7 @@ var startMiningCmd = &cobra.Command{
 	Params: A list of the nodes to start mining or None for all nodes
 	Format: [node 1 number] [node 2 number]...`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::start_mining" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -197,6 +211,7 @@ var stopMiningCmd = &cobra.Command{
 	Params: A list of the nodes to stop mining or None for all nodes
 	Format: [node 1 number] [node 2 number]...`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::stop_mining" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -212,6 +227,7 @@ var blockListenerCmd = &cobra.Command{
 	Params: The block number to start at or None for all blocks
 	Format: [block number]`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::block_listener" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
@@ -228,6 +244,7 @@ var getRecentSentTxCmd = &cobra.Command{
 	Params: The number of transactions to retrieve
 	Format: [number]`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_recent_sent_tx" + "," + strings.Join(args[:], ",")
 		// fmt.Println(command)
 		wsGethCmd(serverAddr, command)
