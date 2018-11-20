@@ -16,7 +16,7 @@ var (
 
 var buildCmd = &cobra.Command{
 	Use:     "build",
-	Aliases: []string{"init", "create","plop"},
+	Aliases: []string{"init", "create", "plop"},
 	Short:   "Build a blockchain using image and deploy nodes",
 	Long: `Build will create and deploy a blockchain and the specified number of nodes. Each node will be instantiated in its own containers and will interact individually as a participant of the specified network.
 	

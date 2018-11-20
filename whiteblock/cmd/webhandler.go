@@ -1,17 +1,19 @@
 package cmd
 
 import (
-	"log"
-	"sync"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"sync"
+
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
 )
 
 type BuildStatus struct {
-	Error		error	`json:"error"`
-	Progress	float64	`json:"progress"`
+	Error    error   `json:"error"`
+	Progress float64 `json:"progress"`
 }
 
 func wsBuild(wsaddr, msg string) {
@@ -26,7 +28,8 @@ func wsBuild(wsaddr, msg string) {
 	defer c.Close()
 
 	if err != nil {
-		panic(err.Error())
+		println(err.Error())
+		os.Exit(1)
 	}
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		log.Println("Connected")
@@ -42,12 +45,12 @@ func wsBuild(wsaddr, msg string) {
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
-		json.Unmarshal([]byte(args),&status)
-		fmt.Printf("Building: %f \t\t\t\t\r",status.Progress)
-		if status.Progress == 100.0{
+		json.Unmarshal([]byte(args), &status)
+		fmt.Printf("Building: %f \t\t\t\t\r", status.Progress)
+		if status.Progress == 100.0 {
 			fmt.Println("\nDone")
 			mutex.Unlock()
-		}else if status.Error != nil{
+		} else if status.Error != nil {
 			fmt.Println(status.Error.Error())
 		}
 	})
@@ -64,13 +67,14 @@ func wsBuild(wsaddr, msg string) {
 func wsGetServers(wsaddr string) {
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
-	
+
 	c, err := gosocketio.Dial(
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
 	if err != nil {
-		panic(err.Error())
+		println(err.Error())
+		os.Exit(1)
 	}
 	defer c.Close()
 
@@ -92,13 +96,13 @@ func wsSSH(wsaddr, msg string) {
 	)
 
 	if err != nil {
-		panic(err.Error())
+		println(err.Error())
+		os.Exit(1)
 	}
 	defer c.Close()
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		//log.Println("Connected")
 	})
-
 
 	err = c.On("exec", func(h *gosocketio.Channel, args string) {
 		print(args)
@@ -118,7 +122,8 @@ func wsGetNodes(wsaddr string) {
 		transport.GetDefaultWebsocketTransport(),
 	)
 	if err != nil {
-		panic(err)
+		println(err.Error())
+		os.Exit(1)
 	}
 	defer c.Close()
 	err = c.On("get_nodes", func(h *gosocketio.Channel, args string) {
@@ -127,11 +132,11 @@ func wsGetNodes(wsaddr string) {
 	})
 
 	c.Emit("get_nodes", "")
-	
+
 	mutex.Lock()
 }
 
-func wsGethCmd(wsaddr, cmd string) {
+func wsGethCmd(wsaddr, cmd, param string) {
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
 	c, err := gosocketio.Dial(
@@ -140,7 +145,8 @@ func wsGethCmd(wsaddr, cmd string) {
 	)
 
 	if err != nil {
-		panic(err.Error())
+		println(err.Error())
+		os.Exit(1)
 	}
 	defer c.Close()
 
@@ -151,8 +157,7 @@ func wsGethCmd(wsaddr, cmd string) {
 		}
 	})
 
-	c.Emit(cmd, "")
+	c.Emit(cmd, param)
 
-	
 	mutex.Lock()
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -18,7 +19,11 @@ var gethCmd = &cobra.Command{
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		out, err := exec.Command("bash", "-c", "./whiteblock geth -h").Output()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%s", out)
 	},
 }
 
@@ -30,9 +35,17 @@ var getBlockNumberCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_block_number"
+		param := ""
 		fmt.Println(serverAddr)
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_block_number -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -46,9 +59,17 @@ var getBlockCmd = &cobra.Command{
 	Format: <Block Number>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_block" + "," + strings.Join(args[:], ",")
+		command := "eth::get_block"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_block -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -60,8 +81,16 @@ var getAccountCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_accounts"
+		param := ""
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_accounts -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -75,9 +104,17 @@ var getBalanceCmd = &cobra.Command{
 	Format: <address>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_balance" + "," + strings.Join(args[:], ",")
+		command := "eth::get_balance"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_balance -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -92,9 +129,17 @@ var sendTxCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::send_transaction" + "," + strings.Join(args[:], ",")
+		command := "eth::send_transaction"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) <= 4 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth send_transaction -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -108,9 +153,17 @@ var getTxCountCmd = &cobra.Command{
 	Format: <address> [block number]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_transaction_count" + "," + strings.Join(args[:], ",")
+		command := "eth::get_transaction_count"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 2 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction_count -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -124,9 +177,17 @@ var getTxCmd = &cobra.Command{
 	Format: <hash>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_transaction" + "," + strings.Join(args[:], ",")
+		command := "eth::get_transaction"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -140,9 +201,17 @@ var getTxReceiptCmd = &cobra.Command{
 	Format: <hash>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_transaction_receipt" + "," + strings.Join(args[:], ",")
+		command := "eth::get_transaction_receipt"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction_receipt -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -154,8 +223,16 @@ var getHashRateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_hash_rate"
+		param := ""
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_hash_rate -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -168,21 +245,37 @@ var startTxCmd = &cobra.Command{
 	Format: <tx/s> <value> [destination]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::start_transactions" + "," + strings.Join(args[:], ",")
+		command := "eth::start_transactions"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) <= 1 || len(args) > 3 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth start_transactions -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
 var stopTxCmd = &cobra.Command{
 	Use:   "stop_transactions",
-	Short: "Start transactions",
+	Short: "Stop transactions",
 	Long:  `Stops the sending of transactions if transactions are currently being sent`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::stop_transactions"
+		param := ""
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth stop_transactions -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -196,9 +289,17 @@ var startMiningCmd = &cobra.Command{
 	Format: [node 1 number] [node 2 number]...`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::start_mining" + "," + strings.Join(args[:], ",")
+		command := "eth::start_mining"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth start_mining -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -212,9 +313,17 @@ var stopMiningCmd = &cobra.Command{
 	Format: [node 1 number] [node 2 number]...`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::stop_mining" + "," + strings.Join(args[:], ",")
+		command := "eth::stop_mining"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth stop_mining -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -228,9 +337,17 @@ var blockListenerCmd = &cobra.Command{
 	Format: [block number]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::block_listener" + "," + strings.Join(args[:], ",")
+		command := "eth::block_listener"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth block_listener -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
@@ -245,9 +362,17 @@ var getRecentSentTxCmd = &cobra.Command{
 	Format: [number]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_recent_sent_tx" + "," + strings.Join(args[:], ",")
+		command := "eth::get_recent_sent_tx"
+		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsGethCmd(serverAddr, command)
+		if len(args) == 0 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock geth get_recent_sent_tx -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+		wsGethCmd(serverAddr, command, param)
 	},
 }
 
