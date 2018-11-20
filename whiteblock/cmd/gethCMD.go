@@ -62,7 +62,7 @@ var getBlockCmd = &cobra.Command{
 		command := "eth::get_block"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 1 {
+		if len(args) < 1 || len(args) > 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_block -h").Output()
 			if err != nil {
 				panic(err)
@@ -107,7 +107,7 @@ var getBalanceCmd = &cobra.Command{
 		command := "eth::get_balance"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 1 {
+		if len(args) < 1 || len(args) > 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_balance -h").Output()
 			if err != nil {
 				panic(err)
@@ -180,7 +180,7 @@ var getTxCmd = &cobra.Command{
 		command := "eth::get_transaction"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 1 {
+		if len(args) < 1 || len(args) > 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction -h").Output()
 			if err != nil {
 				panic(err)
@@ -204,7 +204,7 @@ var getTxReceiptCmd = &cobra.Command{
 		command := "eth::get_transaction_receipt"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 1 {
+		if len(args) < 1 || len(args) > 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction_receipt -h").Output()
 			if err != nil {
 				panic(err)
@@ -268,7 +268,7 @@ var stopTxCmd = &cobra.Command{
 		command := "eth::stop_transactions"
 		param := ""
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 1 {
+		if len(args) >= 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth stop_transactions -h").Output()
 			if err != nil {
 				panic(err)
@@ -340,7 +340,7 @@ var blockListenerCmd = &cobra.Command{
 		command := "eth::block_listener"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 1 {
+		if len(args) > 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth block_listener -h").Output()
 			if err != nil {
 				panic(err)
@@ -365,7 +365,7 @@ var getRecentSentTxCmd = &cobra.Command{
 		command := "eth::get_recent_sent_tx"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 1 {
+		if len(args) > 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_recent_sent_tx -h").Output()
 			if err != nil {
 				panic(err)
