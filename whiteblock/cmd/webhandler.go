@@ -180,9 +180,10 @@ func wsNetconfCmd(wsaddr, cmd, param string) {
 	defer c.Close()
 
 	err = c.On(cmd, func(h *gosocketio.Channel, args string) {
-
-		mutex.Unlock()
-
+		if len(args) == 0 {
+			println(args)
+			mutex.Unlock()
+		}
 	})
 
 	println(param)
