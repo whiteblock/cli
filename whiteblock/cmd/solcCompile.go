@@ -23,7 +23,8 @@ func compile(path, filename string) {
 var solcCMD = &cobra.Command{
 	Use:   "contractcompile",
 	Short: "Smart contract compiler.",
-	Long: `Compiles the specified smart contract.
+	Long: `
+Compiles the specified smart contract.
 
 	`,
 

@@ -7,14 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	servers string
-)
-
 var getCmd = &cobra.Command{
 	Use:   "get <command>",
 	Short: "Get server and network information.",
-	Long: `Get will allow the user to get server and network information.
+	Long: `
+Get will allow the user to get server and network information.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -30,7 +27,8 @@ var getServerCmd = &cobra.Command{
 	Use:     "server",
 	Aliases: []string{"servers"},
 	Short:   "Get server information.",
-	Long: `Server will allow the user to get server information.
+	Long: `
+Server will allow the user to get server information.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -44,7 +42,8 @@ var getNodesrCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
 	Short:   "List will show all nodes.",
-	Long: `List will output all of the nodes in the current network.
+	Long: `
+List will output all of the nodes in the current network.
 
 	`,
 
@@ -57,7 +56,8 @@ var getNodesrCmd = &cobra.Command{
 var getTestnetCmd = &cobra.Command{
 	Use:   "testnet",
 	Short: "Get testnet information",
-	Long: `Testnet will allow the user to get infromation regarding the test network.
+	Long: `
+Testnet will allow the user to get infromation regarding the test network.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -67,7 +67,6 @@ var getTestnetCmd = &cobra.Command{
 }
 
 func init() {
-	getCmd.LocalFlags().StringVarP(&servers, "id", "i", "", "Server ID")
 	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	getCmd.AddCommand(getServerCmd, getTestnetCmd, getNodesrCmd)

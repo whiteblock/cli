@@ -15,9 +15,9 @@ var (
 var addscCMD = &cobra.Command{
 	Use:   "contractadd",
 	Short: "Add a smart contract.",
-	Long: `Adds the specified smart contract into the /Downloads folder.
-
-	`,
+	Long: `
+Adds the specified smart contract into the /Downloads folder.
+`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		cp := "cp " + fmt.Sprintf(addPath) + "/" + fmt.Sprintf(addFilename)

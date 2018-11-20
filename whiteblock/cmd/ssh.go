@@ -15,7 +15,8 @@ var (
 var sshCmd = &cobra.Command{
 	Use:   "ssh",
 	Short: "SSH into an existing container.",
-	Long: `SSH will allow the user to go into the contianer where the specified node exists.
+	Long: `
+SSH will allow the user to go into the contianer where the specified node exists.
 
 Response: stdout of the command
 	`,
