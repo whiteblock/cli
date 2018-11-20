@@ -31,7 +31,7 @@ var listNodesCmd = &cobra.Command{
 }
 
 func init() {
-	listNodesCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 5000")
+	listNodesCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	RootCmd.AddCommand(listNodesCmd)
 }

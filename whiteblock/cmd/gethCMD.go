@@ -253,7 +253,7 @@ var getRecentSentTxCmd = &cobra.Command{
 
 func init() {
 	// gethCmd.Flags().StringVarP(&gethcommand, "command", "c", "", "Geth command")
-	gethCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 5000")
+	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
 

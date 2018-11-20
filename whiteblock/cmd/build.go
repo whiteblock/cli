@@ -16,7 +16,7 @@ var (
 
 var buildCmd = &cobra.Command{
 	Use:     "build",
-	Aliases: []string{"init", "create"},
+	Aliases: []string{"init", "create","plop"},
 	Short:   "Build a blockchain using image and deploy nodes",
 	Long: `Build will create and deploy a blockchain and the specified number of nodes. Each node will be instantiated in its own containers and will interact individually as a participant of the specified network.
 	
@@ -40,7 +40,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
 	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
 	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
-	buildCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 5000")
+	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	RootCmd.AddCommand(buildCmd)
 }

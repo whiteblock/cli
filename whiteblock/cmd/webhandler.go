@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"log"
-	"regexp"
-	"strings"
-	"time"
 	"sync"
 	"fmt"
 	"encoding/json"
@@ -21,7 +18,7 @@ func wsBuild(wsaddr, msg string) {
 
 	// fmt.Println(wsaddr)
 	var mutex = &sync.Mutex{}
-	mutex.Unlock()
+	mutex.Lock()
 	c, err := gosocketio.Dial(
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
@@ -29,11 +26,8 @@ func wsBuild(wsaddr, msg string) {
 	defer c.Close()
 
 	if err != nil {
-		log.Println(err.Error())
+		panic(err.Error())
 	}
-
-	// wg.Add(1)
-
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		log.Println("Connected")
 	})
@@ -48,8 +42,8 @@ func wsBuild(wsaddr, msg string) {
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
-		json.Unmarshal(args,&status)
-		fmt.Println("Building: %f\r",status.Progress)
+		json.Unmarshal([]byte(args),&status)
+		fmt.Printf("Building: %f \t\t\t\t\r",status.Progress)
 		if status.Progress == 100.0{
 			fmt.Println("\nDone")
 			mutex.Unlock()
@@ -68,142 +62,97 @@ func wsBuild(wsaddr, msg string) {
 }
 
 func wsGetServers(wsaddr string) {
-
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
+	
 	c, err := gosocketio.Dial(
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
-
 	if err != nil {
-		log.Println(err.Error())
+		panic(err.Error())
 	}
-	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
-		log.Println("Connected")
-	})
-
-	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
-		log.Fatal("Disconnected")
-	})
+	defer c.Close()
 
 	err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
-		log.Println("servers: ", args)
-
-		if strings.ContainsAny(args, "{") {
-			c.Close()
-		}
-
-		if strings.ContainsAny(args, "[") {
-			c.Close()
-		}
-
+		print(args)
+		mutex.Unlock()
 	})
 
 	c.Emit("get_servers", "")
-
-	time.Sleep(1000 * time.Second)
-	c.Close()
-
+	mutex.Lock()
 }
 
 func wsSSH(wsaddr, msg string) {
-
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
 	c, err := gosocketio.Dial(
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
 
 	if err != nil {
-		log.Println(err.Error())
+		panic(err.Error())
 	}
+	defer c.Close()
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
-		log.Println("Connected")
+		//log.Println("Connected")
 	})
 
-	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
-		log.Fatal("Disconnected")
-	})
 
 	err = c.On("exec", func(h *gosocketio.Channel, args string) {
-		log.Println("output: ", args)
-
+		print(args)
+		mutex.Unlock()
 	})
 
 	c.Emit("exec", msg)
-
-	time.Sleep(1000 * time.Second)
-	c.Close()
+	mutex.Lock()
 
 }
 
 func wsGetNodes(wsaddr string) {
-
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
 	c, err := gosocketio.Dial(
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
-
 	if err != nil {
-		log.Println(err.Error())
+		panic(err)
 	}
-	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
-		log.Println("Connected")
-	})
-
-	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
-		log.Fatal("Disconnected")
-	})
-
+	defer c.Close()
 	err = c.On("get_nodes", func(h *gosocketio.Channel, args string) {
-		log.Println("nodes: ", args)
-
-		if strings.ContainsAny(args, "{") {
-			c.Close()
-		}
-
-		if strings.ContainsAny(args, "[") {
-			c.Close()
-		}
-
+		print(args)
+		mutex.Unlock()
 	})
 
 	c.Emit("get_nodes", "")
-
-	time.Sleep(1000 * time.Second)
-	c.Close()
-
+	
+	mutex.Lock()
 }
 
 func wsGethCmd(wsaddr, cmd string) {
-
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
 	c, err := gosocketio.Dial(
 		wsaddr,
 		transport.GetDefaultWebsocketTransport(),
 	)
 
 	if err != nil {
-		log.Println(err.Error())
+		panic(err.Error())
 	}
-	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
-		log.Println("Connected")
-	})
-
-	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
-		log.Fatal("Disconnected")
-	})
+	defer c.Close()
 
 	err = c.On(cmd, func(h *gosocketio.Channel, args string) {
-		log.Println("Output: ", args)
-
-		match, _ := regexp.MatchString("[a-zA-Z0-9]+", args)
-		if match {
-			c.Close()
+		if len(args) > 0 {
+			println(args)
+			mutex.Unlock()
 		}
-
 	})
 
 	c.Emit(cmd, "")
 
-	time.Sleep(1000 * time.Second)
-	c.Close()
-
+	
+	mutex.Lock()
 }

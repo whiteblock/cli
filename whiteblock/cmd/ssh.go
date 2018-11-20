@@ -23,14 +23,14 @@ var sshCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		//add websocket command later
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		msg := "{\"Servers\":" + fmt.Sprintf("%s", server) + "\",\"node\":" + fmt.Sprintf("%d", node) + ",\"command\":\"" + command + "\"}"
+		msg := "{\"server\":" + fmt.Sprintf("%s", sshserver) + ",\"node\":" + fmt.Sprintf("%d", node) + ",\"command\":\"" + command + "\"}"
 
 		wsSSH(serverAddr, msg)
 	},
 }
 
 func init() {
-	sshCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 5000")
+	sshCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	sshCmd.Flags().StringVarP(&command, "cmd", "c", "ls -l", "Which shell to run in container")
 	sshCmd.Flags().StringVarP(&sshserver, "server", "s", "1", "Which server to run in")
 	sshCmd.Flags().IntVarP(&node, "node", "n", 0, "Node number to SSH into")

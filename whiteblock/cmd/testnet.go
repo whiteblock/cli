@@ -26,8 +26,8 @@ var testnetCmd = &cobra.Command{
 }
 
 func init() {
-	testnetCmd.Flags().StringVarP(&testNetID, "ID", "i", "", "Testnet ID")
-	testnetCmd.Flags().StringVarP(&serverAddr, "serverAddr", "a", "localhost:5000", "server address with port 5000")
+	testnetCmd.Flags().StringVarP(&testNetID, "id", "i", "", "Testnet ID")
+	testnetCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	RootCmd.AddCommand(testnetCmd)
 }
