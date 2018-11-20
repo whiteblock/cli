@@ -1,41 +1,49 @@
 # Whiteblock CLI
 
-./whiteblock [COMMAND] [FLAGS]
+./whiteblock <COMMAND> [FLAGS]
 
-This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. Documentation and exmaples can be found at www.whiteblock.io/docs/cli.
+This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. Documentation, usages, and exmaples can be found at [www.whiteblock.io/docs/cli].
+
+* Available Commands:
+    * build           Build a blockchain using image and deploy nodes
+    * contractadd     Add a smart contract.
+    * contractcompile Smart contract compiler.
+    * get             Get server and network information.
+    * geth            Run geth commands
+    * help            Help about any command
+    * netconfig       Network conditions
+    * send            Send transactions from all nodes
+    * ssh             SSH into an existing container.
+    * version         Get whiteblock CLI client version
+
 * flags:
     * -h, --help : help for whiteblock
 
 ## Commands
 
-### init
-./whiteblock init [FLAGS]
+### build / init / create
+./whiteblock build [FLAGS]
 
 * aliases: build, create, init
 Build will deploy a blockchain and the specified number of nodes. Each node will be instantiated in its own containers and will interact individually as a p
 articipant of the specified blockchain.
 
-    Image                 Specifies the docker image of the network to deploy, default 'Geth' image will be used;
-    Nodes                Number of nodes to create, 10 will be used as default;
-    Server                Number of servers to deploy network, 1 server will be used;
+* flags:
+    * -b, --blockc string        blockchain (default "ethereum")
+    * -h, --help                 help for build
+    * -i, --image string         image (default "ethereum:latest")
+    * -n, --nodes int            number of nodes (default 10)
+    * -s, --server stringArray   number of servers
+    * -a, --server-addr string   server address with port 5000 (default "localhost:5000")
+
+### get
+./whiteblock get <COMMAND> [FLAGS]
+
+Get will allow the user to get server and network information.
 
 * flags:
-    * -h, --help : help for init
-    * -i, --image string : image (default "ethereum:latest")
-    * -n, --nodes int : number of nodes (default 10)
-    * -s, —server int : number of servers (default 1)
-
-### send
-./whiteblock send [FLAGS]
-
-Send will have nodes send a specified number of transactions from every node that had been deployed.
-
-        transactions              Sends specified number of transactions;
-        senders                       Number of nodes sending transactions;
-
-* flags:
-    * -t, --transactions int : number of transactions to send (default 100)
-    * -s, --senders int : Number of Nodes Sending (default 10)
+  -h, --help                 help for get
+  -a, --server-addr string   server address with port 5000 (default "localhost:5000")
 
 ### server
 ./whiteblock server [FLAGS]

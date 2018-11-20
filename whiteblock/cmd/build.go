@@ -20,10 +20,6 @@ var buildCmd = &cobra.Command{
 	Short:   "Build a blockchain using image and deploy nodes",
 	Long: `
 Build will create and deploy a blockchain and the specified number of nodes. Each node will be instantiated in its own containers and will interact individually as a participant of the specified network.
-	
-	image 				Specifies the docker image of the network to deploy, default 'Geth' image will be used;
-	nodes 				Number of nodes to create, 10 will be used as default;
-	server 				Number of servers to deploy network, e.g. "alpha", "bravo", "charlie", etc.;
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -38,10 +34,10 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 }
 
 func init() {
-	buildCmd.LocalFlags().StringVarP(&blockchain, "blockc", "b", "ethereum", "blockchain")
-	buildCmd.LocalFlags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
-	buildCmd.LocalFlags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
-	buildCmd.LocalFlags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
+	buildCmd.Flags().StringVarP(&blockchain, "blockc", "b", "ethereum", "blockchain")
+	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
+	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
+	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	RootCmd.AddCommand(buildCmd)

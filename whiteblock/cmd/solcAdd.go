@@ -31,8 +31,8 @@ Adds the specified smart contract into the /Downloads folder.
 }
 
 func init() {
-	addscCMD.LocalFlags().StringVarP(&addPath, "path", "p", "", "File path where the smart contract is located")
-	addscCMD.LocalFlags().StringVarP(&addFilename, "filename", "f", "", "File name of the smart contract")
+	addscCMD.Flags().StringVarP(&addPath, "path", "p", "", "File path where the smart contract is located")
+	addscCMD.Flags().StringVarP(&addFilename, "filename", "f", "", "File name of the smart contract")
 
 	RootCmd.AddCommand(addscCMD)
 }

@@ -32,8 +32,8 @@ Response: stdout of the command
 
 func init() {
 	sshCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	sshCmd.LocalFlags().StringVarP(&command, "cmd", "c", "ls -l", "Which shell to run in container")
-	sshCmd.LocalFlags().StringVarP(&sshserver, "server", "s", "1", "Which server to run in")
-	sshCmd.LocalFlags().IntVarP(&node, "node", "n", 0, "Node number to SSH into")
+	sshCmd.Flags().StringVarP(&command, "cmd", "c", "ls -l", "Which shell to run in container")
+	sshCmd.Flags().StringVarP(&sshserver, "server", "s", "1", "Which server to run in")
+	sshCmd.Flags().IntVarP(&node, "node", "n", 0, "Node number to SSH into")
 	RootCmd.AddCommand(sshCmd)
 }

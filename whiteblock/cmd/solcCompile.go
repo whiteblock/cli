@@ -34,8 +34,8 @@ Compiles the specified smart contract.
 }
 
 func init() {
-	solcCMD.LocalFlags().StringVarP(&path, "path", "p", "", "File path where the smart contract is located")
-	solcCMD.LocalFlags().StringVarP(&filename, "filename", "f", "", "File name of the smart contract")
+	solcCMD.Flags().StringVarP(&path, "path", "p", "", "File path where the smart contract is located")
+	solcCMD.Flags().StringVarP(&filename, "filename", "f", "", "File name of the smart contract")
 
 	RootCmd.AddCommand(solcCMD)
 }
