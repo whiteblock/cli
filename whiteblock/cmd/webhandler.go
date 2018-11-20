@@ -157,6 +157,9 @@ func wsGethCmd(wsaddr, cmd, param string) {
 		}
 	})
 
+	println(cmd)
+	println(param)
+
 	c.Emit(cmd, param)
 
 	mutex.Lock()

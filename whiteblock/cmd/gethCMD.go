@@ -38,7 +38,7 @@ var getBlockNumberCmd = &cobra.Command{
 		param := ""
 		fmt.Println(serverAddr)
 		// fmt.Println(command)
-		if len(args) > 1 {
+		if len(args) >= 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_block_number -h").Output()
 			if err != nil {
 				panic(err)
@@ -83,7 +83,7 @@ var getAccountCmd = &cobra.Command{
 		command := "eth::get_accounts"
 		param := ""
 		// fmt.Println(command)
-		if len(args) > 1 {
+		if len(args) >= 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_accounts -h").Output()
 			if err != nil {
 				panic(err)
@@ -132,7 +132,7 @@ var sendTxCmd = &cobra.Command{
 		command := "eth::send_transaction"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) <= 4 {
+		if len(args) <= 4 || len(args) > 5 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth send_transaction -h").Output()
 			if err != nil {
 				panic(err)
@@ -156,7 +156,7 @@ var getTxCountCmd = &cobra.Command{
 		command := "eth::get_transaction_count"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) == 0 || len(args) > 2 {
+		if len(args) < 1 || len(args) > 2 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction_count -h").Output()
 			if err != nil {
 				panic(err)
@@ -225,7 +225,7 @@ var getHashRateCmd = &cobra.Command{
 		command := "eth::get_hash_rate"
 		param := ""
 		// fmt.Println(command)
-		if len(args) > 1 {
+		if len(args) >= 1 {
 			out, err := exec.Command("bash", "-c", "./whiteblock geth get_hash_rate -h").Output()
 			if err != nil {
 				panic(err)
