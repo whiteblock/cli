@@ -54,7 +54,7 @@ var emulationOffCmd = &cobra.Command{
 }
 
 var latencyCmd = &cobra.Command{
-	Use:     "latency <engine number> <path number> <engine number> <path number> <amount>",
+	Use:     "latency <engine number> <path number> <amount>",
 	Aliases: []string{"lat"},
 	Short:   "Set latency",
 	Long: `
@@ -65,7 +65,7 @@ Latency will introduce delay to the network.
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[4] + " port 1 to port 2"
-		msg2 := "engine " + args[2] + " path " + args[3] + " set delay constant " + args[4] + " port 2 to port 1"
+		msg2 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[4] + " port 2 to port 1"
 
 		wsNetconfCmd(serverAddr, command, msg1)
 		wsNetconfCmd(serverAddr, command, msg2)
@@ -83,7 +83,7 @@ Packetloss will drop packets in the network.
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 		msg1 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[4] + " port 1 to port 2"
-		msg2 := "engine " + args[2] + " path " + args[3] + " set loss random " + args[4] + " port 2 to port 1"
+		msg2 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[4] + " port 2 to port 1"
 
 		wsNetconfCmd(serverAddr, command, msg1)
 		wsNetconfCmd(serverAddr, command, msg2)
