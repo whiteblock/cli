@@ -27,6 +27,7 @@ var buildCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		// curlPOST(fmt.Sprint(serverAddr)+"/testnets/", "-d '{\"Servers\":\""+fmt.Sprint("%d", server)+"\",\"Blockchain\":\"ethereum\",\"Nodes\":"+fmt.Sprintf("%d", nodes)+",\"Image\":\""+fmt.Sprint(image)+"\"}'")
+
 		msg := "{\"Servers\":" + fmt.Sprintf("%s", server) + ",\"Blockchain\":\"" + blockchain + "\",\"Nodes\":" + fmt.Sprintf("%d", nodes) + ",\"Image\":\"" + image + "\"}"
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
@@ -36,10 +37,10 @@ var buildCmd = &cobra.Command{
 }
 
 func init() {
-	buildCmd.Flags().StringVarP(&blockchain, "blockc", "b", "ethereum", "blockchain")
-	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
-	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
-	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
+	buildCmd.LocalFlags().StringVarP(&blockchain, "blockc", "b", "ethereum", "blockchain")
+	buildCmd.LocalFlags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
+	buildCmd.LocalFlags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
+	buildCmd.LocalFlags().StringArrayVarP(&server, "server", "s", []string{}, "number of servers")
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	RootCmd.AddCommand(buildCmd)

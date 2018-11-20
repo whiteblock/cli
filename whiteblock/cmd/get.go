@@ -12,7 +12,7 @@ var (
 )
 
 var getCmd = &cobra.Command{
-	Use:   "get",
+	Use:   "get <command>",
 	Short: "Get server and network information.",
 	Long: `Get will allow the user to get server and network information.
 	`,
@@ -67,12 +67,10 @@ var getTestnetCmd = &cobra.Command{
 }
 
 func init() {
-	getCmd.Flags().StringVarP(&servers, "id", "i", "", "Server ID")
+	getCmd.LocalFlags().StringVarP(&servers, "id", "i", "", "Server ID")
 	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	getCmd.AddCommand(getServerCmd)
-	getCmd.AddCommand(getTestnetCmd)
-	getCmd.AddCommand(getNodesrCmd)
+	getCmd.AddCommand(getServerCmd, getTestnetCmd, getNodesrCmd)
 
 	RootCmd.AddCommand(getCmd)
 }

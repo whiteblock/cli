@@ -31,8 +31,8 @@ var addscCMD = &cobra.Command{
 }
 
 func init() {
-	addscCMD.Flags().StringVarP(&addPath, "path", "p", "", "File path where the smart contract is located")
-	addscCMD.Flags().StringVarP(&addFilename, "filename", "f", "", "File name of the smart contract")
+	addscCMD.LocalFlags().StringVarP(&addPath, "path", "p", "", "File path where the smart contract is located")
+	addscCMD.LocalFlags().StringVarP(&addFilename, "filename", "f", "", "File name of the smart contract")
 
 	RootCmd.AddCommand(addscCMD)
 }
