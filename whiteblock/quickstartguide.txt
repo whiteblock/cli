@@ -34,7 +34,7 @@ example: whiteblock build --nodes 10 --server 1 --blockc ethereum --image ethere
 
 2. Configure Network Conditions
 
-command: whiteblock netconfig <command> [flags]
+command: whiteblock netconfig <command> <engine> <path> <amount> [flags]
 
 * input netropy documentation here *
 
@@ -43,7 +43,7 @@ flags:
 
 Netconfig will introduce persisting network conditions for testing. Network emulations such as latency, packetloss, and bandwidth can be configured and introduced to the network.
 
-example: whiteblock netconfig latency 10
+example: whiteblock netconfig latency 1 1 100
 
 3. Send Transactions:
 
