@@ -164,3 +164,31 @@ func wsSendCmd(wsaddr, cmd, param string) {
 
 	mutex.Lock()
 }
+
+func wsNetconfCmd(wsaddr, cmd, param string) {
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
+	c, err := gosocketio.Dial(
+		wsaddr,
+		transport.GetDefaultWebsocketTransport(),
+	)
+
+	if err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+	defer c.Close()
+
+	err = c.On(cmd, func(h *gosocketio.Channel, args string) {
+		if len(args) == 0 {
+			println(args)
+			mutex.Unlock()
+		}
+	})
+
+	println(param)
+
+	c.Emit(cmd, param)
+
+	mutex.Lock()
+}
