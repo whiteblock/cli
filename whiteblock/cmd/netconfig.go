@@ -27,6 +27,32 @@ Netconfig will introduce persisting network conditions for testing.
 	},
 }
 
+var emulationOnCmd = &cobra.Command{
+	Use:   "on <engine number>",
+	Short: "Turn on emulation",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "netconfig"
+		msg := "engine " + args[0] + " on"
+
+		wsSendCmd(serverAddr, command, msg)
+	},
+}
+
+var emulationOffCmd = &cobra.Command{
+	Use:   "off <engine number>",
+	Short: "Turn off emulation",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "netconfig"
+		msg := "engine " + args[0] + " off"
+
+		wsSendCmd(serverAddr, command, msg)
+	},
+}
+
 var latencyCmd = &cobra.Command{
 	Use:     "latency <engine number> <path number> <engine number> <path number>",
 	Aliases: []string{"lat"},
@@ -87,7 +113,7 @@ Fomat:
 }
 
 func init() {
-	netropyCmd.AddCommand(latencyCmd, packetLossCmd, bandwCmd)
+	netropyCmd.AddCommand(emulationOnCmd, emulationOffCmd, latencyCmd, packetLossCmd, bandwCmd)
 
 	RootCmd.AddCommand(netropyCmd)
 }
