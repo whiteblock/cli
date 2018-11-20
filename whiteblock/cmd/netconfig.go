@@ -64,8 +64,8 @@ Latency will introduce delay to the network.
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
-		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant port 1 to port 2"
-		msg2 := "engine " + args[2] + " path " + args[3] + " set delay constant port 2 to port 1"
+		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant port 1 to port 2" + args[4]
+		msg2 := "engine " + args[2] + " path " + args[3] + " set delay constant port 2 to port 1" + args[4]
 
 		wsSendCmd(serverAddr, command, msg1)
 		wsSendCmd(serverAddr, command, msg2)
