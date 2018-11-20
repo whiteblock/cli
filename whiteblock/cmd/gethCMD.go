@@ -34,7 +34,7 @@ var getBlockNumberCmd = &cobra.Command{
 	Long: `
 Get the current highest block number of the chain
 
-Response: The block number e.g. 10`,
+Response: The block number`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_block_number"
