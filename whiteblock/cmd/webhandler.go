@@ -136,7 +136,7 @@ func wsGetNodes(wsaddr string) {
 	mutex.Lock()
 }
 
-func wsGethCmd(wsaddr, cmd, param string) {
+func wsSendCmd(wsaddr, cmd, param string) {
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
 	c, err := gosocketio.Dial(

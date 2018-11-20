@@ -1,0 +1,51 @@
+************************************
+********* QUICKSTART GUIDE *********
+************************************
+
+Getting Started:
+
+1. Build The Network
+2. Configure Network Conditions
+3. Send Transactions
+4. Examine Data
+
+Optional:
+- Send Specific Commands To Blockchain
+- SSH Into Node
+
+--------------------------------------------
+
+1. Build The Network:
+
+command: whiteblock build [flags]
+
+flags:
+  -b, --blockc string           blockchain (default "ethereum")
+  -h, --help                    help for build
+  -i, --image string            image (default "ethereum:latest")
+  -n, --nodes int               number of nodes (default 10)
+  -s, --server stringArray      number of servers
+  -a, --server-addr string      server address with port 5000 (default "localhost:5000")
+
+This will create and deploy the specified blockchain with the specified number of nodes. Each node will be instantiated in its own container and will interact individually as a participant of the specified network. The blockchain will be built on a server that will be specified on build. 
+
+example: whiteblock build --nodes 10 --server 1 --blockc ethereum --image ethereum:latest
+
+
+2. Configure Network Conditions
+
+command: whiteblock netconfig <command> [flags]
+
+* input netropy documentation here *
+
+flags:
+    -a, --server-addr string      server address with port 5000 (default "localhost:5000")
+
+Netconfig will introduce persisting network conditions for testing. Network emulations such as latency, packetloss, and bandwidth can be configured and introduced to the network.
+
+example: whiteblock netconfig latency 10
+
+3. Send Transactions:
+
+command: whiteblock geth send_transactions <tx/s> <value> [destination]
+

@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -10,7 +12,7 @@ var (
 )
 
 var netropyCmd = &cobra.Command{
-	Use:     "netconfig",
+	Use:     "netconfig <engine number> <path number> <command>",
 	Aliases: []string{"emulate"},
 	Short:   "Network conditions",
 	Long: `Netconfig will introduce persisting network conditions for testing.
@@ -20,7 +22,11 @@ var netropyCmd = &cobra.Command{
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		// add curl command
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "netconfig"
+		msg := "engine " + args[0] + " path " + args[1] + " " + strings.Join(args[2:], " ")
+
+		wsSendCmd(serverAddr, command, msg)
 	},
 }
 
