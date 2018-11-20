@@ -6,11 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	latency    int
-	packetloss float32
-)
-
 var netropyCmd = &cobra.Command{
 	Use:     "netconfig <engine number> <path number> <engine number> <path number> <command>",
 	Aliases: []string{"emulate"},
@@ -35,7 +30,7 @@ Netconfig will introduce persisting network conditions for testing.
 var latencyCmd = &cobra.Command{
 	Use:     "latency <engine number> <path number> <engine number> <path number>",
 	Aliases: []string{"lat"},
-	Short:   "Latency",
+	Short:   "Set latency",
 	Long: `
 Latency will introduce delay to the network.
 	`,
@@ -54,7 +49,7 @@ Latency will introduce delay to the network.
 var packetLossCmd = &cobra.Command{
 	Use:     "packetloss <engine number> <path number> <engine number> <path number> <percent>",
 	Aliases: []string{"loss"},
-	Short:   "Packetloss",
+	Short:   "Set packetloss",
 	Long: `
 Packetloss will drop packets in the network.
 	`,
@@ -72,7 +67,7 @@ Packetloss will drop packets in the network.
 var bandwCmd = &cobra.Command{
 	Use:     "bandwidth <engine number> <path number> <engine number> <path number> <bandwidth number> <bandwidth type>",
 	Aliases: []string{"bw"},
-	Short:   "Bandwidth",
+	Short:   "Set bandwidth",
 	Long: `
 Bandwidth will constrict the network to the specified bandwidth.
 
@@ -92,9 +87,6 @@ Fomat:
 }
 
 func init() {
-	netropyCmd.Flags().IntVarP(&latency, "latency", "l", 10, "latency")
-	netropyCmd.Flags().Float32VarP(&packetloss, "packetloss", "p", 0.001, "packetloss")
-
 	netropyCmd.AddCommand(latencyCmd, packetLossCmd, bandwCmd)
 
 	RootCmd.AddCommand(netropyCmd)
