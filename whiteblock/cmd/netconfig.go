@@ -54,7 +54,7 @@ var emulationOffCmd = &cobra.Command{
 }
 
 var latencyCmd = &cobra.Command{
-	Use:     "latency <engine number> <path number> <engine number> <path number>",
+	Use:     "latency <engine number> <path number> <engine number> <path number> <amount>",
 	Aliases: []string{"lat"},
 	Short:   "Set latency",
 	Long: `
@@ -91,7 +91,7 @@ Packetloss will drop packets in the network.
 }
 
 var bandwCmd = &cobra.Command{
-	Use:     "bandwidth <engine number> <path number> <engine number> <path number> <bandwidth number> <bandwidth type>",
+	Use:     "bandwidth <engine number> <path number> <engine number> <path number> <amount> <bandwidth type>",
 	Aliases: []string{"bw"},
 	Short:   "Set bandwidth",
 	Long: `
