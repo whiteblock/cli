@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -28,6 +29,8 @@ Response: stdout of the command
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 
 		command := "exec"

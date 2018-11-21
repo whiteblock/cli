@@ -25,14 +25,14 @@ Netconfig will introduce persisting network conditions for testing.
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		if len(args) < 5 {
-			println("Invalid number of arguments given")
+		if len(args) < 3 {
 			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
 			if err != nil {
-				println(err.Error())
 				os.Exit(1)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 
 		msg := "engine " + args[0] + " path " + args[1] + " " + strings.Join(args[2:], " ")
@@ -48,6 +48,17 @@ var emulationOnCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
+
+		if len(args) < 1 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
+		}
+
 		msg := "engine " + args[0] + " on"
 
 		wsEmitListen(serverAddr, command, msg)
@@ -61,6 +72,17 @@ var emulationOffCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
+
+		if len(args) < 1 || len(args) > 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
+		}
+
 		msg := "engine " + args[0] + " off"
 
 		wsEmitListen(serverAddr, command, msg)
@@ -78,6 +100,17 @@ Latency will introduce delay to the network. You will specify the amount of late
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
+
+		if len(args) < 3 || len(args) > 3 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
+		}
+
 		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[2] + " port 1 to port 2"
 		msg2 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[2] + " port 2 to port 1"
 
@@ -96,6 +129,17 @@ Packetloss will drop packets in the network. You will specify the amount of pack
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
+
+		if len(args) < 3 || len(args) > 3 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
+		}
+
 		msg1 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[2] + " port 1 to port 2"
 		msg2 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[2] + " port 2 to port 1"
 
@@ -118,6 +162,17 @@ Fomat:
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
+
+		if len(args) < 4 || len(args) > 4 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
+		}
+
 		msg1 := "engine " + args[0] + " path " + args[1] + " set bw fixed " + args[2] + args[3]
 		msg2 := "engine " + args[2] + " path " + args[3] + " set bw fixed " + args[2] + args[3]
 

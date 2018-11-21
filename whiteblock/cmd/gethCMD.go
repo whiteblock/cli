@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -25,6 +26,8 @@ Geth will allow the user to get infromation and run geth commands.
 			panic(err)
 		}
 		fmt.Printf("%s", out)
+		println("\nNo command given. Please choose a command from the list above.\n")
+		os.Exit(1)
 	},
 }
 
@@ -48,6 +51,8 @@ Response: The block number`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -75,6 +80,8 @@ Response: JSON Representation of the block.`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -99,6 +106,8 @@ Response: A JSON array of the accounts`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -126,6 +135,8 @@ Response: The integer balance of the account in wei`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -153,6 +164,8 @@ Response: The transaction hash`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -180,6 +193,8 @@ Response: The transaction count`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -207,6 +222,8 @@ Response: JSON representation of the transaction.`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -234,6 +251,8 @@ Response: JSON representation of the transaction receipt.`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -258,6 +277,8 @@ Response: The hash rate of a single node in the network`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -284,6 +305,8 @@ Params: The amount of transactions to send in a second, the value of each transa
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -306,6 +329,8 @@ Stops the sending of transactions if transactions are currently being sent`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -372,6 +397,8 @@ Response: Will emit on eth::block_listener for every block after the given block
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -400,6 +427,8 @@ Response: JSON object of transaction data`,
 				panic(err)
 			}
 			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
 		}
 		wsEmitListen(serverAddr, command, param)
 	},

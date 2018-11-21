@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -20,6 +21,8 @@ Get will allow the user to get server and network information.
 			panic(err)
 		}
 		fmt.Printf("%s", out)
+		println("\nNo command given. Please choose a command from the list above.\n")
+		os.Exit(1)
 	},
 }
 
