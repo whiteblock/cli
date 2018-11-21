@@ -18,9 +18,7 @@ Response: stdout of the command
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		//add websocket command later
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		// msg := "{\"server\":" + fmt.Sprintf("%s", sshserver) + ",\"node\":" + fmt.Sprintf("%d", node) + ",\"command\":\"" + command + "\"}"
 
 		if len(args) < 3 {
 			println("Invalid number of arguments given")
