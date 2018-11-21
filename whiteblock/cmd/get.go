@@ -122,6 +122,7 @@ func init() {
 	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd)
+	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd)
 
 	RootCmd.AddCommand(getCmd)
 }
