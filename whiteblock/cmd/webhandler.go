@@ -249,7 +249,6 @@ func wsEmitListen(wsaddr, cmd, param string) {
 			if len(args) > 0 {
 				print(args)
 			}
-			println("Network configuration has been completed")
 			mutex.Unlock()
 		})
 	}
