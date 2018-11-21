@@ -28,7 +28,7 @@ Netconfig will introduce persisting network conditions for testing.
 			println("Invalid number of arguments given")
 			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
 			if err != nil {
-				panic(err)
+				panic(err.Error())
 			}
 			fmt.Printf("%s", out)
 		}
