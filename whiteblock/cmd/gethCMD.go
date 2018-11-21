@@ -49,7 +49,7 @@ Response: The block number`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -76,7 +76,7 @@ Response: JSON Representation of the block.`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -100,7 +100,7 @@ Response: A JSON array of the accounts`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -127,7 +127,7 @@ Response: The integer balance of the account in wei`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -154,7 +154,7 @@ Response: The transaction hash`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -181,7 +181,7 @@ Response: The transaction count`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -208,7 +208,7 @@ Response: JSON representation of the transaction.`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -235,7 +235,7 @@ Response: JSON representation of the transaction receipt.`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -259,7 +259,7 @@ Response: The hash rate of a single node in the network`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -285,7 +285,7 @@ Params: The amount of transactions to send in a second, the value of each transa
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -307,7 +307,7 @@ Stops the sending of transactions if transactions are currently being sent`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -326,7 +326,7 @@ Response: The number of nodes which successfully received the signal to start mi
 		command := "eth::start_mining"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -346,7 +346,7 @@ Response: The number of nodes which successfully received the signal to stop min
 		command := "eth::stop_mining"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -373,7 +373,7 @@ Response: Will emit on eth::block_listener for every block after the given block
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
@@ -401,7 +401,7 @@ Response: JSON object of transaction data`,
 			}
 			fmt.Printf("%s", out)
 		}
-		wsSendCmd(serverAddr, command, param)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 

@@ -10,7 +10,7 @@ Getting Started:
 4. Examine Data
 
 Optional:
-- Send Specific Commands To Blockchain
+- Send Specific Commands To The Blockchain
 - SSH Into Node
 
 --------------------------------------------
@@ -48,4 +48,42 @@ example: whiteblock netconfig latency 1 1 100
 3. Send Transactions:
 
 command: whiteblock geth send_transactions <tx/s> <value> [destination]
+
+This will send transactions (in geth) with instructions on how many transactions per second to send and the value (in hex) to send. This will immediately begin transactions if the network has been built properly.
+
+4. Examine Data
+
+You may now go to the GUI and use our data visualization tools to examine the different data points that are being push directly from the blockchain. 
+
+-----------------------------------------------------
+OPTIONAL:
+
+Send Specific Commands To The Blockchain:
+
+command: whiteblock geth <command>
+
+Available Commands:
+    block_listener          Get block listener
+    get_accounts            Get account information
+    get_balance             Get account balance information
+    get_block               Get block information
+    get_block_number        Get block number
+    get_hash_rate           Get hasg rate
+    get_recent_sent_tx      Get recently sent transaction
+    get_transaction         Get transaction information
+    get_transaction_count   Get transaction count
+    get_transaction_receipt Get transaction receipt
+    send_transaction        Sends a transaction
+    start_mining            Start Mining
+    start_transactions      Start transactions
+    stop_mining             Stop mining
+    stop_transactions       Stop transactions
+
+This will allow you to send commands directly to the blockchain. This allows for more granular testing and data collection.
+
+example: whiteblock geth get_block_number
+
+SSH Into Node:
+
+command: whiteblock ssh <node number>
 

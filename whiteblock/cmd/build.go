@@ -25,10 +25,11 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 	Run: func(cmd *cobra.Command, args []string) {
 		// curlPOST(fmt.Sprint(serverAddr)+"/testnets/", "-d '{\"Servers\":\""+fmt.Sprint("%d", server)+"\",\"Blockchain\":\"ethereum\",\"Nodes\":"+fmt.Sprintf("%d", nodes)+",\"Image\":\""+fmt.Sprint(image)+"\"}'")
 
-		msg := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + fmt.Sprintf("%d", nodes) + ",\"image\":\"" + image + "\"}"
+		command := "build"
+		param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + fmt.Sprintf("%d", nodes) + ",\"image\":\"" + image + "\"}"
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
-		wsBuild(serverAddr, msg)
+		wsEmitListen(serverAddr, command, param)
 
 	},
 }

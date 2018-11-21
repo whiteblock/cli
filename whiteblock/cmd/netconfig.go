@@ -23,7 +23,7 @@ Netconfig will introduce persisting network conditions for testing.
 		command := "netconfig"
 		msg := "engine " + args[0] + " path " + args[1] + " " + strings.Join(args[4:], " ")
 
-		wsNetconfCmd(serverAddr, command, msg)
+		wsEmitListen(serverAddr, command, msg)
 	},
 }
 
@@ -36,7 +36,7 @@ var emulationOnCmd = &cobra.Command{
 		command := "netconfig"
 		msg := "engine " + args[0] + " on"
 
-		wsNetconfCmd(serverAddr, command, msg)
+		wsEmitListen(serverAddr, command, msg)
 	},
 }
 
@@ -49,7 +49,7 @@ var emulationOffCmd = &cobra.Command{
 		command := "netconfig"
 		msg := "engine " + args[0] + " off"
 
-		wsNetconfCmd(serverAddr, command, msg)
+		wsEmitListen(serverAddr, command, msg)
 	},
 }
 
@@ -67,8 +67,8 @@ Latency will introduce delay to the network.
 		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[4] + " port 1 to port 2"
 		msg2 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[4] + " port 2 to port 1"
 
-		wsNetconfCmd(serverAddr, command, msg1)
-		wsNetconfCmd(serverAddr, command, msg2)
+		wsEmitListen(serverAddr, command, msg1)
+		wsEmitListen(serverAddr, command, msg2)
 	},
 }
 
@@ -85,8 +85,8 @@ Packetloss will drop packets in the network.
 		msg1 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[4] + " port 1 to port 2"
 		msg2 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[4] + " port 2 to port 1"
 
-		wsNetconfCmd(serverAddr, command, msg1)
-		wsNetconfCmd(serverAddr, command, msg2)
+		wsEmitListen(serverAddr, command, msg1)
+		wsEmitListen(serverAddr, command, msg2)
 	},
 }
 
@@ -107,8 +107,8 @@ Fomat:
 		msg1 := "engine " + args[0] + " path " + args[1] + " set bw fixed " + args[4] + args[5]
 		msg2 := "engine " + args[2] + " path " + args[3] + " set bw fixed " + args[4] + args[5]
 
-		wsNetconfCmd(serverAddr, command, msg1)
-		wsNetconfCmd(serverAddr, command, msg2)
+		wsEmitListen(serverAddr, command, msg1)
+		wsEmitListen(serverAddr, command, msg2)
 	},
 }
 

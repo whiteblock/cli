@@ -33,23 +33,25 @@ Server will allow the user to get server information.
 
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "get_servers"
 
-		wsGetServers(serverAddr)
+		wsEmitListen(serverAddr, command, "")
 	},
 }
 
-var getNodesrCmd = &cobra.Command{
+var getNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
-	Short:   "List will show all nodes.",
+	Short:   "Nodes will show all nodes.",
 	Long: `
-List will output all of the nodes in the current network.
+Nodes will output all of the nodes in the current network.
 
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		wsGetNodes(serverAddr)
+		command := "get_nodes"
+		wsEmitListen(serverAddr, command, "")
 	},
 }
 
@@ -61,7 +63,7 @@ Testnet will allow the user to get infromation regarding the test network.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		serverAddr = "http://" + serverAddr
 		curlGET(fmt.Sprint(serverAddr) + "/testnets/")
 	},
 }
@@ -69,7 +71,7 @@ Testnet will allow the user to get infromation regarding the test network.
 func init() {
 	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	getCmd.AddCommand(getServerCmd, getTestnetCmd, getNodesrCmd)
+	getCmd.AddCommand(getServerCmd, getTestnetCmd, getNodesCmd)
 
 	RootCmd.AddCommand(getCmd)
 }

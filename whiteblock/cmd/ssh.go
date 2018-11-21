@@ -30,9 +30,10 @@ Response: stdout of the command
 			fmt.Printf("%s", out)
 		}
 
-		msg := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + args[2] + "\"}"
+		command := "exec"
+		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + args[2] + "\"}"
 
-		wsSSH(serverAddr, msg)
+		wsEmitListen(serverAddr, command, param)
 	},
 }
 
