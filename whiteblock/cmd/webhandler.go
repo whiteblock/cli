@@ -47,6 +47,7 @@ func wsEmitListen(wsaddr, cmd, param string) {
 				mutex.Unlock()
 			} else if status.Error != nil {
 				fmt.Println(status.Error.Error())
+				mutex.Unlock()
 			}
 		})
 	}
