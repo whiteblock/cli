@@ -14,7 +14,7 @@ var netropyCmd = &cobra.Command{
 	Aliases: []string{"emulate"},
 	Short:   "Network conditions",
 	Long: `
-Netconfig will introduce persisting network conditions for testing.
+Netconfig will introduce persisting network conditions for testing. Use '?' at any time for more help on configuring the network.
 	
 	set delay <amount> 				Specifies the latency to add [ms];
 	set loss loss <amount>			Specifies the amount of packet loss to add [%];
