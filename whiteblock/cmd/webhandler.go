@@ -246,8 +246,8 @@ func wsEmitListen(wsaddr, cmd, param string) {
 	// netconfig
 	if cmd == "netconfig" {
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
-			mutex.Unlock()
 			println("Network configuration has been completed")
+			mutex.Unlock()
 		})
 	}
 
