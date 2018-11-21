@@ -82,7 +82,7 @@ var statsByTimeCmd = &cobra.Command{
 	Use:   "time <start time> <end time>",
 	Short: "Get stastics by time",
 	Long: `
-Stats will allow the user to get statistics by specifying a start time and stop time (unix time stamp).
+Stats time will allow the user to get statistics by specifying a start time and stop time (unix time stamp).
 
 Params: Unix time stamps
 Format: <start unix time stamp> <end unix time stamp>
@@ -102,7 +102,7 @@ var statsByBlockCmd = &cobra.Command{
 	Use:   "block <start block> <end block>",
 	Short: "Get stastics of a blockchain",
 	Long: `
-Stats will allow the user to get statistics regarding the network.
+Stats block will allow the user to get statistics regarding the network.
 
 Params: Block numbers
 Format: <start block number> <end block number>
@@ -118,11 +118,27 @@ Response: JSON representation of network statistics
 	},
 }
 
+var statsAllCmd = &cobra.Command{
+	Use:   "all",
+	Short: "Get all stastics of a blockchain",
+	Long: `
+Stats all will allow the user to get all the statistics regarding the network.
+
+Response: JSON representation of network statistics
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "all_stats"
+		wsEmitListen(serverAddr, command, "")
+	},
+}
+
 func init() {
 	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd)
-	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd)
+	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsByBlockCmd)
 
 	RootCmd.AddCommand(getCmd)
 }

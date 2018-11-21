@@ -96,6 +96,30 @@ func wsEmitListen(wsaddr, cmd, param string) {
 		})
 	}
 
+	// stats
+	if cmd == "stats" {
+		err = c.On("stats", func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				print(args)
+			} else {
+				println(err.Error())
+			}
+			mutex.Unlock()
+		})
+	}
+
+	// all_stats
+	if cmd == "all_stats" {
+		err = c.On("all_stats", func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				print(args)
+			} else {
+				println(err.Error())
+			}
+			mutex.Unlock()
+		})
+	}
+
 	c.Emit(cmd, param)
 	mutex.Lock()
 }
