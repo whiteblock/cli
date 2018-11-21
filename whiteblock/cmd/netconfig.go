@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -21,6 +23,16 @@ Netconfig will introduce persisting network conditions for testing.
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
+
+		if len(args) < 5 {
+			println("Invalid number of arguments given")
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s", out)
+		}
+
 		msg := "engine " + args[0] + " path " + args[1] + " " + strings.Join(args[4:], " ")
 
 		wsEmitListen(serverAddr, command, msg)
@@ -58,14 +70,14 @@ var latencyCmd = &cobra.Command{
 	Aliases: []string{"lat"},
 	Short:   "Set latency",
 	Long: `
-Latency will introduce delay to the network.
+Latency will introduce delay to the network. You will specify the amount of latency in ms.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
-		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[4] + " port 1 to port 2"
-		msg2 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[4] + " port 2 to port 1"
+		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[2] + " port 1 to port 2"
+		msg2 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[2] + " port 2 to port 1"
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)
@@ -73,17 +85,17 @@ Latency will introduce delay to the network.
 }
 
 var packetLossCmd = &cobra.Command{
-	Use:     "packetloss <engine number> <path number> <engine number> <path number> <percent>",
+	Use:     "packetloss <engine number> <path number> <percent>",
 	Aliases: []string{"loss"},
 	Short:   "Set packetloss",
 	Long: `
-Packetloss will drop packets in the network.
+Packetloss will drop packets in the network. You will specify the amount of packet loss in %.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
-		msg1 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[4] + " port 1 to port 2"
-		msg2 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[4] + " port 2 to port 1"
+		msg1 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[2] + " port 1 to port 2"
+		msg2 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[2] + " port 2 to port 1"
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)
@@ -91,11 +103,11 @@ Packetloss will drop packets in the network.
 }
 
 var bandwCmd = &cobra.Command{
-	Use:     "bandwidth <engine number> <path number> <engine number> <path number> <amount> <bandwidth type>",
+	Use:     "bandwidth <engine number> <path number> <amount> <bandwidth type>",
 	Aliases: []string{"bw"},
 	Short:   "Set bandwidth",
 	Long: `
-Bandwidth will constrict the network to the specified bandwidth.
+Bandwidth will constrict the network to the specified bandwidth. You will specify the amount of bandwdth and the type.
 
 Fomat: 
 	bandwidth type: bps, Kbps, Mbps, Gbps
@@ -104,8 +116,8 @@ Fomat:
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
-		msg1 := "engine " + args[0] + " path " + args[1] + " set bw fixed " + args[4] + args[5]
-		msg2 := "engine " + args[2] + " path " + args[3] + " set bw fixed " + args[4] + args[5]
+		msg1 := "engine " + args[0] + " path " + args[1] + " set bw fixed " + args[2] + args[3]
+		msg2 := "engine " + args[2] + " path " + args[3] + " set bw fixed " + args[2] + args[3]
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)

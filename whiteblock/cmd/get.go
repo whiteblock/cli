@@ -63,8 +63,7 @@ Testnet will allow the user to get infromation regarding the test network.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "http://" + serverAddr
-		curlGET(fmt.Sprint(serverAddr) + "/testnets/")
+		// add get_testnet command
 	},
 }
 

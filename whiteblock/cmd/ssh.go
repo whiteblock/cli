@@ -8,7 +8,7 @@ import (
 )
 
 var sshCmd = &cobra.Command{
-	Use:   "ssh <node> <server> <command> ",
+	Use:   "ssh <server> <node> <command> ",
 	Short: "SSH into an existing container.",
 	Long: `
 SSH will allow the user to go into the contianer where the specified node exists.
