@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -32,7 +33,7 @@ Response: stdout of the command
 		}
 
 		command := "exec"
-		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + args[2] + "\"}"
+		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + strings.Join(args[2:], " ") + "\"}"
 
 		wsEmitListen(serverAddr, command, param)
 	},
