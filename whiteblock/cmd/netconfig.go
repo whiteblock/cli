@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -9,7 +10,7 @@ import (
 )
 
 var netropyCmd = &cobra.Command{
-	Use:     "netconfig <engine number> <path number> <engine number> <path number> <command>",
+	Use:     "netconfig <engine number> <path number> <command>",
 	Aliases: []string{"emulate"},
 	Short:   "Network conditions",
 	Long: `
@@ -28,12 +29,13 @@ Netconfig will introduce persisting network conditions for testing.
 			println("Invalid number of arguments given")
 			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
 			if err != nil {
-				panic(err.Error())
+				println(err.Error())
+				os.Exit(1)
 			}
 			fmt.Printf("%s", out)
 		}
 
-		msg := "engine " + args[0] + " path " + args[1] + " " + strings.Join(args[4:], " ")
+		msg := "engine " + args[0] + " path " + args[1] + " " + strings.Join(args[2:], " ")
 
 		wsEmitListen(serverAddr, command, msg)
 	},
