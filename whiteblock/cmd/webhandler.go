@@ -100,7 +100,7 @@ func wsEmitListen(wsaddr, cmd, param string) {
 	if cmd == "stats" {
 		err = c.On("stats", func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
-				print(args)
+				print(prettyp(args))
 			} else {
 				println(err.Error())
 			}
@@ -112,7 +112,7 @@ func wsEmitListen(wsaddr, cmd, param string) {
 	if cmd == "all_stats" {
 		err = c.On("all_stats", func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
-				print(args)
+				print(prettyp(args))
 			} else {
 				println(err.Error())
 			}
