@@ -16,9 +16,9 @@ var netropyCmd = &cobra.Command{
 	Long: `
 Netconfig will introduce persisting network conditions for testing.
 	
-	latency 			Specifies the latency to add [ms];
-	packetloss 			Specifies the amount of packet loss to add [%];
-	bandwidth			Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
+	set delay <amount> 				Specifies the latency to add [ms];
+	set loss loss <amount>			Specifies the amount of packet loss to add [%];
+	set bw <amount> <type>			Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
