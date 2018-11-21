@@ -42,7 +42,6 @@ Response: The block number`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_block_number"
 		param := ""
-		fmt.Println(serverAddr)
 		// fmt.Println(command, param)
 		if len(args) >= 1 {
 			println("Invalid number of arguments given")
