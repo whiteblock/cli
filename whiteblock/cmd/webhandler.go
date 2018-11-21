@@ -55,7 +55,7 @@ func wsEmitListen(wsaddr, cmd, param string) {
 	// get servers
 	if cmd == "get_servers" {
 		err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
-			print(args)
+			print(prettyp(args))
 			mutex.Unlock()
 		})
 	}
