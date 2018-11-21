@@ -28,6 +28,21 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
 		wsEmitListen(serverAddr, command, param)
+
+		for _, serv := range server {
+			switch serv {
+			case "1":
+				println("GUI to look at stats and information found here: 172.16.1.5:3000")
+			case "2":
+				println("GUI to look at stats and information found here: 172.16.2.5:3000")
+			case "3":
+				println("GUI to look at stats and information found here: 172.16.3.5:3000")
+			case "4":
+				println("GUI to look at stats and information found here: 172.16.4.5:3000")
+			case "5":
+				println("GUI to look at stats and information found here: 172.16.5.5:3000")
+			}
+		}
 	},
 }
 
