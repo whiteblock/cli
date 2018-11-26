@@ -259,7 +259,7 @@ Response: JSON representation of the transaction receipt.`,
 
 var getHashRateCmd = &cobra.Command{
 	Use:   "get_hash_rate",
-	Short: "Get hasg rate",
+	Short: "Get hash rate",
 	Long: `
 Get the current hash rate per node
 
