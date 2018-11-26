@@ -75,7 +75,7 @@ func wsEmitListen(wsaddr, cmd, param string) {
 				if strings.Contains(args, "{") {
 					println(prettyp(args))
 				} else {
-					print(args)
+					println(args)
 				}
 				mutex.Unlock()
 			}
