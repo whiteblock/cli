@@ -1,6 +1,6 @@
 # Whiteblock CLI
 
-## ./whiteblock <COMMAND> [FLAGS]
+## ./whiteblock <COMMAND>
 This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. Documentation, usages, and exmaples can be found at [www.whiteblock.io/docs/cli].
 
 * Available Commands:
@@ -33,7 +33,7 @@ Build will deploy a blockchain and the specified number of nodes. Each node will
   *  -s, --server stringArray:   number of servers
   *  -a, --server-addr string:   server address with port 5000 (default "localhost:5000")
 
-### get <subcommand>
+### get <command>
 ./whiteblock get <SUBCOMMAND> [FLAGS]
 
 Get will allow the user to get server and network information.
@@ -47,7 +47,7 @@ Get will allow the user to get server and network information.
   *  -h, --help : help for get
   *  -a, --server-addr `string`:  server address with port 5000 (default "localhost:5000")
 
-#### get nodes [FLAGS]
+#### get nodes
 ./whiteblock get nodes [FLAGS]
 
 Aliases: nodes, node
@@ -57,7 +57,7 @@ Nodes will output all of the nodes in the current network.
 * Flags:
   *  -h, --help : help for server
 
-#### get server [FLAGS]
+#### get server
 ./whiteblock get server [FLAGS]
 
 Aliases: server, servers
@@ -67,7 +67,7 @@ Server will allow the user to get server information.
 * Flags:
   *  -h, --help : help for server
 
-#### get testnet [FLAGS]
+#### get testnet
 ./whiteblock get testnet [FLAGS]
 
 Testnet will allow the user to get infromation regarding the test network.
@@ -75,8 +75,8 @@ Testnet will allow the user to get infromation regarding the test network.
 * Flags:
   *  -h, --help : help for testnet
 
-### geth <SUBCOMMAND> [FLAGS]
-./whiteblock geth <subcommand> [flags]
+### geth <COMMAND>
+./whiteblock geth <command> [flags]
 
 Geth will allow the user to get infromation and run geth commands.
 
@@ -101,7 +101,7 @@ Geth will allow the user to get infromation and run geth commands.
   *  -h, --help:               help for geth
   *  -a, --server-addr `string`:   server address with port 5000 (default "localhost:5000")
 
-#### geth block_listener [block number] [FLAGS]
+#### geth block_listener [block number]
 ./whiteblock geth block_listener [block number] [flags]
 
 Get all blocks and continue to subscribe to new blocks
@@ -113,7 +113,7 @@ Response: Will emit on eth::block_listener for every block after the given block
 * Flags:
   *  -h, --help:   help for block_listener
 
-#### geth get_accounts [FLAGS]
+#### geth get_accounts
 ./whiteblock geth get_accounts [flags]
 
 Get a list of all unlocked accounts
@@ -123,7 +123,7 @@ Response: A JSON array of the accounts
 * Flags:
   * -h, --help:   help for get_accounts
 
-#### geth get_balance <ADDRESS> [FLAGS]
+#### geth get_balance <ADDRESS> 
 ./whiteblock geth get_balance <address> [flags]
 
 Get the current balance of an account
@@ -135,7 +135,7 @@ Response: The integer balance of the account in wei
 * Flags:
   *  -h, --help:   help for get_balance
 
-#### geth get_block <BLOCK NUMBER> [FLAGS]
+#### geth get_block <BLOCK NUMBER>
 ./whiteblock geth get_block <block number> [flags]
 
 Get the data of a block
@@ -146,7 +146,7 @@ Params: Block number
 * Flags:
   * -h, --help:   help for get_block
 
-#### geth get_block_number [FLAGS]
+#### geth get_block_number
 ./whiteblock geth get_block_number [flags]
 
 Get the current highest block number of the chain
@@ -156,7 +156,7 @@ Response: The block number
 * Flags:
   *  -h, --help:   help for get_block_number
 
-#### geth get_hash_rate [FLAGS]
+#### geth get_hash_rate 
 ./whiteblock geth get_hash_rate [flags]
 
 Get the current hash rate per node
@@ -166,7 +166,7 @@ Response: The hash rate of a single node in the network
 * Flags:
   *  -h, --help:   help for get_hash_rate
   
-#### geth get_recent_sent_tx [NUMBER] [FLAGS]
+#### geth get_recent_sent_tx [NUMBER]
 ./whiteblock geth get_recent_sent_tx [number] [flags]
 
 Get a number of the most recent transactions sent
@@ -178,7 +178,7 @@ Response: JSON object of transaction data
 * Flags:
   *  -h, --help:   help for get_recent_sent_tx
 
-#### geth get_transaction <HASH> [FLAGS]
+#### geth get_transaction <HASH>
 ./whiteblock geth get_transaction <hash> [flags]
 
 Get a transaction by its hash
@@ -191,7 +191,7 @@ Response: JSON representation of the transaction.
 * Flags:
   *  -h, --help:   help for get_transaction
 
-#### geth get_transaction_count <ADDRESS> [BLOCK NUMBER [FLAGS]
+#### geth get_transaction_count <ADDRESS> [BLOCK NUMBER
 ./whiteblock geth get_transaction_count <address> [block number] [flags]
 
 Get the transaction count sent from an address, optionally by block
@@ -203,7 +203,7 @@ Response: The transaction count
 * Flags:
   *  -h, --help:   help for get_transaction_count
 
-#### geth get_transaction_receipt <HASH> [FLAGS]
+#### geth get_transaction_receipt <HASH>
 ./whiteblock geth get_transaction_receipt <hash> [flags]
 
 Get the transaction receipt by the tx hash
@@ -215,7 +215,7 @@ Response: JSON representation of the transaction receipt.
 * Flags:
   *  -h, --help:   help for get_transaction_receipt
 
-#### geth send_transaction <FROM> <TO> <GAS> <GAS PRICE> <VALUE> [FLAGS]
+#### geth send_transaction <FROM> <TO> <GAS> <GAS PRICE> <VALUE>
 ./whiteblock geth send_transaction <from address> <to address> <gas> <gas price> <value to send> [flags]
 
 Send a transaction between two accounts
@@ -227,7 +227,7 @@ Response: The transaction hash
 * Flags:
   *  -h, --help:   help for send_transaction
 
-#### geth start_mining [NODE 1 NUMBER] [NODE 2 NUMBER] ... [FLAGS]
+#### geth start_mining [NODE 1 NUMBER] [NODE 2 NUMBER] ... 
 ./whiteblock geth start_mining [node 1 number] [node 2 number]... [flags]
 
 Send the start mining signal to nodes, may take a while to take effect due to DAG generation
@@ -239,7 +239,7 @@ Response: The number of nodes which successfully received the signal to start mi
 * Flags:
   *  -h, --help:   help for start_mining
 
-#### geth start_transactions <TX/S> <VALUE> [DESTINATION] [FLAGS]
+#### geth start_transactions <TX/S> <VALUE> [DESTINATION]
 ./whiteblock geth start_transactions <tx/s> <value> [destination] [flags]
 
 Start sending transactions according to the given parameters, value = -1 means randomize value.
@@ -250,7 +250,7 @@ Params: The amount of transactions to send in a second, the value of each transa
 * Flags:
   *  -h, --help:   help for start_transactions
 
-#### geth stop_mining [NODE 1 NUMBER] [NODE 2 NUMBER] ... [FLAGS]
+#### geth stop_mining [NODE 1 NUMBER] [NODE 2 NUMBER] ...
 ./whiteblock geth stop_mining [node 1 number] [node 2 number]... [flags]
 
 Send the stop mining signal to nodes
@@ -270,21 +270,18 @@ Stops the sending of transactions if transactions are currently being sent
 * Flags:
   *  -h, --help:   help for stop_transactions
 
-### ssh [FLAGS]
-./whiteblock ssh [flags]
+### ssh <server> <node> <command>
+./whiteblock ssh <server> <node> <command>  [flags]
 
 SSH will allow the user to go into the contianer where the specified node exists.
 
 Response: stdout of the command
 
 * Flags:
-  *  -c, --cmd `string`:           Which shell to run in container (default "ls -l")
   *  -h, --help:                 help for ssh
-  *  -n, --node `int`:             Node number to SSH into
-  *  -s, --server `string`:        Which server to run in (default "1")
   *  -a, --server-addr `string`:   server address with port 5000 (default "localhost:5000")
 
-### version [FLAGS]
+### version
 ./whiteblock version
 
 Get whiteblock CLI client version
@@ -292,52 +289,73 @@ Get whiteblock CLI client version
 * Flags:
   *  -h, --help : help for version
 
+### netconfig <command>
+./whiteblock netconfig <engine number> <path number> <command> [flags]
 
-**** TO CONFIGURE: ****
-
-
-### netconfig <SUBCOMMAND> [FLAGS]
-./whiteblock netconfig [COMMAND] [ENGINE NUMBER] [ENGINE NUMBER] [FLAGS]
-
-Netropy will introduce persisting network conditions for testing.
+Netconfig will introduce persisting network conditions for testing.
 
 * Available Commands:
     * latency           
     * packetloss     
     * bandwidth 
 
-#### netropy latency <MILISEC> [FLAGS]
-./whiteblock netconfig latency <milisec> [flags]
+#### netconfig latency <engine> <path> <amount>
+./whiteblock netconfig latency <engine number> <path number> <amount> [flags]
 
-Latency will set persisting latency to the network.
+Latency will introduce delay to the network. You will specify the amount of latency in ms.
 
-#### netropy packetloss <PERCENT> [FLAGS]
-./whiteblock netconfig packetloss <percent> [flags]
+Flags:
+  -h, --help   help for latency
 
-Packetloss will drop random packets in the network.
+#### netconfig packetloss <engine> <path> <percent> 
+./whiteblock netconfig packetloss <engine number> <path number> <percent> [flags]
 
-#### netropy bandwidth <MB> [FLAGS]
-./whiteblock netconfig bandwidth <mb> [flags]
+Packetloss will drop packets in the network. You will specify the amount of packet loss in %.
 
-Bandwidth will delegate a specific amount of bandwidth to the network.
+Flags:
+  -h, --help   help for packetloss
+
+#### netconfig bandwidth <engine> <path> <bw amount> <bw type>
+./whiteblock netconfig bandwidth <engine number> <path number> <amount> <bandwidth type> [flags]
+
+Bandwidth will constrict the network to the specified bandwidth. You will specify the amount of bandwdth and the type.
+
+Fomat:
+        bandwidth type: bps, Kbps, Mbps, Gbps
+
+Flags:
+  -h, --help   help for bandwidth
 
 
-### contractadd
-./whiteblock contractadd <filename> [flags]
+### contract <command>
+./whiteblock contract <command> [flags]
+
+Contract allows the user to add and compile a smart contract.
+
+Available Commands:
+  * add
+  * compile
+
+Flags:
+  -h, --help   help for contract
+
+
+#### contract add <path> <filename>
+./whiteblock contract add <path> <filename>
 
 Adds the specified smart contract into the /Downloads folder.
 
+
+
 * Flags:
   *  -h, --help:              help for contractadd
-  *  -p, --path `string` :      File path where the smart contract is located
 
-### contractcompile
-./whiteblock contractcompile <filename> [flags]
+#### contract compile <path> <filename>
+./whiteblock contract compile <path> <filename>
 
 Compiles the specified smart contract.
 
 * Flags:
   * -h, --help:              help for contractcompile
-  * -p, --path `string`:       File path where the smart contract is located
 
 
