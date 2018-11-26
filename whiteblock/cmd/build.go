@@ -32,15 +32,15 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		for _, serv := range server {
 			switch serv {
 			case "1":
-				println("GUI to look at stats and information found here: 172.16.1.5:3000")
+				println("GUI to view stats and network information found here: 172.16.1.5:3000")
 			case "2":
-				println("GUI to look at stats and information found here: 172.16.2.5:3000")
+				println("GUI to view stats and network information found here: 172.16.2.5:3000")
 			case "3":
-				println("GUI to look at stats and information found here: 172.16.3.5:3000")
+				println("GUI to view stats and network information found here: 172.16.3.5:3000")
 			case "4":
-				println("GUI to look at stats and information found here: 172.16.4.5:3000")
+				println("GUI to view stats and network information found here: 172.16.4.5:3000")
 			case "5":
-				println("GUI to look at stats and information found here: 172.16.5.5:3000")
+				println("GUI to view stats and network information found here: 172.16.5.5:3000")
 			}
 		}
 	},
@@ -49,7 +49,7 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 func init() {
 	buildCmd.Flags().StringVarP(&blockchain, "blockc", "b", "ethereum", "blockchain")
 	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
-	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 10, "number of nodes")
+	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 5, "number of nodes")
 	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "servers to build on")
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 

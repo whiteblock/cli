@@ -49,8 +49,8 @@ var emulationOnCmd = &cobra.Command{
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		if len(args) < 1 || len(args) > 1 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+		if len(args) != 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig on -h").Output()
 			if err != nil {
 				os.Exit(1)
 			}
@@ -73,8 +73,8 @@ var emulationOffCmd = &cobra.Command{
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		if len(args) < 1 || len(args) > 1 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+		if len(args) != 1 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig off -h").Output()
 			if err != nil {
 				os.Exit(1)
 			}
@@ -101,8 +101,8 @@ Latency will introduce delay to the network. You will specify the amount of late
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		if len(args) < 3 || len(args) > 3 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+		if len(args) != 3 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig latency -h").Output()
 			if err != nil {
 				os.Exit(1)
 			}
@@ -130,8 +130,8 @@ Packetloss will drop packets in the network. You will specify the amount of pack
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		if len(args) < 3 || len(args) > 3 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+		if len(args) != 3 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig packetloss -h").Output()
 			if err != nil {
 				os.Exit(1)
 			}
@@ -163,8 +163,8 @@ Fomat:
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		if len(args) < 4 || len(args) > 4 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
+		if len(args) != 4 {
+			out, err := exec.Command("bash", "-c", "./whiteblock netconfig bandwidth -h").Output()
 			if err != nil {
 				os.Exit(1)
 			}

@@ -21,7 +21,7 @@ Response: stdout of the command
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
-		if len(args) < 3 {
+		if len(args) != 3 {
 			println("Invalid number of arguments given")
 			out, err := exec.Command("bash", "-c", "./whiteblock ssh -h").Output()
 			if err != nil {

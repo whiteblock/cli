@@ -12,7 +12,7 @@ var getCmd = &cobra.Command{
 	Use:   "get <command>",
 	Short: "Get server and network information.",
 	Long: `
-Get will allow the user to get server and network information and statstics.
+Get will ouput server and network information and statstics.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -31,7 +31,7 @@ var getServerCmd = &cobra.Command{
 	Aliases: []string{"servers"},
 	Short:   "Get server information.",
 	Long: `
-Server will allow the user to get server information.
+Server will ouput server information.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -45,7 +45,7 @@ Server will allow the user to get server information.
 var getNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
-	Short:   "Nodes will show all nodes.",
+	Short:   "Nodes will show all nodes in the network.",
 	Long: `
 Nodes will output all of the nodes in the current network.
 
@@ -91,6 +91,16 @@ Response: JSON representation of network statistics
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 2 {
+			out, err := exec.Command("bash", "-c", "./whiteblock get stats time -h").Output()
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
+		}
+
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "stats"
 		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
@@ -111,6 +121,16 @@ Response: JSON representation of network statistics
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 2 {
+			out, err := exec.Command("bash", "-c", "./whiteblock get stats block -h").Output()
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Printf("%s", out)
+			println("\nError: Invalid number of arguments given\n")
+			os.Exit(1)
+		}
+
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "stats"
 		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
