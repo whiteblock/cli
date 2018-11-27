@@ -1,19 +1,31 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
-	"sync"
 
-	gc "github.com/rthornton128/goncurses"
 	"github.com/spf13/cobra"
 )
 
+var (
+	dir string
+)
+
+func getDir() string {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return dir
+}
+
 var sshCmd = &cobra.Command{
-	Use:   "ssh <server> <node> <command> ",
+	Use:   "ssh <server> <node> //<command> ",
 	Short: "SSH into an existing container.",
 	Long: `
 SSH will allow the user to go into the contianer where the specified node exists.
@@ -35,59 +47,33 @@ Response: stdout of the command
 			os.Exit(1)
 		}
 
-		var mutex = &sync.Mutex{}
-		mutex.Lock()
+		// command := "exec"
+		// param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + strings.Join(args[2:], " ") + "\"}"
 
-		scr, err := gc.Init()
-		if err != nil {
-			log.Fatal("init:", err)
-		}
-		defer gc.End()
+		// wsEmitListen(serverAddr, command, param)
 
-		gc.Echo(false)
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Simple Shell")
+		fmt.Println("---------------------------------------------------------------")
+		on := true
 
-		scr.Println("Type characters to have them appear on the screen.")
-		scr.Println("Press 'q' to exit.")
-		scr.Println()
+		for on {
+			fmt.Print(getDir() + " -> ")
+			text, _ := reader.ReadString('\n')
+			text = strings.Replace(text, "\n", "", -1)
 
-		// Accept input concurrently via a goroutine and connect a channel
-		in := make(chan gc.Char)
-		ready := make(chan bool)
-		go func(w *gc.Window, ch chan<- gc.Char) {
-			for {
-				// Block until all write operations are complete
-				<-ready
-				// Send typed character down the channel (which is blocking
-				// in the main loop)
-				ch <- gc.Char(w.GetChar())
-			}
-		}(scr, in)
+			command := "exec"
+			param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + text + "\"}"
 
-		// Once a character has been received on the 'in' channel the
-		// 'ready' channel will block until it receives another piece of data.
-		// This happens only once the received character has been written to
-		// the screen. The 'in' channel then blocks on the next loop until
-		// another 'true' is sent down the 'ready' channel signaling to the
-		// input goroutine that it's okay to receive input
-		for {
-			var c gc.Char
-			select {
-			case c = <-in: // blocks while waiting for input from goroutine
-				scr.Print(string(c))
-				scr.Refresh()
-			case ready <- true: // sends once above block completes
-			}
-			// Exit when 'q' is pressed
-			if c == gc.Char('q') {
-				mutex.Unlock()
+			wsEmitListen(serverAddr, command, param)
+
+			if text == "q" {
 				break
 			}
+
+			fmt.Println(text)
 		}
 
-		command := "exec"
-		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + strings.Join(args[2:], " ") + "\"}"
-
-		wsEmitListen(serverAddr, command, param)
 	},
 }
 
