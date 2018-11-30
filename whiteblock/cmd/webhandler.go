@@ -17,7 +17,7 @@ type BuildStatus struct {
 	Progress float64 `json:"progress"`
 }
 
-func wsEmitListen(wsaddr, cmd, param string) {
+func wsEmitListen(wsaddr, cmd, param string) string {
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
 	c, err := gosocketio.Dial(
@@ -93,9 +93,10 @@ func wsEmitListen(wsaddr, cmd, param string) {
 	}
 
 	// ssh
+	out := ""
 	if cmd == "exec" {
 		err = c.On("exec", func(h *gosocketio.Channel, args string) {
-			print(args)
+			out = args
 			mutex.Unlock()
 		})
 	}
@@ -126,4 +127,5 @@ func wsEmitListen(wsaddr, cmd, param string) {
 
 	c.Emit(cmd, param)
 	mutex.Lock()
+	return out
 }
