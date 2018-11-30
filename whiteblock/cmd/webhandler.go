@@ -32,6 +32,8 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 
 	defer c.Close()
 
+	out := ""
+
 	// build
 	if cmd == "build" {
 		err = c.On("build", func(h *gosocketio.Channel, args string) {
@@ -55,7 +57,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	// get servers
 	if cmd == "get_servers" {
 		err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
-			print(prettyp(args))
+			out = prettyp(args)
 			mutex.Unlock()
 		})
 	}
@@ -63,7 +65,31 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	// get nodes
 	if cmd == "get_nodes" {
 		err = c.On("get_nodes", func(h *gosocketio.Channel, args string) {
-			print(args)
+			out = args
+			mutex.Unlock()
+		})
+	}
+
+	// get stats
+	if cmd == "stats" {
+		err = c.On("stats", func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				out = prettyp(args)
+			} else {
+				println(err.Error())
+			}
+			mutex.Unlock()
+		})
+	}
+
+	// get all_stats
+	if cmd == "all_stats" {
+		err = c.On("all_stats", func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				out = prettyp(args)
+			} else {
+				println(err.Error())
+			}
 			mutex.Unlock()
 		})
 	}
@@ -93,34 +119,9 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	}
 
 	// ssh
-	out := ""
 	if cmd == "exec" {
 		err = c.On("exec", func(h *gosocketio.Channel, args string) {
 			out = args
-			mutex.Unlock()
-		})
-	}
-
-	// stats
-	if cmd == "stats" {
-		err = c.On("stats", func(h *gosocketio.Channel, args string) {
-			if len(args) > 0 {
-				print(prettyp(args))
-			} else {
-				println(err.Error())
-			}
-			mutex.Unlock()
-		})
-	}
-
-	// all_stats
-	if cmd == "all_stats" {
-		err = c.On("all_stats", func(h *gosocketio.Channel, args string) {
-			if len(args) > 0 {
-				print(prettyp(args))
-			} else {
-				println(err.Error())
-			}
 			mutex.Unlock()
 		})
 	}
