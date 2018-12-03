@@ -25,7 +25,7 @@ var sshCmd = &cobra.Command{
 SSH will allow the user to go into the contianer where the specified node exists.
 
 Response: stdout of the command
-        `,
+	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
@@ -52,14 +52,15 @@ Response: stdout of the command
 				sig := <-sigs
 				fmt.Println(sig)
 				command := "exec"
-				param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "ps aux | grep \\\"" + lastcmd + "\\\" |grep -v grep| awk '{print $2}' | sort | tail -n1\"}"
 
-				println(param)
-				wsEmitListen(serverAddr, command, param)
+				param1 := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "ps aux | grep \\\"" + lastcmd + "\\\" |grep -v grep| awk '{print $2}' | sort | tail -n 1\"}"
+				println(param1)
+				pid := wsEmitListen(serverAddr, command, param1)
+				pid = strings.Replace(pid, "\n", "", -1)
 
-				// command2 := "exec"
-				// param2 := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "kill $(ps aux | grep \\\"" + lastcmd + "\\\" |grep -v grep| awk '{print $2}' | sort | tail -n 1)\"}"
-				// wsEmitListen(serverAddr, command2, param2)
+				param2 := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "kill " + pid + "\"}"
+				resp := wsEmitListen(serverAddr, command, param2)
+				println(resp, lastcmd, ": process has been terminated")
 
 				fmt.Print("\r\n"+dir+strings.Join(cwd[:], ""), "$ ")
 			}
@@ -103,8 +104,8 @@ Response: stdout of the command
 				}
 			} else if len(textarg[0]) == 0 {
 				continue
-			} else if textarg[0] == "yes" {
-				println("yes: command not found")
+			} else if textarg[0] == "yes" || textarg[0] == "kill" {
+				println("command not found")
 			} else {
 				// println(cwd)
 				lastcmd = textarg[0]
@@ -128,7 +129,7 @@ func init() {
 /*
 fixes/bugs:
 - have to account for "cd ../" or "cd ..{anything}"
-        - this will append to the cwd improperly
+	- this will append to the cwd improperly
 
-        *- fix this by error handling by checking if the directory actually exists before appending
+	*- fix this by error handling by checking if the directory actually exists before appending
 */

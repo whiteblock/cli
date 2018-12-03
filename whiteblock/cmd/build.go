@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -12,6 +15,9 @@ var (
 	nodes      int
 	server     []string
 	serverAddr string
+	cpu        string
+	memory     string
+	params     string
 )
 
 var buildCmd = &cobra.Command{
@@ -23,34 +29,121 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		command := "build"
-		param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + fmt.Sprintf("%d", nodes) + ",\"image\":\"" + image + "\"}"
+		buildArr := make([]string, 0)
+		paramArr := make([]string, 0)
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "build"
 
-		wsEmitListen(serverAddr, command, param)
+		buildOpt := [6]string{"servers (default set to: [])", "blockchain (default set to: ethereum)", "nodes (default set to: 10)", "image (default set to: ethereum:latest)", "cpus (default set to: \"\")", "memory (default set to: \"\")"}
+		defOpt := [6]string{"[]", "ethereum", "10", "ethereum:latest", "", ""}
 
-		for _, serv := range server {
-			switch serv {
-			case "1":
-				println("GUI to view stats and network information found here: 172.16.1.5:3000")
-			case "2":
-				println("GUI to view stats and network information found here: 172.16.2.5:3000")
-			case "3":
-				println("GUI to view stats and network information found here: 172.16.3.5:3000")
-			case "4":
-				println("GUI to view stats and network information found here: 172.16.4.5:3000")
-			case "5":
-				println("GUI to view stats and network information found here: 172.16.5.5:3000")
+		scanner := bufio.NewScanner(os.Stdin)
+		for i := 0; i < len(buildOpt); i++ {
+			fmt.Print(buildOpt[i] + ": ")
+			scanner.Scan()
+
+			text := scanner.Text()
+			if len(text) != 0 {
+				fmt.Println(text)
+				buildArr = append(buildArr, text)
+			} else {
+				buildArr = append(buildArr, defOpt[i])
 			}
 		}
+
+		server := "[" + buildArr[0] + "]"
+		blockchain := buildArr[1]
+		nodes := buildArr[2]
+		image := buildArr[3]
+		cpu := buildArr[4]
+		memory := buildArr[5]
+
+		param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"}}"
+		println(param)
+
+		if blockchain == "ethereum" {
+			q := [9]string{"chainId", "networkId", "difficulty", "initBalance", "maxPeers", "gasLimit", "homesteadBlock", "eip155Block", "eip158Block"}
+
+			scanner := bufio.NewScanner(os.Stdin)
+			for i := 0; i < len(q); i++ {
+				fmt.Print(q[i] + ": ")
+				scanner.Scan()
+
+				text := scanner.Text()
+				if len(text) != 0 {
+					fmt.Println(text)
+					paramArr = append(paramArr, text)
+				} else {
+					continue
+				}
+			}
+
+			bcParameters := "{\"chainId\":" + paramArr[0] + ",\"networkId\":" + paramArr[1] + ",\"difficulty\":" + paramArr[2] + ",\"initBalance\":" + paramArr[3] + ",\"maxPeers\":" + paramArr[4] + ",\"gasLimit\":" + paramArr[5] + ",\"homesteadBlock\":" + paramArr[6] + ",\"eip155Block\":" + paramArr[7] + ",\"eip158Block\":" + paramArr[8] + "}"
+
+			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":" + bcParameters + "}"
+			// wsEmitListen(serverAddr, command, param)
+
+			println(command)
+			println(param)
+		} else if blockchain == "syscoin" {
+			q := [4]string{"rpcUser", "rpcPass", "difficulty", "extras"}
+			o := [9]string{"server", "regtest", "listen", "rest", "debug", "unittest", "addressindex", "assetallocationindex", "tpstest"}
+
+			scanner := bufio.NewScanner(os.Stdin)
+			for i := 0; i < len(q); i++ {
+				fmt.Print(q[i] + ": ")
+				scanner.Scan()
+
+				text := scanner.Text()
+				if len(text) != 0 {
+					fmt.Println(text)
+					paramArr = append(paramArr, text)
+				} else {
+					paramArr = append(paramArr, "")
+				}
+			}
+			println("Add Options (y/n): ")
+
+			for j := 0; j < len(o); j++ {
+				fmt.Print(o[j] + ": ")
+				scanner.Scan()
+
+				text := scanner.Text()
+				if text == "y" {
+					fmt.Println(text)
+					paramArr = append(paramArr, o[j])
+				} else if text == "n" {
+					continue
+				}
+			}
+
+			bcParameters := "{\"rpcUser\":" + paramArr[0] + ",\"rpcPass\":" + paramArr[1] + ",\"difficulty\":" + paramArr[2] + ",\"options\":[" + strings.Join(paramArr[4:], ",") + "],\"extras\":[" + paramArr[3] + "]}"
+
+			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":" + bcParameters + "}"
+			// wsEmitListen(serverAddr, command, param)
+
+			println(command)
+			println(param)
+		}
+
+		// for _, serv := range server {
+		// 	switch serv {
+		// 	case "1":
+		// 		println("GUI to view stats and network information found here: 172.16.1.5:3000")
+		// 	case "2":
+		// 		println("GUI to view stats and network information found here: 172.16.2.5:3000")
+		// 	case "3":
+		// 		println("GUI to view stats and network information found here: 172.16.3.5:3000")
+		// 	case "4":
+		// 		println("GUI to view stats and network information found here: 172.16.4.5:3000")
+		// 	case "5":
+		// 		println("GUI to view stats and network information found here: 172.16.5.5:3000")
+		// 	}
+		// }
 	},
 }
 
 func init() {
-	buildCmd.Flags().StringVarP(&blockchain, "blockc", "b", "ethereum", "blockchain")
-	buildCmd.Flags().StringVarP(&image, "image", "i", "ethereum:latest", "image")
-	buildCmd.Flags().IntVarP(&nodes, "nodes", "n", 5, "number of nodes")
-	buildCmd.Flags().StringArrayVarP(&server, "server", "s", []string{}, "servers to build on")
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	RootCmd.AddCommand(buildCmd)
