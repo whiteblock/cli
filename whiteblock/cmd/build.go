@@ -10,15 +10,37 @@ import (
 )
 
 var (
-	blockchain string
-	image      string
-	nodes      int
-	server     []string
 	serverAddr string
-	cpu        string
-	memory     string
-	params     string
+
+	// blockchain string
+	// image      string
+	// nodes      int
+	// server     []string
+	// cpu        string
+	// memory     string
+	// params     string
 )
+
+func checkServ(server string) string {
+	servList := make([]string, 0)
+	servList = append(servList, "GUI to view stats and network information found here:")
+	if strings.Contains(server, "1") {
+		servList = append(servList, " 172.16.1.5:3000")
+	}
+	if strings.Contains(server, "2") {
+		servList = append(servList, " 172.16.2.5:3000")
+	}
+	if strings.Contains(server, "3") {
+		servList = append(servList, " 172.16.3.5:3000")
+	}
+	if strings.Contains(server, "4") {
+		servList = append(servList, " 172.16.4.5:3000")
+	}
+	if strings.Contains(server, "5") {
+		servList = append(servList, " 172.16.5.5:3000")
+	}
+	return strings.Join(servList, " ")
+}
 
 var buildCmd = &cobra.Command{
 	Use:     "build",
@@ -44,7 +66,6 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 
 			text := scanner.Text()
 			if len(text) != 0 {
-				fmt.Println(text)
 				buildArr = append(buildArr, text)
 			} else {
 				buildArr = append(buildArr, defOpt[i])
@@ -58,8 +79,7 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		cpu := buildArr[4]
 		memory := buildArr[5]
 
-		param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"}}"
-		println(param)
+		// param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"}}"
 
 		if blockchain == "ethereum" {
 			q := [9]string{"chainId", "networkId", "difficulty", "initBalance", "maxPeers", "gasLimit", "homesteadBlock", "eip155Block", "eip158Block"}
@@ -71,20 +91,17 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 
 				text := scanner.Text()
 				if len(text) != 0 {
-					fmt.Println(text)
 					paramArr = append(paramArr, text)
 				} else {
-					continue
+					paramArr = append(paramArr, "\"\"")
 				}
 			}
 
 			bcParameters := "{\"chainId\":" + paramArr[0] + ",\"networkId\":" + paramArr[1] + ",\"difficulty\":" + paramArr[2] + ",\"initBalance\":" + paramArr[3] + ",\"maxPeers\":" + paramArr[4] + ",\"gasLimit\":" + paramArr[5] + ",\"homesteadBlock\":" + paramArr[6] + ",\"eip155Block\":" + paramArr[7] + ",\"eip158Block\":" + paramArr[8] + "}"
 
 			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":" + bcParameters + "}"
-			// wsEmitListen(serverAddr, command, param)
+			wsEmitListen(serverAddr, command, param)
 
-			println(command)
-			println(param)
 		} else if blockchain == "syscoin" {
 			q := [4]string{"rpcUser", "rpcPass", "difficulty", "extras"}
 			o := [9]string{"server", "regtest", "listen", "rest", "debug", "unittest", "addressindex", "assetallocationindex", "tpstest"}
@@ -120,26 +137,10 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 			bcParameters := "{\"rpcUser\":" + paramArr[0] + ",\"rpcPass\":" + paramArr[1] + ",\"difficulty\":" + paramArr[2] + ",\"options\":[" + strings.Join(paramArr[4:], ",") + "],\"extras\":[" + paramArr[3] + "]}"
 
 			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":" + bcParameters + "}"
-			// wsEmitListen(serverAddr, command, param)
+			wsEmitListen(serverAddr, command, param)
 
-			println(command)
-			println(param)
 		}
-
-		// for _, serv := range server {
-		// 	switch serv {
-		// 	case "1":
-		// 		println("GUI to view stats and network information found here: 172.16.1.5:3000")
-		// 	case "2":
-		// 		println("GUI to view stats and network information found here: 172.16.2.5:3000")
-		// 	case "3":
-		// 		println("GUI to view stats and network information found here: 172.16.3.5:3000")
-		// 	case "4":
-		// 		println("GUI to view stats and network information found here: 172.16.4.5:3000")
-		// 	case "5":
-		// 		println("GUI to view stats and network information found here: 172.16.5.5:3000")
-		// 	}
-		// }
+		println(checkServ(server))
 	},
 }
 
