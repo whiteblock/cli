@@ -138,7 +138,7 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 			// println(param)
 
 		}
-		println(checkServ(server))
+		// println(checkServ(server))
 	},
 }
 
