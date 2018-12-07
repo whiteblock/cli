@@ -43,6 +43,11 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			}
 		})
 
+		if err != nil {
+			println(err.Error())
+			os.Exit(1)
+		}
+
 		err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 			var status BuildStatus
 			json.Unmarshal([]byte(args), &status)
@@ -134,6 +139,21 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		err = c.On("exec", func(h *gosocketio.Channel, args string) {
 			out = args
 			mutex.Unlock()
+		})
+	}
+
+	// sys commands
+	if strings.HasPrefix(cmd, "sys::") {
+		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				if strings.Contains(args, "{") {
+					println(prettyp(args))
+				} else if args == "started" {
+					println(args)
+					os.Exit(1)
+				}
+				mutex.Unlock()
+			}
 		})
 	}
 
