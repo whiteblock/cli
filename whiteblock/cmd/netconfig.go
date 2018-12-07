@@ -16,9 +16,10 @@ var netropyCmd = &cobra.Command{
 	Long: `
 Netconfig will introduce persisting network conditions for testing. Use '?' at any time for more help on configuring the network.
 	
-	set delay <amount> 				Specifies the latency to add [ms];
-	set loss loss <amount>			Specifies the amount of packet loss to add [%];
-	set bw <amount> <type>			Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
+	bandwidth <engine number> <path number> <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
+	delay <engine number> <path number> <amount> 				Specifies the latency to add [ms];
+	loss <engine number> <path number> <percent>				Specifies the amount of packet loss to add [%];
+	
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -90,7 +91,7 @@ var emulationOffCmd = &cobra.Command{
 }
 
 var latencyCmd = &cobra.Command{
-	Use:     "latency <engine number> <path number> <amount>",
+	Use:     "delay <engine number> <path number> <amount>",
 	Aliases: []string{"lat"},
 	Short:   "Set latency",
 	Long: `
@@ -120,7 +121,7 @@ Latency will introduce delay to the network. You will specify the amount of late
 }
 
 var packetLossCmd = &cobra.Command{
-	Use:     "packetloss <engine number> <path number> <percent>",
+	Use:     "loss <engine number> <path number> <percent>",
 	Aliases: []string{"loss"},
 	Short:   "Set packetloss",
 	Long: `

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -54,9 +55,9 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		buildArr := make([]string, 0)
 		paramArr := make([]string, 0)
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "build"
+		bldcommand := "build"
 
-		buildOpt := [6]string{"servers (default set to: [])", "blockchain (default set to: ethereum)", "nodes (default set to: 10)", "image (default set to: ethereum:latest)", "cpus (default set to: \"\")", "memory (default set to: \"\")"}
+		buildOpt := [6]string{"servers (default set to: [])", "blockchain (default set to: ethereum)", "nodes (default set to: 10)", "image (default set to: ethereum:latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
 		defOpt := [6]string{"[]", "ethereum", "10", "ethereum:latest", "", ""}
 
 		scanner := bufio.NewScanner(os.Stdin)
@@ -79,65 +80,62 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		cpu := buildArr[4]
 		memory := buildArr[5]
 
-		// param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"}}"
-
 		if blockchain == "ethereum" {
-			q := [9]string{"chainId", "networkId", "difficulty", "initBalance", "maxPeers", "gasLimit", "homesteadBlock", "eip155Block", "eip158Block"}
+			getParamCommand := "get_params"
+			bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
+			var paramlist []map[string]string
+
+			json.Unmarshal(bcparam, &paramlist)
 
 			scanner := bufio.NewScanner(os.Stdin)
-			for i := 0; i < len(q); i++ {
-				fmt.Print(q[i] + ": ")
-				scanner.Scan()
 
-				text := scanner.Text()
-				if len(text) != 0 {
-					paramArr = append(paramArr, text)
-				} else {
-					paramArr = append(paramArr, "\"\"")
+			for i := 0; i < len(paramlist); i++ {
+				for key, value := range paramlist[i] {
+					fmt.Print(key, " ("+value+"): ")
+					scanner.Scan()
+					text := scanner.Text()
+					if len(text) != 0 {
+						fmt.Println(text)
+						paramArr = append(paramArr, "\""+key+"\""+": "+text)
+					} else {
+						continue
+					}
 				}
 			}
 
-			bcParameters := "{\"chainId\":" + paramArr[0] + ",\"networkId\":" + paramArr[1] + ",\"difficulty\":" + paramArr[2] + ",\"initBalance\":" + paramArr[3] + ",\"maxPeers\":" + paramArr[4] + ",\"gasLimit\":" + paramArr[5] + ",\"homesteadBlock\":" + paramArr[6] + ",\"eip155Block\":" + paramArr[7] + ",\"eip158Block\":" + paramArr[8] + "}"
-
-			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":" + bcParameters + "}"
-			wsEmitListen(serverAddr, command, param)
+			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+			wsEmitListen(serverAddr, bldcommand, param)
+			// println(bldcommand)
+			// println(param)
 
 		} else if blockchain == "syscoin" {
-			q := [4]string{"rpcUser", "rpcPass", "difficulty", "extras"}
-			o := [9]string{"server", "regtest", "listen", "rest", "debug", "unittest", "addressindex", "assetallocationindex", "tpstest"}
+
+			getParamCommand := "get_params"
+			bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
+			var paramlist []map[string]string
+
+			json.Unmarshal(bcparam, &paramlist)
 
 			scanner := bufio.NewScanner(os.Stdin)
-			for i := 0; i < len(q); i++ {
-				fmt.Print(q[i] + ": ")
-				scanner.Scan()
 
-				text := scanner.Text()
-				if len(text) != 0 {
-					fmt.Println(text)
-					paramArr = append(paramArr, text)
-				} else {
-					paramArr = append(paramArr, "")
-				}
-			}
-			println("Add Options (y/n): ")
-
-			for j := 0; j < len(o); j++ {
-				fmt.Print(o[j] + ": ")
-				scanner.Scan()
-
-				text := scanner.Text()
-				if text == "y" {
-					fmt.Println(text)
-					paramArr = append(paramArr, o[j])
-				} else if text == "n" {
-					continue
+			for i := 0; i < len(paramlist); i++ {
+				for key, value := range paramlist[i] {
+					fmt.Print(key, " ("+value+"): ")
+					scanner.Scan()
+					text := scanner.Text()
+					if len(text) != 0 {
+						fmt.Println(text)
+						paramArr = append(paramArr, "\""+key+"\""+": "+text)
+					} else {
+						continue
+					}
 				}
 			}
 
-			bcParameters := "{\"rpcUser\":" + paramArr[0] + ",\"rpcPass\":" + paramArr[1] + ",\"difficulty\":" + paramArr[2] + ",\"options\":[" + strings.Join(paramArr[4:], ",") + "],\"extras\":[" + paramArr[3] + "]}"
-
-			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":" + bcParameters + "}"
-			wsEmitListen(serverAddr, command, param)
+			param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+			wsEmitListen(serverAddr, bldcommand, param)
+			// println(bldcommand)
+			// println(param)
 
 		}
 		println(checkServ(server))

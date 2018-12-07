@@ -58,7 +58,7 @@ Server will ouput server information.
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "get_servers"
 
-		wsEmitListen(serverAddr, command, "")
+		println(wsEmitListen(serverAddr, command, ""))
 	},
 }
 
@@ -74,7 +74,7 @@ Nodes will output all of the nodes in the current network.
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "get_nodes"
-		wsEmitListen(serverAddr, command, "")
+		println(wsEmitListen(serverAddr, command, ""))
 	},
 }
 
