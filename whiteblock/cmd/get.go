@@ -103,6 +103,9 @@ var dataByTimeCmd = &cobra.Command{
 	Long: `
 Data time will pull block data from the network from a given start and end time and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
 
+Params: Unix time stamps
+Format: <start unix time stamp> <end unix time stamp>
+
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -136,6 +139,9 @@ var dataByBlockCmd = &cobra.Command{
 	Short: "Data block will pull data from the network and output into a file.",
 	Long: `
 Data block will pull block data from the network from a given start and end block and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
+
+Params: Unix time stamps
+Format: <start unix time stamp> <end unix time stamp>
 
 	`,
 

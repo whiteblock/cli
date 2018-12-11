@@ -20,30 +20,29 @@ Optional:
 command: whiteblock build [flags]
 
 flags:
-  -b, --blockc string           blockchain (default "ethereum")
-  -h, --help                    help for build
-  -i, --image string            image (default "ethereum:latest")
-  -n, --nodes int               number of nodes (default 10)
-  -s, --server stringArray      number of servers
   -a, --server-addr string      server address with port 5000 (default "localhost:5000")
 
 This will create and deploy the specified blockchain with the specified number of nodes. Each node will be instantiated in its own container and will interact individually as a participant of the specified network. The blockchain will be built on a server that will be specified on build. 
 
-example: whiteblock build --nodes 10 --server 1 --blockc ethereum --image ethereum:latest
+The blockchain set up can be customized using the cli. The different customizations will be outputted to be added.
+
+example: whiteblock build
 
 
 2. Configure Network Conditions
 
-command: whiteblock netconfig <command> <engine> <path> <amount> [flags]
+command: whiteblock netconfig <command> [flags]
 
-* input netropy documentation here *
-
-flags:
-    -a, --server-addr string      server address with port 5000 (default "localhost:5000")
+* available commands:
+    * bandwidth
+    * delay
+    * loss
+    * off
+    * on
 
 Netconfig will introduce persisting network conditions for testing. Network emulations such as latency, packetloss, and bandwidth can be configured and introduced to the network.
 
-example: whiteblock netconfig latency 1 1 100
+example: whiteblock netconfig delay 1 1 100
 
 3. Send Transactions:
 
@@ -51,9 +50,15 @@ command: whiteblock geth send_transactions <tx/s> <value> [destination]
 
 This will send transactions (in geth) with instructions on how many transactions per second to send and the value (in hex) to send. This will immediately begin transactions if the network has been built properly.
 
+example: whiteblock geth send_transactions 100 0x545454
+
 4. Examine Data
 
+command: whiteblock get stats <command> [flags]
+
 You may now go to the GUI and use our data visualization tools to examine the different data points that are being push directly from the blockchain. 
+
+example: whiteblock get stats all
 
 -----------------------------------------------------
 OPTIONAL:
@@ -85,5 +90,7 @@ example: whiteblock geth get_block_number
 
 SSH Into Node:
 
-command: whiteblock ssh <node number>
+command: whiteblock ssh <server> <node>
+
+SSH will allow the user to go into the contianer where the specified node exists. A terminal will be outputted to interact with the container. 
 
