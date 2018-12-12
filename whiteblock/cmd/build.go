@@ -4,7 +4,12 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,6 +18,35 @@ import (
 var (
 	serverAddr string
 )
+
+func writeFile(prevBuild string) {
+	cwd := os.Getenv("HOME")
+	_, err := exec.Command("bash", "-c", "mkdir -p "+cwd+"/.config/whiteblock/").Output()
+	if err != nil {
+		log.Fatalf("could not create directory: %s", err)
+	}
+
+	file, err := os.Create(cwd + "/.config/whiteblock/previous_build.txt")
+
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+	defer file.Close() // Make sure to close the file when you're done
+
+	_, err = file.WriteString(prevBuild)
+	if err != nil {
+		log.Fatalf("failed writing to file: %s", err)
+	}
+}
+
+func readFile() (string, error) {
+	cwd := os.Getenv("HOME")
+	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/previous_build.txt")
+	if err != nil {
+		fmt.Print(err)
+	}
+	return string(b), nil
+}
 
 // func checkServ(server string) string {
 // 	servList := make([]string, 0)
@@ -102,14 +136,16 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 					text := scanner.Text()
 					if value == "string" {
 						if len(text) != 0 {
-							fmt.Println(text)
+							if fmt.Sprint(reflect.TypeOf(text)) != "string" {
+								println("bad type")
+								os.Exit(2)
+							}
 							paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
 						} else {
 							continue
 						}
 					} else if value == "[]string" {
 						if len(text) != 0 {
-							fmt.Println(text)
 							tmp := strings.Replace(text, " ", ",", -1)
 							paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
 						} else {
@@ -117,25 +153,53 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 						}
 					} else if value == "int" {
 						if len(text) != 0 {
-							fmt.Println(text)
-							paramArr = append(paramArr, "\""+key+"\""+": "+text)
+							i, err := strconv.Atoi(text)
+							if err != nil {
+								println("bad type")
+								os.Exit(2)
+							}
+							paramArr = append(paramArr, "\""+key+"\""+": "+string(i))
 						} else {
 							continue
 						}
 					}
-
 				}
 			}
 		}
 
 		param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
-		wsEmitListen(serverAddr, bldcommand, param)
+		stat := wsEmitListen(serverAddr, bldcommand, param)
+		if stat == "" {
+			writeFile(param)
+		}
+	},
+}
 
+var previousCmd = &cobra.Command{
+	Use:     "previous",
+	Aliases: []string{"prev"},
+	Short:   "Build a blockchain using previous configurations",
+	Long: `
+Build previous will recreate and deploy the previously built blockchain and specified number of nodes.
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		bldcommand := "build"
+
+		prevBuild, _ := readFile()
+
+		if len(prevBuild) == 0 {
+			println("No previous build. Use build command to deploy a blockchain.")
+		} else {
+			wsEmitListen(serverAddr, bldcommand, prevBuild)
+		}
 	},
 }
 
 func init() {
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
+	buildCmd.AddCommand(previousCmd)
 	RootCmd.AddCommand(buildCmd)
 }
