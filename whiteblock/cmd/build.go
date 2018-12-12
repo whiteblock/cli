@@ -153,12 +153,12 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 						}
 					} else if value == "int" {
 						if len(text) != 0 {
-							i, err := strconv.Atoi(text)
+							_, err := strconv.Atoi(text)
 							if err != nil {
 								println("bad type")
 								os.Exit(2)
 							}
-							paramArr = append(paramArr, "\""+key+"\""+": "+string(i))
+							paramArr = append(paramArr, "\""+key+"\""+": "+text)
 						} else {
 							continue
 						}
