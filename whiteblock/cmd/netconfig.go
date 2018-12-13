@@ -10,11 +10,11 @@ import (
 )
 
 var netropyCmd = &cobra.Command{
-	Use:     "netconfig <engine number> <path number> <command>",
+	Use:     "netconfig <command>",
 	Aliases: []string{"emulate"},
 	Short:   "Network conditions",
 	Long: `
-Netconfig will introduce persisting network conditions for testing. Use '?' at any time for more help on configuring the network.
+Netconfig will introduce persisting network conditions for testing.
 	
 	bandwidth <engine number> <path number> <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
 	delay <engine number> <path number> <amount> 				Specifies the latency to add [ms];
@@ -60,7 +60,7 @@ var emulationOnCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		msg := "engine " + args[0] + " on"
+		msg := "engine " + args[0] + " emulation on"
 
 		wsEmitListen(serverAddr, command, msg)
 	},
@@ -84,7 +84,7 @@ var emulationOffCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		msg := "engine " + args[0] + " off"
+		msg := "engine " + args[0] + " emulation off"
 
 		wsEmitListen(serverAddr, command, msg)
 	},

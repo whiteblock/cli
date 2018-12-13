@@ -95,5 +95,5 @@ Compiles the specified smart contract.
 func init() {
 	solcCMD.AddCommand(addSolcCMD, compileSolcCMD)
 
-	// RootCmd.AddCommand(solcCMD)
+	RootCmd.AddCommand(solcCMD)
 }

@@ -1,12 +1,24 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"reflect"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
+
+type List struct {
+	Results []struct {
+		Series []struct {
+			Columns []string        `json:"columns"`
+			Values  [][]interface{} `json:"values"`
+		}
+	} `json:"results"`
+}
 
 var sysCMD = &cobra.Command{
 	Use:   "sys <command>",
@@ -97,7 +109,119 @@ Params: Test number
 			println("\nError: Invalid number of arguments given\n")
 			os.Exit(1)
 		}
-		wsEmitListen(serverAddr, command, args[0])
+		results := []byte(wsEmitListen(serverAddr, command, args[0]))
+		var result map[string]interface{}
+		err := json.Unmarshal(results, &result)
+		if err != nil {
+			panic(err)
+		}
+
+		var l List
+		json.Unmarshal(results, &l)
+		r := l.Results
+		rc := r[0]
+		s := rc.Series
+		sc := s[0]
+		c := sc.Columns
+		v := sc.Values[0]
+
+		for i := 0; i < len(c); i++ {
+			fmt.Println("\t" + c[i] + ": " + fmt.Sprint(v[i]) + " type is: " + fmt.Sprint(reflect.TypeOf(v[i])))
+		}
+	},
+}
+
+var testPinnacleCMD = &cobra.Command{
+	Use:   "pinnacle <wait time> <min complete percent>",
+	Short: "Run the pinnacle test series.",
+	Long: `
+Sys test pinnacle will run the propagation test.
+
+Format: <test number>
+Params: Test number
+
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+
+		xS := "1000"
+		y := 500
+		z := 0
+
+		var pinArgs []string
+		buildCmd.Run(buildCmd, pinArgs)
+
+		pinArgs = append(pinArgs, args[0])
+		pinArgs = append(pinArgs, args[1])
+		pinArgs = append(pinArgs, xS)
+		testStartCMD.Run(testStartCMD, pinArgs[:])
+
+		command := "sys::get_recent_test_results"
+		results := []byte(wsEmitListen(serverAddr, command, args[0]))
+		var result map[string]interface{}
+		err := json.Unmarshal(results, &result)
+		if err != nil {
+			panic(err)
+		}
+
+		var l List
+		json.Unmarshal(results, &l)
+		r := l.Results
+		rc := r[0]
+		s := rc.Series
+		sc := s[0]
+		c := sc.Columns
+
+		avgTestTime := c[1]
+
+		for i := 0; i < len(pinArgs); i++ {
+			println(pinArgs[i])
+		}
+
+		xI, err := strconv.Atoi(xS)
+		if err != nil {
+			panic(err)
+		}
+
+		for {
+			command := "sys::get_recent_test_results"
+			results := []byte(wsEmitListen(serverAddr, command, args[0]))
+			var result map[string]interface{}
+			err := json.Unmarshal(results, &result)
+			if err != nil {
+				panic(err)
+			}
+
+			var l List
+			json.Unmarshal(results, &l)
+			r := l.Results
+			rc := r[0]
+			s := rc.Series
+			sc := s[0]
+			c := sc.Columns
+
+			if c[1] != avgTestTime {
+				avgTestTime = c[1]
+				if c[9] == "0" {
+					if y > 50 {
+						xI = (xI - y)
+						xS = string(xI)
+						z = xI
+					} else {
+						break
+					}
+				} else if c[9] == "1" {
+					xI = (xI + y)
+					y = y / 2
+					xS = string(xI)
+					z = xI
+				}
+			}
+			pinArgs[2] = xS
+			testStartCMD.Run(testStartCMD, pinArgs[:])
+		}
+		println(z)
 	},
 }
 
@@ -105,7 +229,7 @@ func init() {
 	testStartCMD.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	testResultsCMD.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	sysTestCMD.AddCommand(testStartCMD, testResultsCMD)
+	sysTestCMD.AddCommand(testStartCMD, testResultsCMD, testPinnacleCMD)
 	sysCMD.AddCommand(sysTestCMD)
 	RootCmd.AddCommand(sysCMD)
 }

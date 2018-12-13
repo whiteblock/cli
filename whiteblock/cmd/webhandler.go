@@ -147,7 +147,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
 				if strings.Contains(args, "{") {
-					println(prettyp(args))
+					out = args
 				} else if args == "started" {
 					println(args)
 					os.Exit(1)

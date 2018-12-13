@@ -92,7 +92,7 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		bldcommand := "build"
 
-		buildOpt := [6]string{"servers (default set to: [])", "blockchain (default set to: ethereum)", "nodes (default set to: 10)", "image (default set to: ethereum:latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
+		buildOpt := [6]string{"servers (required server number)", "blockchain (default set to: ethereum)", "nodes (default set to: 10)", "image (default set to: ethereum:latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
 		defOpt := [6]string{"[]", "ethereum", "10", "ethereum:latest", "", ""}
 
 		scanner := bufio.NewScanner(os.Stdin)
@@ -106,6 +106,11 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 			} else {
 				buildArr = append(buildArr, defOpt[i])
 			}
+		}
+
+		if buildArr[0] == "[]" {
+			println("Invalid server. Please specify a server; none was given.")
+			os.Exit(2)
 		}
 
 		server := "[" + buildArr[0] + "]"
