@@ -154,7 +154,7 @@ Params: Test number
 		y := 500
 		z := 0
 
-		buildCmd.Run(buildCmd, emptyArgs)
+		buildCmd.Execute()
 
 		pinArgs = append(pinArgs, args[0])
 		pinArgs = append(pinArgs, args[1])
@@ -223,7 +223,7 @@ Params: Test number
 				}
 			}
 			pinArgs[2] = xS
-			previousCmd.Run(previousCmd, emptyArgs)
+			previousCmd.Execute()
 			testStartCMD.Run(testStartCMD, pinArgs[:])
 		}
 		println(z)
