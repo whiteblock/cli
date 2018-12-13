@@ -145,7 +145,7 @@ Params: Test number
 	Run: func(cmd *cobra.Command, args []string) {
 		var pinArgs []string
 
-		println("connecting to: " + serverAddr)
+		// println("connecting to: " + serverAddr)
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
