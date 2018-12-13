@@ -143,14 +143,18 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		var emptyArgs []string
+		var pinArgs []string
+
+		println("connecting to: " + serverAddr)
+
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
 		xS := "1000"
 		y := 500
 		z := 0
 
-		var pinArgs []string
-		buildCmd.Run(buildCmd, pinArgs)
+		buildCmd.Run(buildCmd, emptyArgs)
 
 		pinArgs = append(pinArgs, args[0])
 		pinArgs = append(pinArgs, args[1])
@@ -219,6 +223,7 @@ Params: Test number
 				}
 			}
 			pinArgs[2] = xS
+			previousCmd.Run(previousCmd, emptyArgs)
 			testStartCMD.Run(testStartCMD, pinArgs[:])
 		}
 		println(z)
