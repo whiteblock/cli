@@ -143,7 +143,6 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		var emptyArgs []string
 		var pinArgs []string
 
 		println("connecting to: " + serverAddr)
