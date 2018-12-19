@@ -11,20 +11,14 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-type Node []struct {
-	ID        int    `json:"id"`
-	TestNetID int    `json:"testNetId"`
-	Server    int    `json:"server"`
-	LocalID   int    `json:"localId"`
-	IP        string `json:"ip"`
-	Label     string `json:"label"`
-}
-
-var sshCmd = &cobra.Command{
-	Use:   "ssh <server> <node>",
-	Short: "SSH into an existing container.",
+var scpCmd = &cobra.Command{
+	Use:   "scp <server number> <node number> <source> <destination>",
+	Short: "Scp will copy a file into the node.",
 	Long: `
-SSH will allow the user to go into the contianer where the specified node exists.
+
+Scp will allow the user to copy a file and add it to a node.
+Format: <server number>, <node number>, <source>, <destination>
+Params: servern number, node number, file/dir source, file/dir destination
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -49,7 +43,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
+		err = unix.Exec("/usr/bin/scp", []string{"scp", "-r", "-o", "StrictHostKeyChecking no", args[2], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[3]}, os.Environ())
 		log.Fatal(err)
 	},
 }
