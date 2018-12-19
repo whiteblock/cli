@@ -178,9 +178,6 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		if stat == "" {
 			writeFile(param)
 		}
-
-		println(stat)
-		println(param)
 	},
 }
 
