@@ -95,6 +95,19 @@ Response: JSON representation of network statistics
   *  -h, --help : help for time
   *  -a, --server-addr `string`:  server address with port 5000 (default "localhost:5000")
 
+#### get default
+./whiteblock get default <blockchain> [FLAGS]
+
+Get the blockchain specific parameters for a deployed blockchain.
+
+Params: The blockchain to get the build params of
+Format: <blockchain>
+
+Response: The params as a list of key value params, of name and type respectively
+
+* Flags:
+  *  -h, --help : help for default
+
 #### get nodes
 ./whiteblock get nodes [FLAGS]
 

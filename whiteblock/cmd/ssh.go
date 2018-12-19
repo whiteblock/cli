@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
-	"os/signal"
-	"strings"
-	"syscall"
+	"strconv"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/sys/unix"
 )
 
 var (
@@ -16,6 +16,15 @@ var (
 	cwd     []string
 	lastcmd string
 )
+
+type Node []struct {
+	ID        int    `json:"id"`
+	TestNetID int    `json:"testNetId"`
+	Server    int    `json:"server"`
+	LocalID   int    `json:"localId"`
+	IP        string `json:"ip"`
+	Label     string `json:"label"`
+}
 
 var sshCmd = &cobra.Command{
 	Use:   "ssh <server> <node>",
@@ -27,7 +36,6 @@ Response: stdout of the command
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
 		if len(args) != 2 {
 			println("\nError: Invalid number of arguments given\n")
@@ -35,85 +43,24 @@ Response: stdout of the command
 			return
 		}
 
-		dir = "Server" + args[0] + "-Node" + args[1] + ":"
-		cwd = append(cwd, "/")
-		cwd = append(cwd, "root/")
-
-		sigs := make(chan os.Signal, 1)
-		signal.Notify(sigs, syscall.SIGINT, syscall.SIGSTOP)
-		go func() {
-			for {
-				sig := <-sigs
-				fmt.Println(sig)
-				command := "exec"
-
-				param1 := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "ps aux | grep \\\"" + lastcmd + "\\\" |grep -v grep| awk '{print $2}' | sort | tail -n 1\"}"
-				println(param1)
-				pid := wsEmitListen(serverAddr, command, param1)
-				pid = strings.Replace(pid, "\n", "", -1)
-
-				param2 := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "kill " + pid + "\"}"
-				resp := wsEmitListen(serverAddr, command, param2)
-				println(resp, lastcmd, ": process has been terminated")
-
-				fmt.Print("\r\n"+dir+strings.Join(cwd[:], ""), "$ ")
-			}
-		}()
-
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("SSH Server: " + args[0] + " Node: " + args[1])
-		fmt.Println("---------------------------------------------------------------")
-
-		for {
-			//print cwd path
-			fmt.Print(dir+strings.Join(cwd[:], ""), "$ ")
-			text, _ := reader.ReadString('\n')
-			text = strings.Replace(text, "\n", "", -1)
-			textarg := strings.Split(text, " ")
-
-			//to quit
-			if text == "q" {
-				os.Exit(1)
-			}
-
-			//cd handling
-			if textarg[0] == "cd" {
-				if len(textarg) == 1 {
-					cwd = nil
-					cwd = append(cwd, "/")
-				} else if textarg[1] == "/" {
-					cwd = nil
-					cwd = append(cwd, "/")
-				} else if textarg[1] == ".." {
-					if len(cwd) > 0 {
-						cwd = append(cwd[:len(cwd)-1])
-					}
-				} else if textarg[1] != ".." {
-					command := "exec"
-					param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "[ -d " + strings.Join(cwd, "") + textarg[1] + "/ ] && echo $? \"}"
-					outerr := wsEmitListen(serverAddr, command, param)
-
-					if outerr[0] == '0' {
-						cwd = append(cwd, textarg[1]+"/")
-					} else {
-						println("directory does not exist")
-					}
-				}
-			} else if len(textarg[0]) == 0 {
-				continue
-			} else if textarg[0] == "yes" || textarg[0] == "kill" {
-				println("command not found")
-			} else {
-				// println(cwd)
-				lastcmd = textarg[0]
-
-				command := "exec"
-				param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "bash -c \\\"cd " + strings.Join(cwd, "") + " && " + text + "\\\"\"}"
-				// println(param)
-				out := wsEmitListen(serverAddr, command, param)
-				println(out)
-			}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command1 := "nodes"
+		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
+		var node Node
+		json.Unmarshal(out1, &node)
+		nodeNumber, err := strconv.Atoi(args[1])
+		if err != nil {
+			panic(err)
 		}
+		println(node[nodeNumber].IP)
+
+		command2 := "exec"
+		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
+
+		println(wsEmitListen(serverAddr, command2, param))
+
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
+		log.Fatal(err)
 	},
 }
 
@@ -122,11 +69,3 @@ func init() {
 
 	RootCmd.AddCommand(sshCmd)
 }
-
-/*
-fixes/bugs:
-- have to account for "cd ../" or "cd ..{anything}"
-	- this will append to the cwd improperly
-
-	*- fix this by error handling by checking if the directory actually exists before appending
-*/

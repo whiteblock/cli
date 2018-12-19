@@ -118,6 +118,18 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		})
 	}
 
+	// get nodes
+	if cmd == "nodes" {
+		err = c.On("nodes", func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				out = args
+			} else {
+				println(err.Error())
+			}
+			mutex.Unlock()
+		})
+	}
+
 	// get all_stats
 	if cmd == "all_stats" {
 		err = c.On("all_stats", func(h *gosocketio.Channel, args string) {
@@ -174,14 +186,6 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 
 	// sys commands
 	if strings.HasPrefix(cmd, "sys::") {
-		// if cmd == "sys::start_test" {
-		// 	err = c.On(cmd, func(h *gosocketio.Channel, args string) {
-		// 		if len(args) > 0 {
-		// 			out = args
-		// 			os.Exit(2)
-		// 		}
-		// 	})
-		// }
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
 				out = args
