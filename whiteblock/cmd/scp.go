@@ -49,7 +49,7 @@ Params: servern number, node number, file/dir source, file/dir destination
 }
 
 func init() {
-	sshCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	scpCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	RootCmd.AddCommand(sshCmd)
+	RootCmd.AddCommand(scpCmd)
 }
