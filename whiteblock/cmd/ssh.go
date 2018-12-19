@@ -81,6 +81,9 @@ Response: stdout of the command
 				if len(textarg) == 1 {
 					cwd = nil
 					cwd = append(cwd, "/")
+				} else if textarg[1] == "/" {
+					cwd = nil
+					cwd = append(cwd, "/")
 				} else if textarg[1] == ".." {
 					if len(cwd) > 0 {
 						cwd = append(cwd[:len(cwd)-1])
@@ -106,7 +109,7 @@ Response: stdout of the command
 
 				command := "exec"
 				param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"" + "bash -c \\\"cd " + strings.Join(cwd, "") + " && " + text + "\\\"\"}"
-				println(param)
+				// println(param)
 				out := wsEmitListen(serverAddr, command, param)
 				println(out)
 			}
