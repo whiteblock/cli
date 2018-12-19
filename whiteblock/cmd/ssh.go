@@ -57,7 +57,7 @@ Response: stdout of the command
 		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-o","StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
 	},
 }
