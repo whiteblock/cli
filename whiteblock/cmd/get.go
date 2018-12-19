@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"os/user"
 	"strings"
 	"time"
@@ -36,13 +34,9 @@ Get will ouput server and network information and statstics.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		out, err := exec.Command("bash", "-c", "./whiteblock get -h").Output()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("%s", out)
 		println("\nNo command given. Please choose a command from the list above.\n")
-		os.Exit(1)
+		cmd.Help()
+		return
 	},
 }
 
@@ -78,6 +72,86 @@ Nodes will output all of the nodes in the current network.
 	},
 }
 
+var getRunningCmd = &cobra.Command{
+	Use:   "running",
+	Short: "Running will check if a test is running.",
+	Long: `
+Running will check whether or not there is a test running and get the name of the currently running test.
+
+Response: true or false, on whether or not a test is running; The name of the test or nothing if there is not a test running.
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 0 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command1 := "state::is_running"
+		command2 := "state::what_is_running"
+		println(wsEmitListen(serverAddr, command1, ""))
+		println(wsEmitListen(serverAddr, command2, ""))
+
+	},
+}
+
+var getLogCmd = &cobra.Command{
+	Use:   "log <server id> <node number",
+	Short: "Log will dump data pertaining to the node.",
+	Long: `
+Get stdout and stderr from a node.
+
+Params: Server number and node number
+Format: {"server":<server id>,"node":<node number>}
+
+Response: stdout and stderr of the blockchain process
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 2 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "log"
+		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + "}"
+		println(wsEmitListen(serverAddr, command, param))
+		// println(serverAddr)
+		// println(command)
+		// println(param)
+
+	},
+}
+
+var getNetworkDefaultsCmd = &cobra.Command{
+	Use:   "default <blockchain>",
+	Short: "Default gets the blockchain params.",
+	Long: `
+Get the blockchain specific parameters for a deployed blockchain.
+
+Params: The blockchain to get the build params of
+Format: <blockchain>
+
+Response: The params as a list of key value params, of name and type respectively
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "get_defaults"
+		println(wsEmitListen(serverAddr, command, args[0]))
+	},
+}
+
 var getDataCmd = &cobra.Command{
 	Use:   "data <command>",
 	Short: "Data will pull data from the network and output into a file.",
@@ -87,13 +161,9 @@ Data will pull specific or all block data from the network and output into a fil
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		out, err := exec.Command("bash", "-c", "./whiteblock get data -h").Output()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("%s", out)
 		println("\nNo command given. Please choose a command from the list above.\n")
-		os.Exit(1)
+		cmd.Help()
+		return
 	},
 }
 
@@ -110,13 +180,9 @@ Format: <start unix time stamp> <end unix time stamp>
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 || len(args) > 3 {
-			out, err := exec.Command("bash", "-c", "./whiteblock get data time -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		} else if len(args) == 2 {
 			usr, err := user.Current()
 			if err != nil {
@@ -147,13 +213,9 @@ Format: <start unix time stamp> <end unix time stamp>
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 || len(args) > 3 {
-			out, err := exec.Command("bash", "-c", "./whiteblock get data block -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		} else if len(args) == 2 {
 			usr, err := user.Current()
 			if err != nil {
@@ -181,13 +243,9 @@ Data all will pull all data from the network and output into a file. The directo
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 1 {
-			out, err := exec.Command("bash", "-c", "./whiteblock get data all -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		} else if len(args) == 0 {
 			usr, err := user.Current()
 			if err != nil {
@@ -214,13 +272,9 @@ Response: JSON representation of network statistics
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		out, err := exec.Command("bash", "-c", "./whiteblock get stats -h").Output()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("%s", out)
-		println("\nNo command given. Please choose a command from the list above.\n")
-		os.Exit(1)
+		println("\nError: Invalid number of arguments given\n")
+		cmd.Help()
+		return
 	},
 }
 
@@ -238,13 +292,9 @@ Response: JSON representation of network statistics
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 2 {
-			out, err := exec.Command("bash", "-c", "./whiteblock get stats time -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
@@ -269,13 +319,9 @@ Response: JSON representation of network statistics
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 2 {
-			out, err := exec.Command("bash", "-c", "./whiteblock get stats block -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
@@ -318,7 +364,7 @@ func init() {
 	statsByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getDataCmd, getStatsCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getDataCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
 	getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsAllCmd)
 

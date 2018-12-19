@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -27,13 +24,9 @@ Netconfig will introduce persisting network conditions for testing.
 		command := "netconfig"
 
 		if len(args) < 3 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		msg := "engine " + args[0] + " path " + args[1] + " " + strings.Join(args[2:], " ")
@@ -51,13 +44,9 @@ var emulationOnCmd = &cobra.Command{
 		command := "netconfig"
 
 		if len(args) != 1 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig on -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		msg := "engine " + args[0] + " emulation on"
@@ -75,13 +64,9 @@ var emulationOffCmd = &cobra.Command{
 		command := "netconfig"
 
 		if len(args) != 1 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig off -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		msg := "engine " + args[0] + " emulation off"
@@ -103,13 +88,9 @@ Latency will introduce delay to the network. You will specify the amount of late
 		command := "netconfig"
 
 		if len(args) != 3 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig latency -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		msg1 := "engine " + args[0] + " path " + args[1] + " set delay constant " + args[2] + " port 1 to port 2"
@@ -132,13 +113,9 @@ Packetloss will drop packets in the network. You will specify the amount of pack
 		command := "netconfig"
 
 		if len(args) != 3 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig packetloss -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		msg1 := "engine " + args[0] + " path " + args[1] + " set loss random " + args[2] + " port 1 to port 2"
@@ -165,13 +142,9 @@ Fomat:
 		command := "netconfig"
 
 		if len(args) != 4 {
-			out, err := exec.Command("bash", "-c", "./whiteblock netconfig bandwidth -h").Output()
-			if err != nil {
-				os.Exit(1)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		msg1 := "engine " + args[0] + " path " + args[1] + " set bw fixed " + args[2] + args[3]

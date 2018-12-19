@@ -38,7 +38,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	if cmd == "build" {
 		err = c.On("build", func(h *gosocketio.Channel, args string) {
 			log.Println("build: ", args)
-			if args == "Unable to build" {
+			if args != "Build in Progress" {
 				os.Exit(1)
 			}
 		})
@@ -52,13 +52,21 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			var status BuildStatus
 			json.Unmarshal([]byte(args), &status)
 			fmt.Printf("Building: %f \t\t\t\t\r", status.Progress)
-			if status.Progress == 100.0 {
-				fmt.Println("\nDone")
-				mutex.Unlock()
-			} else if status.Error != nil {
+			if status.Error != nil {
 				fmt.Println(status.Error.Error())
 				mutex.Unlock()
+			} else if status.Progress == 100.0 {
+				fmt.Println("\nDone")
+				mutex.Unlock()
 			}
+		})
+	}
+
+	// get_defaults
+	if cmd == "get_defaults" {
+		err = c.On("get_defaults", func(h *gosocketio.Channel, args string) {
+			out = prettyp(args)
+			mutex.Unlock()
 		})
 	}
 
@@ -89,6 +97,18 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	// get stats
 	if cmd == "stats" {
 		err = c.On("stats", func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				out = prettyp(args)
+			} else {
+				println(err.Error())
+			}
+			mutex.Unlock()
+		})
+	}
+
+	// get log
+	if cmd == "log" {
+		err = c.On("log", func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
 				out = prettyp(args)
 			} else {
@@ -142,16 +162,29 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		})
 	}
 
-	// sys commands
-	if strings.HasPrefix(cmd, "sys::") {
+	// state
+	if strings.HasPrefix(cmd, "state::") {
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
-				if strings.Contains(args, "{") {
-					out = args
-				} else if args == "started" {
-					println(args)
-					os.Exit(1)
-				}
+				out = args
+				mutex.Unlock()
+			}
+		})
+	}
+
+	// sys commands
+	if strings.HasPrefix(cmd, "sys::") {
+		// if cmd == "sys::start_test" {
+		// 	err = c.On(cmd, func(h *gosocketio.Channel, args string) {
+		// 		if len(args) > 0 {
+		// 			out = args
+		// 			os.Exit(2)
+		// 		}
+		// 	})
+		// }
+		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				out = args
 				mutex.Unlock()
 			}
 		})
