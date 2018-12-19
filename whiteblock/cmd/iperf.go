@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -10,21 +9,6 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
-func BashExec(_cmd string) (string, error) {
-	cmd := exec.Command("bash", "-c", _cmd)
-	var resultsRaw bytes.Buffer
-	cmd.Stdout = &resultsRaw
-	err := cmd.Start()
-	if err != nil {
-		return "", err
-	}
-	err = cmd.Wait()
-	if err != nil {
-		return "", err
-	}
-	return resultsRaw.String(), nil
-}
 
 var iPerfCmd = &cobra.Command{
 	Use:   "iperf <sending node> <receiving node>",
@@ -64,8 +48,8 @@ Params: sending node, receiving node
 		param := "{\"server\":5,\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
+		wg.Add(2)
 		go func() {
-			wg.Add(1)
 			defer wg.Done()
 			iPerfcmd1 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[sendingNodeNumber].IP), "iperf3", fmt.Sprintf(node[sendingNodeNumber].IP), fmt.Sprintf(node[receivingNodeNumber].IP))
 			err = iPerfcmd1.Run()
@@ -75,7 +59,6 @@ Params: sending node, receiving node
 		}()
 
 		go func() {
-			wg.Add(1)
 			defer wg.Done()
 			iPerfcmd2 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[receivingNodeNumber].IP), "iperf3", fmt.Sprintf(node[receivingNodeNumber].IP), fmt.Sprintf(node[sendingNodeNumber].IP))
 			err := iPerfcmd2.Run()
