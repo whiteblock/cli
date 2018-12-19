@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -21,13 +18,8 @@ Geth will allow the user to get infromation and run geth commands.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		out, err := exec.Command("bash", "-c", "./whiteblock geth -h").Output()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("%s", out)
-		println("\nNo command given. Please choose a command from the list above.\n")
-		os.Exit(1)
+		cmd.Help()
+		return
 	},
 }
 
@@ -44,14 +36,9 @@ Response: The block number`,
 		param := ""
 		// fmt.Println(command, param)
 		if len(args) >= 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_block_number -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -73,14 +60,9 @@ Response: JSON Representation of the block.`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_block -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -99,14 +81,9 @@ Response: A JSON array of the accounts`,
 		param := ""
 		// fmt.Println(command)
 		if len(args) >= 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_accounts -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -128,14 +105,9 @@ Response: The integer balance of the account in wei`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_balance -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -157,14 +129,9 @@ Response: The transaction hash`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) <= 4 || len(args) > 5 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth send_transaction -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -186,14 +153,9 @@ Response: The transaction count`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 2 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction_count -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -215,14 +177,9 @@ Response: JSON representation of the transaction.`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -244,14 +201,9 @@ Response: JSON representation of the transaction receipt.`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_transaction_receipt -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -270,14 +222,9 @@ Response: The hash rate of a single node in the network`,
 		param := ""
 		// fmt.Println(command)
 		if len(args) >= 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_hash_rate -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -298,14 +245,9 @@ Params: The amount of transactions to send in a second, the value of each transa
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) <= 1 || len(args) > 3 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth start_transactions -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -322,14 +264,9 @@ Stops the sending of transactions if transactions are currently being sent`,
 		param := ""
 		// fmt.Println(command)
 		if len(args) >= 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth stop_transactions -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -390,14 +327,9 @@ Response: Will emit on eth::block_listener for every block after the given block
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) > 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth block_listener -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},
@@ -420,14 +352,9 @@ Response: JSON object of transaction data`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) > 1 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock geth get_recent_sent_tx -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 		wsEmitListen(serverAddr, command, param)
 	},

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"reflect"
 	"strconv"
 	"strings"
@@ -21,7 +20,7 @@ var (
 
 func writeFile(prevBuild string) {
 	cwd := os.Getenv("HOME")
-	_, err := exec.Command("bash", "-c", "mkdir -p "+cwd+"/.config/whiteblock/").Output()
+	err := os.MkdirAll(cwd+"/.config/whiteblock/", 0755)
 	if err != nil {
 		log.Fatalf("could not create directory: %s", err)
 	}
@@ -90,6 +89,8 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		buildArr := make([]string, 0)
 		paramArr := make([]string, 0)
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+
+		println(serverAddr)
 		bldcommand := "build"
 
 		buildOpt := [6]string{"servers (required server number)", "blockchain (default set to: ethereum)", "nodes (default set to: 10)", "image (default set to: ethereum:latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
@@ -177,6 +178,9 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		if stat == "" {
 			writeFile(param)
 		}
+
+		println(stat)
+		println(param)
 	},
 }
 
@@ -199,6 +203,8 @@ Build previous will recreate and deploy the previously built blockchain and spec
 		} else {
 			wsEmitListen(serverAddr, bldcommand, prevBuild)
 		}
+
+		println("building from previous configuration")
 	},
 }
 

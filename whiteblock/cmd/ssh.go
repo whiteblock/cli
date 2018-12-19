@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -31,14 +30,9 @@ Response: stdout of the command
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
 		if len(args) != 2 {
-			println("Invalid number of arguments given")
-			out, err := exec.Command("bash", "-c", "./whiteblock ssh -h").Output()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%s", out)
 			println("\nError: Invalid number of arguments given\n")
-			os.Exit(1)
+			cmd.Help()
+			return
 		}
 
 		dir = "Server" + args[0] + "-Node" + args[1] + ":"
