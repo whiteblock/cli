@@ -110,7 +110,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	if cmd == "log" {
 		err = c.On("log", func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
-				out = prettyp(args)
+				out = args
 			} else {
 				println(err.Error())
 			}
