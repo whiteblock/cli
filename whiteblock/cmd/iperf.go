@@ -51,57 +51,55 @@ Params: sending node, receiving node
 		param := "{\"server\":1,\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
-		iPerfcmd1 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[sendingNodeNumber].IP), "iperf3", "-s", fmt.Sprintf(node[sendingNodeNumber].IP), fmt.Sprintf(node[receivingNodeNumber].IP))
-
-		// iPerfcmd1 := exec.Command("bash", "-tc", "ssh -t -o \"StrictHostKeyChecking no\" root@10.2.0.2 iperf3 -s 10.2.0.2 10.2.0.6")
-		fmt.Println(iPerfcmd1)
+		// iPerfcmd1 := exec.Command("bash", "-tc", "ssh -t -o \"StrictHostKeyChecking no\" root@10.2.0.2 iperf3 -s 10.2.0.2")
+		// fmt.Println(iPerfcmd1)
 		// out, err := iPerfcmd1.CombinedOutput()
 		// writer := bufio.NewWriter(os.Stdout)
-		writer := bufio.NewWriterSize(os.Stdout, 20)
-		go func() {
-			for {
-				if writer.Available() == 10 {
-					writer.Flush()
-				}
-			}
-		}()
-		iPerfcmd1.Stdout = writer
-		err = iPerfcmd1.Start()
-		if err != nil {
-			panic(err)
-		}
-		err = iPerfcmd1.Wait()
-		if err != nil {
-			panic(err)
-		}
-
-		writer.Flush()
 
 		// if err != nil {
 		// 	log.Fatal(err)
 		// }
 		// fmt.Println(string(out))
 
-		// wg.Add(2)
-		// go func() {
-		// 	defer wg.Done()
-		// 	iPerfcmd1 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[sendingNodeNumber].IP), "iperf3", "-s", fmt.Sprintf(node[sendingNodeNumber].IP), fmt.Sprintf(node[receivingNodeNumber].IP))
-		// 	err = iPerfcmd1.Run()
-		// 	if err != nil {
-		// 		fmt.Println(err)
-		// 	}
-		// }()
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			iPerfcmd1 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[sendingNodeNumber].IP), "iperf3", "-s", fmt.Sprintf(node[sendingNodeNumber].IP))
+			err = iPerfcmd1.Run()
+			if err != nil {
+				fmt.Println(err)
+			}
 
-		// go func() {
-		// 	defer wg.Done()
-		// iPerfcmd2 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[receivingNodeNumber].IP), "iperf3", "-s", fmt.Sprintf(node[receivingNodeNumber].IP), fmt.Sprintf(node[sendingNodeNumber].IP))
-		// err := iPerfcmd2.Run()
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// 	println("ok")
+			writer := bufio.NewWriterSize(os.Stdout, 20)
+			go func() {
+				for {
+					if writer.Available() == 10 {
+						writer.Flush()
+					}
+				}
+			}()
+			iPerfcmd1.Stdout = writer
+			err = iPerfcmd1.Start()
+			if err != nil {
+				panic(err)
+			}
+			err = iPerfcmd1.Wait()
+			if err != nil {
+				panic(err)
+			}
+			writer.Flush()
+		}()
 
-		// }()
+		go func() {
+			defer wg.Done()
+			iPerfcmd2 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[receivingNodeNumber].IP), "iperf3", "-s", fmt.Sprintf(node[receivingNodeNumber].IP))
+			err := iPerfcmd2.Run()
+			if err != nil {
+				panic(err)
+			}
+			println("ok")
+
+		}()
 
 		wg.Wait()
 	},
