@@ -1,4 +1,1 @@
-{
-    "blockchain": "rchain",
-    "server": 5
-}
+{"blockchain":"rchain","server":[2,3]}
