@@ -12,13 +12,13 @@ import (
 )
 
 var scpCmd = &cobra.Command{
-	Use:   "scp <server number> <node number> <source> <destination>",
+	Use:   "scp <node number> <source> <destination>",
 	Short: "Scp will copy a file into the node.",
 	Long: `
 
 Scp will allow the user to copy a file and add it to a node.
-Format: <server number>, <node number>, <source>, <destination>
-Params: servern number, node number, file/dir source, file/dir destination
+Format: <node number>, <source>, <destination>
+Params: server number, node number, file/dir source, file/dir destination
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -40,7 +40,7 @@ Params: servern number, node number, file/dir source, file/dir destination
 		}
 
 		command2 := "exec"
-		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
+		param := "{\"server\":" + server + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
 		err = unix.Exec("/usr/bin/scp", []string{"scp", "-r", "-o", "StrictHostKeyChecking no", args[2], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[3]}, os.Environ())

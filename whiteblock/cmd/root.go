@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
 	homedir "github.com/mitchellh/go-homedir"
@@ -15,7 +16,7 @@ import (
 
 var (
 	blockchain string
-	server     int
+	server     string
 )
 
 type Iface struct {
@@ -64,7 +65,7 @@ func writeConfigFile(configFile string) {
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(prettyp(configFile))
+	_, err = file.WriteString(configFile)
 	if err != nil {
 		log.Fatalf("failed writing to file: %s", err)
 	}
@@ -101,7 +102,7 @@ func initConfig() {
 		configArr := make([]string, 0)
 		configOpt := [1]string{"blockchain"}
 
-		// idList := make([]string, 0)
+		idList := make([]string, 0)
 
 		scanner := bufio.NewScanner(os.Stdin)
 		tmp := 0
@@ -120,7 +121,6 @@ func initConfig() {
 				}
 				configArr = append(configArr, text)
 				tmp = i + 1
-				println(tmp)
 			}
 		}
 
@@ -137,16 +137,16 @@ func initConfig() {
 		serverID := 0
 		for _, v := range result {
 			serverID = v.ServerID
+			//move this and take out break statement if instance has multiple servers
+			idList = append(idList, fmt.Sprintf("%d", serverID))
 			break
-			// idList = append(idList, fmt.Sprintf("%d", serverID))
 		}
 
-		// idListJoin := strings.Join(idList, ",")
+		server = strings.Join(idList, ",")
 
 		blockchain := configArr[0]
-		param := "{\"blockchain\":\"" + blockchain + "\",\"server\":" + fmt.Sprintf("%d", serverID) + "}"
-		fmt.Println(serverID)
-		println(prettyp(param))
+		param := "{\"blockchain\":\"" + blockchain + "\",\"server\":\"" + fmt.Sprintf(server) + "\"}"
+		println(param)
 		writeConfigFile(param)
 
 		viper.ReadInConfig()
@@ -156,9 +156,9 @@ func initConfig() {
 	if !viper.IsSet("blockchain") {
 		blockchain = "ethereum"
 	}
-	server = viper.GetInt("server")
+	server = viper.GetString("server")
 	if !viper.IsSet("server") {
-		server = 1
+		server = "1"
 	}
 
 	viper.WatchConfig()

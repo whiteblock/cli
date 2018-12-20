@@ -91,8 +91,8 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		bldcommand := "build"
 
-		buildOpt := [6]string{"servers (default set to: " + fmt.Sprintf("%d", server) + ")", "blockchain (default set to: " + blockchain + ")", "nodes (default set to: 10)", "image (default set to: " + blockchain + ":latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
-		defOpt := [6]string{fmt.Sprintf("%d", server), blockchain, "10", "ethereum:latest", "", ""}
+		buildOpt := [6]string{"servers (default set to: " + server + ")", "blockchain (default set to: " + blockchain + ")", "nodes (default set to: 10)", "image (default set to: " + blockchain + ":latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
+		defOpt := [6]string{fmt.Sprintf(server), blockchain, "10", "ethereum:latest", "", ""}
 
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {
@@ -171,7 +171,7 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 			}
 		}
 
-		param := "{\"servers\":" + fmt.Sprintf("%s", server) + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+		param := "{\"servers\":" + server + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
 		stat := wsEmitListen(serverAddr, bldcommand, param)
 		if stat == "" {
 			writeFile(param)

@@ -12,7 +12,7 @@ import (
 )
 
 var pingCmd = &cobra.Command{
-	Use:   "ping <sending node> <receiving node> <server number> ",
+	Use:   "ping <sending node> <receiving node>",
 	Short: "Ping will send packets to a node.",
 	Long: `
 
@@ -44,7 +44,7 @@ Params: sending node, receiving node
 		}
 
 		command2 := "exec"
-		param := "{\"server\":" + args[2] + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
+		param := "{\"server\":" + server + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
 		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[sendingNodeNumber].IP), "ping", fmt.Sprintf(node[sendingNodeNumber].IP), fmt.Sprintf(node[receivingNodeNumber].IP)}, os.Environ())
