@@ -47,7 +47,7 @@ Params: sending node, receiving node
 		param := "{\"server\":" + args[2] + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[sendingNodeNumber].IP) + " ping " + fmt.Sprintf(node[sendingNodeNumber].IP) + " " + fmt.Sprintf(node[receivingNodeNumber].IP)}, os.Environ())
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[sendingNodeNumber].IP), "ping", fmt.Sprintf(node[sendingNodeNumber].IP), fmt.Sprintf(node[receivingNodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
 	},
 }

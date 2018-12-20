@@ -3,7 +3,6 @@ package cmd
 import (
 	"log"
 	"os"
-	"os/user"
 	"strings"
 	"time"
 
@@ -152,115 +151,115 @@ Response: The params as a list of key value params, of name and type respectivel
 	},
 }
 
-var getDataCmd = &cobra.Command{
-	Use:   "data <command>",
-	Short: "Data will pull data from the network and output into a file.",
-	Long: `
-Data will pull specific or all block data from the network and output into a file. You will specify the directory where the file will be downloaded.
+// var getDataCmd = &cobra.Command{
+// 	Use:   "data <command>",
+// 	Short: "Data will pull data from the network and output into a file.",
+// 	Long: `
+// Data will pull specific or all block data from the network and output into a file. You will specify the directory where the file will be downloaded.
 
-	`,
+// 	`,
 
-	Run: func(cmd *cobra.Command, args []string) {
-		println("\nNo command given. Please choose a command from the list above.\n")
-		cmd.Help()
-		return
-	},
-}
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		println("\nNo command given. Please choose a command from the list above.\n")
+// 		cmd.Help()
+// 		return
+// 	},
+// }
 
-var dataByTimeCmd = &cobra.Command{
-	Use:   "time <start time> <end time> [path]",
-	Short: "Data time will pull data from the network and output into a file.",
-	Long: `
-Data time will pull block data from the network from a given start and end time and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
+// var dataByTimeCmd = &cobra.Command{
+// 	Use:   "time <start time> <end time> [path]",
+// 	Short: "Data time will pull data from the network and output into a file.",
+// 	Long: `
+// Data time will pull block data from the network from a given start and end time and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
 
-Params: Unix time stamps
-Format: <start unix time stamp> <end unix time stamp>
+// Params: Unix time stamps
+// Format: <start unix time stamp> <end unix time stamp>
 
-	`,
+// 	`,
 
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 || len(args) > 3 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		} else if len(args) == 2 {
-			usr, err := user.Current()
-			if err != nil {
-				log.Fatal(err)
-			}
-			args = append(args, usr.HomeDir+"/Downloads/")
-		}
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		if len(args) < 2 || len(args) > 3 {
+// 			println("\nError: Invalid number of arguments given\n")
+// 			cmd.Help()
+// 			return
+// 		} else if len(args) == 2 {
+// 			usr, err := user.Current()
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			args = append(args, usr.HomeDir+"/Downloads/")
+// 		}
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "stats"
-		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
-		data := wsEmitListen(serverAddr, command, param)
+// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+// 		command := "stats"
+// 		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
+// 		data := wsEmitListen(serverAddr, command, param)
 
-		cwFile(args[2], data)
-	},
-}
+// 		cwFile(args[2], data)
+// 	},
+// }
 
-var dataByBlockCmd = &cobra.Command{
-	Use:   "block <start block> <end block> [path]",
-	Short: "Data block will pull data from the network and output into a file.",
-	Long: `
-Data block will pull block data from the network from a given start and end block and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
+// var dataByBlockCmd = &cobra.Command{
+// 	Use:   "block <start block> <end block> [path]",
+// 	Short: "Data block will pull data from the network and output into a file.",
+// 	Long: `
+// Data block will pull block data from the network from a given start and end block and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
 
-Params: Unix time stamps
-Format: <start unix time stamp> <end unix time stamp>
+// Params: Unix time stamps
+// Format: <start unix time stamp> <end unix time stamp>
 
-	`,
+// 	`,
 
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 || len(args) > 3 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		} else if len(args) == 2 {
-			usr, err := user.Current()
-			if err != nil {
-				log.Fatal(err)
-			}
-			args = append(args, usr.HomeDir+"/Downloads/")
-		}
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		if len(args) < 2 || len(args) > 3 {
+// 			println("\nError: Invalid number of arguments given\n")
+// 			cmd.Help()
+// 			return
+// 		} else if len(args) == 2 {
+// 			usr, err := user.Current()
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			args = append(args, usr.HomeDir+"/Downloads/")
+// 		}
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "stats"
-		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
-		data := wsEmitListen(serverAddr, command, param)
+// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+// 		command := "stats"
+// 		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
+// 		data := wsEmitListen(serverAddr, command, param)
 
-		cwFile(args[2], data)
-	},
-}
+// 		cwFile(args[2], data)
+// 	},
+// }
 
-var dataAllCmd = &cobra.Command{
-	Use:   "all [path]",
-	Short: "All will pull data from the network and output into a file.",
-	Long: `
-Data all will pull all data from the network and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
+// var dataAllCmd = &cobra.Command{
+// 	Use:   "all [path]",
+// 	Short: "All will pull data from the network and output into a file.",
+// 	Long: `
+// Data all will pull all data from the network and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
 
-	`,
+// 	`,
 
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		} else if len(args) == 0 {
-			usr, err := user.Current()
-			if err != nil {
-				log.Fatal(err)
-			}
-			args = append(args, usr.HomeDir+"/Downloads/")
-		}
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		if len(args) > 1 {
+// 			println("\nError: Invalid number of arguments given\n")
+// 			cmd.Help()
+// 			return
+// 		} else if len(args) == 0 {
+// 			usr, err := user.Current()
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			args = append(args, usr.HomeDir+"/Downloads/")
+// 		}
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "all_stats"
-		data := wsEmitListen(serverAddr, command, "")
+// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+// 		command := "all_stats"
+// 		data := wsEmitListen(serverAddr, command, "")
 
-		cwFile(args[0], data)
-	},
-}
+// 		cwFile(args[0], data)
+// 	},
+// }
 
 var getStatsCmd = &cobra.Command{
 	Use:   "stats <command>",
@@ -354,18 +353,18 @@ func init() {
 	getServerCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	getNodesCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	getDataCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	dataByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	dataByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	dataAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	// getDataCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	// dataByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	// dataByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	// dataAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	getStatsCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getDataCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
-	getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
+	// getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsAllCmd)
 
 	RootCmd.AddCommand(getCmd)
