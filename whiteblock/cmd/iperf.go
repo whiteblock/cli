@@ -15,7 +15,7 @@ var iPerfCmd = &cobra.Command{
 	Short: "iperf will show network conditions.",
 	Long: `
 
-Iperf will show the user network conditions and other data.
+Iperf will show the user network conditions and other data. This command will establish the sending node as a server and the receiving node as a client node. They will send packets and at the end of the test, the output will give bandwidth, transfer size, and other relevant
 
 Format: <sending node> <receiving node>
 Params: sending node, receiving node
@@ -52,30 +52,6 @@ Params: sending node, receiving node
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
-			// iPerfcmd1 := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "root@"+fmt.Sprintf(node[sendingNodeNumber].IP), "iperf3", "-s", fmt.Sprintf(node[sendingNodeNumber].IP))
-			// err = iPerfcmd1.Run()
-			// if err != nil {
-			// 	fmt.Println(err)
-			// }
-
-			// writer := bufio.NewWriterSize(os.Stdout, 20)
-			// go func() {
-			// 	for {
-			// 		if writer.Available() == 10 {
-			// 			writer.Flush()
-			// 		}
-			// 	}
-			// }()
-			// iPerfcmd1.Stdout = writer
-			// err = iPerfcmd1.Start()
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// err = iPerfcmd1.Wait()
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// writer.Flush()
 
 			iPerfcmd := "iperf3 -s " + fmt.Sprintf(node[sendingNodeNumber].IP) + " -1"
 
@@ -106,6 +82,7 @@ Params: sending node, receiving node
 				fmt.Println(result)
 				panic(err)
 			}
+			fmt.Println(result)
 		}()
 
 		wg.Wait()
