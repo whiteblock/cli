@@ -62,6 +62,16 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		})
 	}
 
+	// eos commands
+	if strings.HasPrefix(cmd, "eos::") {
+		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				out = args
+				mutex.Unlock()
+			}
+		})
+	}
+
 	// get_defaults
 	if cmd == "get_defaults" {
 		err = c.On("get_defaults", func(h *gosocketio.Channel, args string) {
@@ -81,7 +91,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	// get servers
 	if cmd == "get_servers" {
 		err = c.On("get_servers", func(h *gosocketio.Channel, args string) {
-			out = prettyp(args)
+			out = (args)
 			mutex.Unlock()
 		})
 	}

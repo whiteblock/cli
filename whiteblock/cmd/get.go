@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -97,19 +98,18 @@ Response: true or false, on whether or not a test is running; The name of the te
 }
 
 var getLogCmd = &cobra.Command{
-	Use:   "log <server id> <node number",
+	Use:   "log <node number>",
 	Short: "Log will dump data pertaining to the node.",
 	Long: `
 Get stdout and stderr from a node.
 
-Params: Server number and node number
-Format: {"server":<server id>,"node":<node number>}
+Params: node number
 
 Response: stdout and stderr of the blockchain process
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
+		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
@@ -117,12 +117,8 @@ Response: stdout and stderr of the blockchain process
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "log"
-		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + "}"
+		param := "{\"server\":" + fmt.Sprintf("%d", server) + ",\"node\":" + args[0] + "}"
 		println(wsEmitListen(serverAddr, command, param))
-		// println(serverAddr)
-		// println(command)
-		// println(param)
-
 	},
 }
 
@@ -132,8 +128,8 @@ var getNetworkDefaultsCmd = &cobra.Command{
 	Long: `
 Get the blockchain specific parameters for a deployed blockchain.
 
-Params: The blockchain to get the build params of
-Format: <blockchain>
+Params: <blockchain>
+Format: The blockchain to get the build params of
 
 Response: The params as a list of key value params, of name and type respectively
 	`,

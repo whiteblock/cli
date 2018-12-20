@@ -89,12 +89,10 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		buildArr := make([]string, 0)
 		paramArr := make([]string, 0)
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-		println(serverAddr)
 		bldcommand := "build"
 
-		buildOpt := [6]string{"servers (required server number)", "blockchain (default set to: ethereum)", "nodes (default set to: 10)", "image (default set to: ethereum:latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
-		defOpt := [6]string{"[]", "ethereum", "10", "ethereum:latest", "", ""}
+		buildOpt := [6]string{"servers (default set to: " + fmt.Sprintf("%d", server) + ")", "blockchain (default set to: " + blockchain + ")", "nodes (default set to: 10)", "image (default set to: " + blockchain + ":latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
+		defOpt := [6]string{fmt.Sprintf("%d", server), blockchain, "10", "ethereum:latest", "", ""}
 
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {

@@ -21,7 +21,7 @@ type Node []struct {
 }
 
 var sshCmd = &cobra.Command{
-	Use:   "ssh <server> <node>",
+	Use:   "ssh <node>",
 	Short: "SSH into an existing container.",
 	Long: `
 SSH will allow the user to go into the contianer where the specified node exists.
@@ -29,7 +29,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) != 2 {
+		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
@@ -46,7 +46,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 		}
 
 		command2 := "exec"
-		param := "{\"server\":" + args[0] + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
+		param := "{\"server\":" + fmt.Sprintf("%d", server) + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
 		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
