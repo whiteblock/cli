@@ -11,7 +11,7 @@ import (
 )
 
 var iPerfCmd = &cobra.Command{
-	Use:   "iperf <sending node> <receiving node>",
+	Use:   "iperf <sending node> <receiving node> <server number>",
 	Short: "iperf will show network conditions.",
 	Long: `
 
@@ -24,7 +24,7 @@ Params: sending node, receiving node
 	Run: func(cmd *cobra.Command, args []string) {
 		var wg sync.WaitGroup
 
-		if len(args) != 2 {
+		if len(args) != 3 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
@@ -45,9 +45,11 @@ Params: sending node, receiving node
 			panic(err)
 		}
 
-		command2 := "exec"
-		param := "{\"server\":1,\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
-		wsEmitListen(serverAddr, command2, param)
+		for i := 0; i < 2; i++ {
+			command2 := "exec"
+			param := "{\"server\":5,\"node\":" + args[i] + ",\"command\":\"service ssh start\"}"
+			wsEmitListen(serverAddr, command2, param)
+		}
 
 		wg.Add(2)
 		go func() {
@@ -69,7 +71,7 @@ Params: sending node, receiving node
 		}()
 
 		go func() {
-			time.Sleep(3 * time.Second)
+			time.Sleep(5 * time.Second)
 			defer wg.Done()
 			iPerfcmd := "iperf3 -c " + fmt.Sprintf(node[sendingNodeNumber].IP)
 
