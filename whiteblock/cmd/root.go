@@ -97,8 +97,8 @@ func initConfig() {
 	viper.SetConfigName("config")
 
 	if err := viper.ReadInConfig(); err != nil {
-		println("No config file could be found. Please follow the steps to create one.")
-		fmt.Println(err)
+		println("No existing config file was found. Your responses to the following prompts will be used to generate one. Consecutive builds will default to the provided values. To reset the configuration file, run `whiteblock reset-conf`.")
+
 		configArr := make([]string, 0)
 		configOpt := [1]string{"blockchain"}
 
@@ -167,4 +167,6 @@ func initConfig() {
 	})
 
 	viper.AutomaticEnv()
+
+	// fmt.Printf("Using existing config file: %s\n", viper.ConfigFileUsed())
 }
