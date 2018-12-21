@@ -172,12 +172,10 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		}
 
 		param := "{\"servers\":" + server + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
-		// stat := wsEmitListen(serverAddr, bldcommand, param)
-		// if stat == "" {
-		// 	writeFile(param)
-		// }
-		println(param)
-		println(bldcommand)
+		stat := wsEmitListen(serverAddr, bldcommand, param)
+		if stat == "" {
+			writeFile(param)
+		}
 	},
 }
 
