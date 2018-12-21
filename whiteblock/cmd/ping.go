@@ -23,7 +23,7 @@ Params: sending node, receiving node
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) != 3 {
+		if len(args) != 2 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
