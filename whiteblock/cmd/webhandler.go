@@ -46,7 +46,6 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			println(err.Error())
 			os.Exit(1)
 		}
-		fmt.Println("Preparing to build: " + blockchain)
 		err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 			var status BuildStatus
 			json.Unmarshal([]byte(args), &status)
