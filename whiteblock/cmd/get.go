@@ -52,7 +52,7 @@ Server will ouput server information.
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "get_servers"
 
-		println(wsEmitListen(serverAddr, command, ""))
+		println(prettyp(wsEmitListen(serverAddr, command, "")))
 	},
 }
 
