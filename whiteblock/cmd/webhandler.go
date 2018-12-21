@@ -13,8 +13,8 @@ import (
 )
 
 type BuildStatus struct {
-	Error    error   `json:"error"`
-	Progress float64 `json:"progress"`
+	Error    map[string]string `json:"error"`
+	Progress float64           `json:"progress"`
 }
 
 func wsEmitListen(wsaddr, cmd, param string) string {
@@ -42,23 +42,25 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 				os.Exit(1)
 			}
 		})
-
 		if err != nil {
 			println(err.Error())
 			os.Exit(1)
 		}
-
+		fmt.Println("Preparing to build: " + blockchain)
 		err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 			var status BuildStatus
 			json.Unmarshal([]byte(args), &status)
-			fmt.Printf("Building: %f \t\t\t\t\r", status.Progress)
 			if status.Error != nil {
-				fmt.Println(status.Error.Error())
+				what := status.Error["what"]
+				fmt.Println("\n" + what)
 				mutex.Unlock()
+				return
 			} else if status.Progress == 100.0 {
 				fmt.Println("\nDone")
 				mutex.Unlock()
+				return
 			}
+			fmt.Printf("Building: %f \t\t\t\t\r", status.Progress)
 		})
 	}
 
