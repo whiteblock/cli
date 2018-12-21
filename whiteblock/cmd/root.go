@@ -136,7 +136,7 @@ func initConfig() {
 
 		serverID := 0
 		for _, v := range result {
-			serverID = v.ServerID
+			serverID = v.Id
 			//move this and take out break statement if instance has multiple servers
 			idList = append(idList, fmt.Sprintf("%d", serverID))
 			break
