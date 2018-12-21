@@ -23,7 +23,7 @@ Params: server number, node number, file/dir source, file/dir destination
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) != 4 {
+		if len(args) != 3 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
