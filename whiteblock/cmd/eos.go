@@ -117,7 +117,7 @@ var eosConstTpsCmd = &cobra.Command{
 	Use:   "run_constant_tps <tps>",
 	Short: "Send continuous transactions",
 	Long: `
-This command will have all nodes send continous transactions at a constant rate..
+This command will have all nodes send continous transactions at a constant rate.
 
 Params: number to transactions per second
 Format: <tps>
@@ -141,7 +141,7 @@ var eosGetBlockNumCmd = &cobra.Command{
 	Use:   "get_block_number [node]",
 	Short: "Send continuous transactions",
 	Long: `
-This command will have all nodes send continous transactions at a constant rate..
+This command will get the block number.
 
 Params: The node to get it from, default is 0
 Format: [node]
