@@ -123,7 +123,7 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		scanner.Scan()
 		ask := scanner.Text()
 
-		if ask == "y" {
+		if ask != "n" {
 		} else {
 			getParamCommand := "get_params"
 			bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
@@ -172,10 +172,12 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 		}
 
 		param := "{\"servers\":" + server + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
-		stat := wsEmitListen(serverAddr, bldcommand, param)
-		if stat == "" {
-			writeFile(param)
-		}
+		// stat := wsEmitListen(serverAddr, bldcommand, param)
+		// if stat == "" {
+		// 	writeFile(param)
+		// }
+		println(param)
+		println(bldcommand)
 	},
 }
 
