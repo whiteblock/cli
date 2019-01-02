@@ -196,10 +196,19 @@ Build previous will recreate and deploy the previously built blockchain and spec
 		if len(prevBuild) == 0 {
 			println("No previous build. Use build command to deploy a blockchain.")
 		} else {
-			wsEmitListen(serverAddr, bldcommand, prevBuild)
+			println(prevBuild)
+			print("Build from previous? (y/n) ")
+			scanner := bufio.NewScanner(os.Stdin)
+			ask := scanner.Text()
+			scanner.Scan()
+			if ask != "n" {
+				println("building from previous configuration")
+				wsEmitListen(serverAddr, bldcommand, prevBuild)
+			} else {
+				println("Build cancelled.")
+			}
 		}
 
-		println("building from previous configuration")
 	},
 }
 
