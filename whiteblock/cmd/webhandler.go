@@ -49,17 +49,15 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 			var status BuildStatus
 			json.Unmarshal([]byte(args), &status)
+			fmt.Printf("Building: %f \t\t\t\t\r", status.Progress)
 			if status.Error != nil {
 				what := status.Error["what"]
 				fmt.Println("\n" + what)
 				mutex.Unlock()
-				return
 			} else if status.Progress == 100.0 {
 				fmt.Println("\nDone")
 				mutex.Unlock()
-				return
 			}
-			fmt.Printf("Building: %f \t\t\t\t\r", status.Progress)
 		})
 	}
 
