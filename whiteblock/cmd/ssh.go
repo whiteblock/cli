@@ -40,7 +40,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
 		var node Node
 		json.Unmarshal(out1, &node)
-		nodeNumber, err := strconv.Atoi(args[1])
+		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
 			panic(err)
 		}
