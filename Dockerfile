@@ -1,6 +1,6 @@
 FROM golang:1.11.3-stretch
 
-ADD . /cli/whiteblock
+ADD . /cli
 
 RUN cd /cli/whiteblock &&\
     go get || \
