@@ -2,7 +2,7 @@
 # https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
 substitutions:
   _IMAGE: 'gcr.io/wb-genesis/bitbucket.org/whiteblockio/cli'
-timeout: '300s'
+timeout: '45m'
 steps:
 # allow these steps to fail, they try to pull cache first
 - name: 'gcr.io/cloud-builders/docker'
