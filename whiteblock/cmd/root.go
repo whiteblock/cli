@@ -149,6 +149,11 @@ func initConfig() {
 		println(param)
 		writeConfigFile(param)
 
+		println("************************************")
+		println("*** Configuration has been set *****")
+		println("*** Default values are now set *****")
+		println("************************************")
+
 		viper.ReadInConfig()
 	}
 
