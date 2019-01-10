@@ -86,96 +86,109 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildArr := make([]string, 0)
-		paramArr := make([]string, 0)
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		bldcommand := "build"
 
-		buildOpt := [6]string{"servers (default set to: " + server + ")", "blockchain (default set to: " + blockchain + ")", "nodes (default set to: 10)", "image (default set to: " + blockchain + ":latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
-		defOpt := [6]string{fmt.Sprintf(server), blockchain, "10", blockchain + ":latest", "", ""}
+		if len(args) == 0 {
+			buildArr := make([]string, 0)
+			paramArr := make([]string, 0)
+			serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+			bldcommand := "build"
 
-		scanner := bufio.NewScanner(os.Stdin)
-		for i := 0; i < len(buildOpt); i++ {
-			fmt.Print(buildOpt[i] + ": ")
-			scanner.Scan()
-
-			text := scanner.Text()
-			if len(text) != 0 {
-				buildArr = append(buildArr, text)
-			} else {
-				buildArr = append(buildArr, defOpt[i])
-			}
-		}
-
-		if buildArr[0] == "[]" {
-			println("Invalid server. Please specify a server; none was given.")
-			os.Exit(2)
-		}
-
-		server := "[" + buildArr[0] + "]"
-		blockchain := buildArr[1]
-		nodes := buildArr[2]
-		image := buildArr[3]
-		cpu := buildArr[4]
-		memory := buildArr[5]
-
-		fmt.Print("Use default parameters? (y/n) ")
-		scanner.Scan()
-		ask := scanner.Text()
-
-		if ask != "n" {
-		} else {
-			getParamCommand := "get_params"
-			bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
-			var paramlist []map[string]string
-
-			json.Unmarshal(bcparam, &paramlist)
+			buildOpt := [6]string{"servers (default set to: " + server + ")", "blockchain (default set to: " + blockchain + ")", "nodes (default set to: 10)", "image (default set to: " + blockchain + ":latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
+			defOpt := [6]string{fmt.Sprintf(server), blockchain, "10", blockchain + ":latest", "", ""}
 
 			scanner := bufio.NewScanner(os.Stdin)
+			for i := 0; i < len(buildOpt); i++ {
+				fmt.Print(buildOpt[i] + ": ")
+				scanner.Scan()
 
-			for i := 0; i < len(paramlist); i++ {
-				for key, value := range paramlist[i] {
-					fmt.Print(key, " ("+value+"): ")
-					scanner.Scan()
-					text := scanner.Text()
-					if value == "string" {
-						if len(text) != 0 {
-							if fmt.Sprint(reflect.TypeOf(text)) != "string" {
-								println("bad type")
-								os.Exit(2)
+				text := scanner.Text()
+				if len(text) != 0 {
+					buildArr = append(buildArr, text)
+				} else {
+					buildArr = append(buildArr, defOpt[i])
+				}
+			}
+
+			if buildArr[0] == "[]" {
+				println("Invalid server. Please specify a server; none was given.")
+				os.Exit(2)
+			}
+
+			server := "[" + buildArr[0] + "]"
+			blockchain := buildArr[1]
+			nodes := buildArr[2]
+			image := buildArr[3]
+			cpu := buildArr[4]
+			memory := buildArr[5]
+
+			fmt.Print("Use default parameters? (y/n) ")
+			scanner.Scan()
+			ask := scanner.Text()
+
+			if ask != "n" {
+			} else {
+				getParamCommand := "get_params"
+				bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
+				var paramlist []map[string]string
+
+				json.Unmarshal(bcparam, &paramlist)
+
+				scanner := bufio.NewScanner(os.Stdin)
+
+				for i := 0; i < len(paramlist); i++ {
+					for key, value := range paramlist[i] {
+						fmt.Print(key, " ("+value+"): ")
+						scanner.Scan()
+						text := scanner.Text()
+						if value == "string" {
+							if len(text) != 0 {
+								if fmt.Sprint(reflect.TypeOf(text)) != "string" {
+									println("bad type")
+									os.Exit(2)
+								}
+								paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
+							} else {
+								continue
 							}
-							paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
-						} else {
-							continue
-						}
-					} else if value == "[]string" {
-						if len(text) != 0 {
-							tmp := strings.Replace(text, " ", ",", -1)
-							paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
-						} else {
-							continue
-						}
-					} else if value == "int" {
-						if len(text) != 0 {
-							_, err := strconv.Atoi(text)
-							if err != nil {
-								println("bad type")
-								os.Exit(2)
+						} else if value == "[]string" {
+							if len(text) != 0 {
+								tmp := strings.Replace(text, " ", ",", -1)
+								paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
+							} else {
+								continue
 							}
-							paramArr = append(paramArr, "\""+key+"\""+": "+text)
-						} else {
-							continue
+						} else if value == "int" {
+							if len(text) != 0 {
+								_, err := strconv.Atoi(text)
+								if err != nil {
+									println("bad type")
+									os.Exit(2)
+								}
+								paramArr = append(paramArr, "\""+key+"\""+": "+text)
+							} else {
+								continue
+							}
 						}
 					}
 				}
 			}
+
+			param := "{\"servers\":" + server + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+			stat := wsEmitListen(serverAddr, bldcommand, param)
+			if stat == "" {
+				writeFile(param)
+			}
+		} else {
+			// param := "{\"servers\":" + args[0] + ",\"blockchain\":\"" + args[1] + "\",\"nodes\":" + args[2] + ",\"image\":\"" + args[3] + "\",\"resources\":{\"cpus\":\"" + args[4] + "\",\"memory\":\"" + args[5] + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+			// stat := wsEmitListen(serverAddr, bldcommand, param)
+			// if stat == "" {
+			// 	writeFile(param)
+			// }
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
 		}
 
-		param := "{\"servers\":" + server + ",\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
-		stat := wsEmitListen(serverAddr, bldcommand, param)
-		if stat == "" {
-			writeFile(param)
-		}
 	},
 }
 

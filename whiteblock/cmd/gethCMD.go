@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -242,13 +243,19 @@ Params: The amount of transactions to send in a second, the value of each transa
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::start_transactions"
-		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) <= 1 || len(args) > 3 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+		weiToInt, err := strconv.Atoi(args[1])
+		weiToEth := weiToInt * 1000000000000000000
+		args[1] = strconv.Itoa(weiToEth)
+		if err != nil {
+			panic(err)
+		}
+		param := strings.Join(args[:], " ")
 		wsEmitListen(serverAddr, command, param)
 	},
 }
