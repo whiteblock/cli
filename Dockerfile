@@ -1,5 +1,7 @@
 FROM ubuntu:latest
 
+ENV DEBIAN_FRONTEND noninteractive
+
 RUN apt-get update && \
     apt-get install -y vim apt-utils iputils-ping expect git git-extras software-properties-common tmux \
     inetutils-tools wget ca-certificates curl build-essential libssl-dev golang-go 
