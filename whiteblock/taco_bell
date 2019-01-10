@@ -1,0 +1,13 @@
+COUNTER=75
+while [  $COUNTER -le 500 ]; do
+./whiteblock build previous
+
+sleep 10
+
+telnet 127.0.0.1 7070 <<EOF
+eos::run_constant_tps $COUNTER
+EOF
+
+sleep 600
+let COUNTER=COUNTER+25
+done   
