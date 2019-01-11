@@ -10,12 +10,12 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
 	"github.com/spf13/cobra"
 )
 
 var (
-	serverAddr string
+	serverAddr 		string
+	serversEnabled	bool
 )
 
 func writeFile(prevBuild string) {
@@ -60,116 +60,130 @@ var buildCmd = &cobra.Command{
 	Use:     "build",
 	Aliases: []string{"init", "create"},
 	Short:   "Build a blockchain using image and deploy nodes",
-	Long: `
-Build will create and deploy a blockchain and the specified number of nodes. Each node will be instantiated in its own container and will interact individually as a participant of the specified network.
-	`,
+	Long: "Build will create and deploy a blockchain and the specified number of nodes."+
+		  " Each node will be instantiated in its own container and will interact"+
+		  " individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
+		
+		if len(args) != 0 {
+			fmt.Println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+		
+		buildArr := make([]string, 0)
+		paramArr := make([]string, 0)
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		bldcommand := "build"
 
-		if len(args) == 0 {
-			buildArr := make([]string, 0)
-			paramArr := make([]string, 0)
-			serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-			bldcommand := "build"
+		buildOpt := []string{"blockchain (" + blockchain + ")", "nodes (10)", "docker image (" + blockchain + ":latest)", 
+								"cpus (empty for no limit)", "memory (empty for no limit)"}
 
-			// buildOpt := [6]string{"servers (default set to: " + server + ")", "blockchain (default set to: " + blockchain + ")", "nodes (default set to: 10)", "image (default set to: " + blockchain + ":latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
-			// defOpt := [6]string{fmt.Sprintf(server), blockchain, "10", blockchain + ":latest", "", ""}
+		defOpt := []string{blockchain, "10", blockchain + ":latest", "", ""}
 
-			buildOpt := [5]string{"blockchain (default set to: " + blockchain + ")", "nodes (default set to: 10)", "image (default set to: " + blockchain + ":latest)", "cpus (default set to: no limit)", "memory (default set to: no limit)"}
-			defOpt := [5]string{blockchain, "10", blockchain + ":latest", "", ""}
+		if(serversEnabled){
+			buildOpt = []string{"servers (" + server + ")", "blockchain (" + blockchain + ")", "nodes (10)", "docker image (" + blockchain + ":latest)", 
+									"cpus (empty for no limit)", "memory (empty for no limit)"}
+			defOpt = []string{fmt.Sprintf(server), blockchain, "10", blockchain + ":latest", "", ""}
+		}
+		
+
+		
+
+		scanner := bufio.NewScanner(os.Stdin)
+		for i := 0; i < len(buildOpt); i++ {
+			fmt.Print(buildOpt[i] + ": ")
+			scanner.Scan()
+
+			text := scanner.Text()
+			if len(text) != 0 {
+				buildArr = append(buildArr, text)
+			} else {
+				buildArr = append(buildArr, defOpt[i])
+			}
+		}
+
+		if buildArr[0] == "[]" {
+			fmt.Println("Invalid server. Please specify a server; none was given.")
+			os.Exit(2)
+		}
+		
+		var offset = 0
+		if(serversEnabled){
+			server = buildArr[offset]
+			offset++
+		}
+		blockchain := buildArr[offset]
+		offset++
+		nodes := buildArr[offset]
+		offset++
+		image := buildArr[offset]
+		offset++
+		cpu := buildArr[offset]
+		offset++
+		memory := buildArr[offset]
+		offset++
+
+		fmt.Print("Use default parameters? (y/n) ")
+		scanner.Scan()
+		ask := scanner.Text()
+
+		if ask != "n" {
+		} else {
+			getParamCommand := "get_params"
+			bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
+			var paramlist []map[string]string
+
+			json.Unmarshal(bcparam, &paramlist)
 
 			scanner := bufio.NewScanner(os.Stdin)
-			for i := 0; i < len(buildOpt); i++ {
-				fmt.Print(buildOpt[i] + ": ")
-				scanner.Scan()
 
-				text := scanner.Text()
-				if len(text) != 0 {
-					buildArr = append(buildArr, text)
-				} else {
-					buildArr = append(buildArr, defOpt[i])
-				}
-			}
-
-			if buildArr[0] == "[]" {
-				println("Invalid server. Please specify a server; none was given.")
-				os.Exit(2)
-			}
-
-			// server := "[" + buildArr[0] + "]"
-			blockchain := buildArr[0]
-			nodes := buildArr[1]
-			image := buildArr[2]
-			cpu := buildArr[3]
-			memory := buildArr[4]
-
-			fmt.Print("Use default parameters? (y/n) ")
-			scanner.Scan()
-			ask := scanner.Text()
-
-			if ask != "n" {
-			} else {
-				getParamCommand := "get_params"
-				bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
-				var paramlist []map[string]string
-
-				json.Unmarshal(bcparam, &paramlist)
-
-				scanner := bufio.NewScanner(os.Stdin)
-
-				for i := 0; i < len(paramlist); i++ {
-					for key, value := range paramlist[i] {
-						fmt.Print(key, " ("+value+"): ")
-						scanner.Scan()
-						text := scanner.Text()
-						if value == "string" {
-							if len(text) != 0 {
-								if fmt.Sprint(reflect.TypeOf(text)) != "string" {
-									println("bad type")
-									os.Exit(2)
-								}
-								paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
-							} else {
-								continue
+			for i := 0; i < len(paramlist); i++ {
+				for key, value := range paramlist[i] {
+					fmt.Print(key, " ("+value+"): ")
+					scanner.Scan()
+					text := scanner.Text()
+					if value == "string" {
+						if len(text) != 0 {
+							if fmt.Sprint(reflect.TypeOf(text)) != "string" {
+								fmt.Println("bad type")
+								os.Exit(2)
 							}
-						} else if value == "[]string" {
-							if len(text) != 0 {
-								tmp := strings.Replace(text, " ", ",", -1)
-								paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
-							} else {
-								continue
+							paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
+						} else {
+							continue
+						}
+					} else if value == "[]string" {
+						if len(text) != 0 {
+							tmp := strings.Replace(text, " ", ",", -1)
+							paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
+						} else {
+							continue
+						}
+					} else if value == "int" {
+						if len(text) != 0 {
+							_, err := strconv.Atoi(text)
+							if err != nil {
+								fmt.Println("bad type")
+								os.Exit(2)
 							}
-						} else if value == "int" {
-							if len(text) != 0 {
-								_, err := strconv.Atoi(text)
-								if err != nil {
-									println("bad type")
-									os.Exit(2)
-								}
-								paramArr = append(paramArr, "\""+key+"\""+": "+text)
-							} else {
-								continue
-							}
+							paramArr = append(paramArr, "\""+key+"\""+": "+text)
+						} else {
+							continue
 						}
 					}
 				}
 			}
-
-			param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
-			stat := wsEmitListen(serverAddr, bldcommand, param)
-			if stat == "" {
-				writeFile(param)
-			}
-		} else {
-			// param := "{\"servers\":" + args[0] + ",\"blockchain\":\"" + args[1] + "\",\"nodes\":" + args[2] + ",\"image\":\"" + args[3] + "\",\"resources\":{\"cpus\":\"" + args[4] + "\",\"memory\":\"" + args[5] + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
-			// stat := wsEmitListen(serverAddr, bldcommand, param)
-			// if stat == "" {
-			// 	writeFile(param)
-			// }
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
 		}
+
+		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + 
+				 	"\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+		stat := wsEmitListen(serverAddr, bldcommand, param)
+		if stat == "" {
+			writeFile(param)
+		}
+		
 
 	},
 }
@@ -189,18 +203,18 @@ Build previous will recreate and deploy the previously built blockchain and spec
 		prevBuild, _ := readFile()
 
 		if len(prevBuild) == 0 {
-			println("No previous build. Use build command to deploy a blockchain.")
+			fmt.Println("No previous build. Use build command to deploy a blockchain.")
 		} else {
-			println(prevBuild)
+			fmt.Println(prevBuild)
 			print("Build from previous? (y/n) ")
 			scanner := bufio.NewScanner(os.Stdin)
 			ask := scanner.Text()
 			scanner.Scan()
 			if ask != "n" {
-				println("building from previous configuration")
+				fmt.Println("building from previous configuration")
 				wsEmitListen(serverAddr, bldcommand, prevBuild)
 			} else {
-				println("Build cancelled.")
+				fmt.Println("Build cancelled.")
 			}
 		}
 
@@ -209,7 +223,8 @@ Build previous will recreate and deploy the previously built blockchain and spec
 
 func init() {
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
+	buildCmd.Flags().BoolVarP(&serversEnabled,"servers","s",false,"display server options")
+	
 	buildCmd.AddCommand(previousCmd)
 	RootCmd.AddCommand(buildCmd)
 }
