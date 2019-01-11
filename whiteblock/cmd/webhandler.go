@@ -65,7 +65,8 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	if strings.HasPrefix(cmd, "eos::") {
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
-				out = args
+				// out = args
+				println(args)
 				mutex.Unlock()
 			}
 		})
