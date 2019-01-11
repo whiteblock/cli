@@ -1,22 +1,19 @@
 package cmd
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
-	"log"
 	"os"
-	"strings"
 
-	"github.com/fsnotify/fsnotify"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
 	blockchain string
 	server     string
+	nodes      int
+	image      string
+	cpus       int
+	memory     int
 )
 
 type Iface struct {
@@ -51,26 +48,6 @@ var RootCmd = &cobra.Command{
 	`,
 }
 
-func writeConfigFile(configFile string) {
-	cwd := os.Getenv("HOME")
-	err := os.MkdirAll(cwd+"/cli/whiteblock/config", 0755)
-	if err != nil {
-		log.Fatalf("could not create directory: %s", err)
-	}
-
-	file, err := os.Create(cwd + "/cli/whiteblock/config/config.json")
-
-	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
-	}
-	defer file.Close()
-
-	_, err = file.WriteString(configFile)
-	if err != nil {
-		log.Fatalf("failed writing to file: %s", err)
-	}
-}
-
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -84,94 +61,4 @@ func init() {
 
 func initConfig() {
 
-	home, err := homedir.Dir()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	viper.AddConfigPath("$HOME/cli/whiteblock/config")
-	viper.AddConfigPath("./cli/whiteblock/config")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath(home + ".config/whiteblock")
-	viper.SetConfigName("config")
-
-	if err := viper.ReadInConfig(); err != nil {
-		println("No existing config file was found. Your responses to the following prompts will be used to generate one. Consecutive builds will default to the provided values. To reset the configuration file, run `whiteblock reset-conf`.")
-
-		configArr := make([]string, 0)
-		configOpt := [1]string{"blockchain"}
-
-		idList := make([]string, 0)
-
-		scanner := bufio.NewScanner(os.Stdin)
-		tmp := 0
-		for {
-			if tmp == len(configOpt) {
-				break
-			}
-			for i := 0; i < len(configOpt); i++ {
-				fmt.Print(configOpt[i] + ": ")
-				scanner.Scan()
-
-				text := scanner.Text()
-				if len(text) == 0 {
-					println("invalid")
-					break
-				}
-				configArr = append(configArr, text)
-				tmp = i + 1
-			}
-		}
-
-		getServerAddr := "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-		command := "get_servers"
-		results := []byte(wsEmitListen(getServerAddr, command, ""))
-		var result map[string]Server
-		err := json.Unmarshal(results, &result)
-		if err != nil {
-			panic(err)
-		}
-
-		serverID := 0
-		for _, v := range result {
-			serverID = v.Id
-			//move this and take out break statement if instance has multiple servers
-			idList = append(idList, fmt.Sprintf("%d", serverID))
-			break
-		}
-
-		server = strings.Join(idList, ",")
-
-		blockchain := configArr[0]
-		param := "{\"blockchain\":\"" + blockchain + "\",\"server\":\"" + fmt.Sprintf(server) + "\"}"
-		println(param)
-		writeConfigFile(param)
-
-		println("************************************")
-		println("*** Configuration has been set *****")
-		println("*** Default values are now set *****")
-		println("************************************")
-
-		viper.ReadInConfig()
-	}
-
-	blockchain = viper.GetString("blockchain")
-	if !viper.IsSet("blockchain") {
-		blockchain = "ethereum"
-	}
-	server = viper.GetString("server")
-	if !viper.IsSet("server") {
-		server = "1"
-	}
-
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file changed:", e.Name)
-	})
-
-	viper.AutomaticEnv()
-
-	// fmt.Printf("Using existing config file: %s\n", viper.ConfigFileUsed())
 }

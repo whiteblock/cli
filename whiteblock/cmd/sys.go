@@ -219,7 +219,7 @@ Params: Test number
 			}
 
 			println("build prev command")
-			prevBuild, _ := readFile()
+			prevBuild, _ := readPrevCmdFile()
 			println(prevBuild)
 			wsEmitListen(pinnacleServerAddr, "build", prevBuild)
 			time.Sleep(5 * time.Second)
