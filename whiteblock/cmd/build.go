@@ -117,12 +117,12 @@ Build will create and deploy a blockchain and the specified number of nodes. Eac
 				os.Exit(2)
 			}
 
-			server := "[" + buildArr[0] + "]"
-			blockchain := buildArr[1]
-			nodes := buildArr[2]
-			image := buildArr[3]
-			cpu := buildArr[4]
-			memory := buildArr[5]
+			// server := "[" + buildArr[0] + "]"
+			blockchain := buildArr[0]
+			nodes := buildArr[1]
+			image := buildArr[2]
+			cpu := buildArr[3]
+			memory := buildArr[4]
 
 			fmt.Print("Use default parameters? (y/n) ")
 			scanner.Scan()
