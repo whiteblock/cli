@@ -10,13 +10,14 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
 	"github.com/spf13/cobra"
 )
 
 var (
-	serverAddr 		string
-	serversEnabled	bool
-	previousYesAll  bool
+	serverAddr     string
+	serversEnabled bool
+	previousYesAll bool
 )
 
 type Config struct {
@@ -28,9 +29,8 @@ type Config struct {
 		Cpus   string
 		Memory string
 	}
-	Params 	interface{}
+	Params interface{}
 }
-
 
 func writePrevCmdFile(prevBuild string) {
 	cwd := os.Getenv("HOME")
@@ -87,20 +87,18 @@ func readConfigFile() ([]byte, error) {
 	if err != nil {
 		fmt.Print(err)
 	}
+	/*
+		fmt.Println(string(b))
 
-	var config Config
-	json.Unmarshal(b, &config)
-	/*fmt.Println(string(b))
+		fmt.Println("get some of this:")
 
-	fmt.Println("get some of this:")
-
-	fmt.Println(config.Servers)
-	fmt.Println(config.Blockchain)
-	fmt.Println(config.Nodes)
-	fmt.Println(config.Image)
-	fmt.Println(config.Resources.Cpus)
-	fmt.Println(config.Resources.Memory)
-*/
+		fmt.Println(config.Servers)
+		fmt.Println(config.Blockchain)
+		fmt.Println(config.Nodes)
+		fmt.Println(config.Image)
+		fmt.Println(config.Resources.Cpus)
+		fmt.Println(config.Resources.Memory)
+	*/
 	return b, nil
 }
 
@@ -133,13 +131,11 @@ func getServer() string {
 	}
 
 	server = strings.Join(idList, ",")
-
 	//fmt.Println("server is: " + server)
-
 	return server
 }
 
-func tern(exp bool,res1 string,res2 string) string{
+func tern(exp bool, res1 string, res2 string) string {
 	if exp {
 		return res1
 	}
@@ -150,18 +146,18 @@ var buildCmd = &cobra.Command{
 	Use:     "build",
 	Aliases: []string{"init", "create"},
 	Short:   "Build a blockchain using image and deploy nodes",
-	Long: "Build will create and deploy a blockchain and the specified number of nodes."+
-		  " Each node will be instantiated in its own container and will interact"+
-		  " individually as a participant of the specified network.\n",
+	Long: "Build will create and deploy a blockchain and the specified number of nodes." +
+		" Each node will be instantiated in its own container and will interact" +
+		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		
+
 		if len(args) != 0 {
 			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
-		
+
 		buildArr := make([]string, 0)
 		paramArr := make([]string, 0)
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
@@ -196,25 +192,23 @@ var buildCmd = &cobra.Command{
 		if serversEnabled {
 			allowEmpty = []bool{false}
 			buildOpt = []string{
-				"servers" +tern((len(server)==0),""," ("+server+")"),
-				 }
+				"servers" + tern((len(server) == 0), "", " ("+server+")"),
+			}
 			defOpt = []string{fmt.Sprintf(server)}
 		}
 
-
-		buildOpt = append(buildOpt,[]string{
-			"blockchain" +tern((len(defaultBlockchain)==0),"", " ("+defaultBlockchain+")"),
-			"nodes"+tern((defaultNodes == "0"), ""," ("+defaultNodes+")"),
-			"docker image"+tern((len(defaultImage)==0),"" ," ("+defaultImage+")"), 
-			"cpus"+tern((len(defaultCpus)==0), "(empty for no limit)", " ("+defaultCpus+")"),
-			"memory"+tern((len(defaultMemory)==0), "(empty for no limit)" ," ("+defaultMemory+")"),
+		buildOpt = append(buildOpt, []string{
+			"blockchain" + tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"),
+			"nodes" + tern((defaultNodes == "0"), "", " ("+defaultNodes+")"),
+			"docker image" + tern((len(defaultImage) == 0), "", " ("+defaultImage+")"),
+			"cpus" + tern((len(defaultCpus) == 0), "(empty for no limit)", " ("+defaultCpus+")"),
+			"memory" + tern((len(defaultMemory) == 0), "(empty for no limit)", " ("+defaultMemory+")"),
 		}...)
 
-		defOpt = append(defOpt,[]string{defaultBlockchain, defaultNodes, defaultImage, defaultCpus, defaultMemory}...)
+		defOpt = append(defOpt, []string{defaultBlockchain, defaultNodes, defaultImage, defaultCpus, defaultMemory}...)
 
-		allowEmpty = append(allowEmpty,[]bool{false,false,false,true,true}...)
-		
-		
+		allowEmpty = append(allowEmpty, []bool{false, false, false, true, true}...)
+
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {
 			fmt.Print(buildOpt[i] + ": ")
@@ -225,15 +219,15 @@ var buildCmd = &cobra.Command{
 				buildArr = append(buildArr, text)
 			} else if len(defOpt[i]) != 0 || allowEmpty[i] {
 				buildArr = append(buildArr, defOpt[i])
-			}else{
+			} else {
 				i--
 				fmt.Println("Value required")
 				continue
 			}
 		}
-		
+
 		var offset = 0
-		if(serversEnabled){
+		if serversEnabled {
 			server = buildArr[offset]
 			offset++
 		}
@@ -247,67 +241,64 @@ var buildCmd = &cobra.Command{
 		offset++
 		memory := buildArr[offset]
 		offset++
-Params:
+	Params:
 		fmt.Print("Use default parameters? (y/n) ")
 		scanner.Scan()
 		ask := scanner.Text()
-		ask = strings.Trim(ask,"\n\t\r\v ")
+		ask = strings.Trim(ask, "\n\t\r\v ")
 
-		switch(ask){
-			case "n":
-				fallthrough
-			case "no":
-				getParamCommand := "get_params"
-				bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
-				var paramlist []map[string]string
+		switch ask {
+		case "n":
+			fallthrough
+		case "no":
+			getParamCommand := "get_params"
+			bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
+			var paramlist []map[string]string
 
-				json.Unmarshal(bcparam, &paramlist)
+			json.Unmarshal(bcparam, &paramlist)
 
-				scanner := bufio.NewScanner(os.Stdin)
+			scanner := bufio.NewScanner(os.Stdin)
 
-				for i := 0; i < len(paramlist); i++ {
-					for key, value := range paramlist[i] {
-						fmt.Printf("%s (%s): ",key,value)
-						scanner.Scan()
-						text := scanner.Text()
-						if len(text) == 0 {
+			for i := 0; i < len(paramlist); i++ {
+				for key, value := range paramlist[i] {
+					fmt.Printf("%s (%s): ", key, value)
+					scanner.Scan()
+					text := scanner.Text()
+					if len(text) == 0 {
+						continue
+					}
+					switch value {
+					case "string":
+						if fmt.Sprint(reflect.TypeOf(text)) != "string" {
+							fmt.Println("Entry must be a string")
+							i--
 							continue
 						}
-						switch(value){
-							case "string":
-								if fmt.Sprint(reflect.TypeOf(text)) != "string" {
-									fmt.Println("Entry must be a string")
-									i--;
-									continue;
-								}
-								paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
-							case "[]string":
-								tmp := strings.Replace(text, " ", ",", -1)
-								paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
-							case "int":
-								_, err := strconv.ParseInt(text,0,64)
-								if err != nil {
-									fmt.Println("Entry must be an integer")
-									i--;
-									continue;
-								}
-								paramArr = append(paramArr, "\""+key+"\""+": "+text)
+						paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
+					case "[]string":
+						tmp := strings.Replace(text, " ", ",", -1)
+						paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
+					case "int":
+						_, err := strconv.ParseInt(text, 0, 64)
+						if err != nil {
+							fmt.Println("Entry must be an integer")
+							i--
+							continue
 						}
+						paramArr = append(paramArr, "\""+key+"\""+": "+text)
 					}
 				}
-			case "y":
-				fallthrough
-			case "yes":
-			default:
-				fmt.Println("Unknown Option")
-				goto Params
+			}
+		case "y":
+			fallthrough
+		case "yes":
+		default:
+			fmt.Println("Unknown Option")
+			goto Params
 		}
-
-
 
 		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
 		stat := wsEmitListen(serverAddr, bldcommand, param)
-
 
 		/*fmt.Println(blockchain)
 		fmt.Println(server)
@@ -320,12 +311,9 @@ Params:
 		fmt.Println(param)*/
 
 		if stat == "" {
-		 	writePrevCmdFile(param)
+			writePrevCmdFile(param)
 			writeConfigFile(param)
 		}
-
-		
-		
 
 	},
 }
@@ -356,36 +344,36 @@ Build previous will recreate and deploy the previously built blockchain and spec
 		}
 
 		scanner := bufio.NewScanner(os.Stdin)
-		for{
+		for {
 			fmt.Print("Build from previous? (y/n) ")
 			scanner.Scan()
 			ask := scanner.Text()
-			ask = strings.Trim(ask,"\n\t\r\v ")
+			ask = strings.Trim(ask, "\n\t\r\v ")
 
-			switch(ask){
-				case "y":
-					fallthrough
-				case "yes":
-					fmt.Println("building from previous configuration")
-					wsEmitListen(serverAddr, bldcommand, prevBuild)
-					return
-				case "n":
-					fallthrough
-				case "no":
-					fmt.Println("Build cancelled.")
-					return
-				default:
-					fmt.Println("Unknown Option "+ask)
+			switch ask {
+			case "y":
+				fallthrough
+			case "yes":
+				fmt.Println("building from previous configuration")
+				wsEmitListen(serverAddr, bldcommand, prevBuild)
+				return
+			case "n":
+				fallthrough
+			case "no":
+				fmt.Println("Build cancelled.")
+				return
+			default:
+				fmt.Println("Unknown Option " + ask)
 			}
 		}
-		
+
 	},
 }
 
 func init() {
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	buildCmd.Flags().BoolVarP(&serversEnabled,"servers","s",false,"display server options")
-	previousCmd.Flags().BoolVarP(&previousYesAll,"yes","y",false,"Yes to all prompts")
+	buildCmd.Flags().BoolVarP(&serversEnabled, "servers", "s", false, "display server options")
+	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
 
 	buildCmd.AddCommand(previousCmd)
 	RootCmd.AddCommand(buildCmd)

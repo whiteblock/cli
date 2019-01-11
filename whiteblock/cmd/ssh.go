@@ -30,7 +30,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given")
 			cmd.Help()
 			return
 		}

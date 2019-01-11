@@ -25,7 +25,7 @@ Params: sending node, receiving node
 		var wg sync.WaitGroup
 
 		if len(args) != 2 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given")
 			cmd.Help()
 			return
 		}

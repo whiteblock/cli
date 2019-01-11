@@ -28,7 +28,7 @@ Sys will allow the user to get infromation and run SYS commands.
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		println("\nNo command given. Please choose a command from the list above.\n")
+		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
 		cmd.Help()
 		return
 	},
@@ -42,7 +42,7 @@ Sys test will allow the user to get infromation and run SYS tests.
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		println("\nNo command given. Please choose a command from the list above.\n")
+		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
 		cmd.Help()
 		return
 	},
@@ -63,13 +63,13 @@ Params: Time in seconds, percentage, number of transactions
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "sys::start_test"
 		if len(args) != 3 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
 		param := "{\"waitTime\":" + args[0] + ",\"minCompletePercent\":" + args[1] + ",\"numberOfTransactions\":" + args[2] + "}"
-		// println(command)
-		// println(param)
+		// fmt.Println(command)
+		// fmt.Println(param)
 		wsEmitListen(serverAddr, command, param)
 		return
 	},
@@ -90,7 +90,7 @@ Params: Test number
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "sys::get_recent_test_results"
 		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -148,7 +148,7 @@ Params: Test number
 		pinArgs = append(pinArgs, xS)
 
 		for i := 0; i < len(pinArgs); i++ {
-			println(pinArgs[i])
+			fmt.Println(pinArgs[i])
 		}
 
 		// sysStartServerAddr := "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
@@ -157,22 +157,22 @@ Params: Test number
 
 		go func() {
 			param := "{\"waitTime\":" + pinArgs[0] + ",\"minCompletePercent\":" + pinArgs[1] + ",\"numberOfTransactions\":" + pinArgs[2] + "}"
-			println(sysStartServerAddr)
+			fmt.Println(sysStartServerAddr)
 			wsEmitListen(sysStartServerAddr, "sys::start_test", param)
 			wg.Done()
 		}()
 
-		println("test start completed")
-		println("waiting to get results")
+		fmt.Println("test start completed")
+		fmt.Println("waiting to get results")
 
 		for {
 			time.Sleep(10 * time.Second)
 			runningTest := wsEmitListen(sysStartServerAddr, "state::is_running", "")
-			println(runningTest)
-			println(wsEmitListen(sysStartServerAddr, "state::what_is_running", ""))
+			fmt.Println(runningTest)
+			fmt.Println(wsEmitListen(sysStartServerAddr, "state::what_is_running", ""))
 			// how long does it take to sync sys::get_recent_test_results. there is an index error because there is no data.
 			if runningTest == "false" {
-				// println("getting test results")
+				// fmt.Println("getting test results")
 				command := "sys::get_recent_test_results"
 				results := []byte(wsEmitListen(sysStartServerAddr, command, args[0]))
 				var result map[string]interface{}
@@ -193,14 +193,14 @@ Params: Test number
 				avgTestTime = fmt.Sprint(v[1])
 
 				for j := 0; j < len(v); j++ {
-					println(string(j) + " -- " + fmt.Sprint(c[j]) + " : " + fmt.Sprint(v[j]))
+					fmt.Println(string(j) + " -- " + fmt.Sprint(c[j]) + " : " + fmt.Sprint(v[j]))
 				}
-				println("v[9] = " + fmt.Sprint(v[9]))
+				fmt.Println("v[9] = " + fmt.Sprint(v[9]))
 				break
 			}
 		}
 
-		println(avgTestTime)
+		fmt.Println(avgTestTime)
 
 		xI, err := strconv.Atoi(xS)
 		if err != nil {
@@ -208,37 +208,37 @@ Params: Test number
 		}
 
 		for {
-			println("going inside pinnacle loops")
+			fmt.Println("going inside pinnacle loops")
 
-			println(pinnacleServerAddr)
+			fmt.Println(pinnacleServerAddr)
 
-			println("chaging pinArgs[2] to -> " + xS)
+			fmt.Println("chaging pinArgs[2] to -> " + xS)
 			pinArgs[2] = xS
 			for k := 0; k < len(pinArgs); k++ {
-				println(pinArgs[k])
+				fmt.Println(pinArgs[k])
 			}
 
-			println("build prev command")
+			fmt.Println("build prev command")
 			prevBuild, _ := readPrevCmdFile()
-			println(prevBuild)
+			fmt.Println(prevBuild)
 			wsEmitListen(pinnacleServerAddr, "build", prevBuild)
 			time.Sleep(5 * time.Second)
 
 			go func() {
-				println("running test again")
+				fmt.Println("running test again")
 				param := "{\"waitTime\":" + pinArgs[0] + ",\"minCompletePercent\":" + pinArgs[1] + ",\"numberOfTransactions\":" + pinArgs[2] + "}"
-				println(pinnacleServerAddr)
+				fmt.Println(pinnacleServerAddr)
 				wsEmitListen(pinnacleServerAddr, "sys::start_test", param)
 			}()
 
 			for {
 				time.Sleep(10 * time.Second)
 				runningTest := wsEmitListen(sysStartServerAddr, "state::is_running", "")
-				println(runningTest)
-				println(wsEmitListen(sysStartServerAddr, "state::what_is_running", ""))
+				fmt.Println(runningTest)
+				fmt.Println(wsEmitListen(sysStartServerAddr, "state::what_is_running", ""))
 				// how long does it take to sync sys::get_recent_test_results. there is an index error because there is no data.
 				if runningTest == "false" {
-					println("getting test results")
+					fmt.Println("getting test results")
 					command := "sys::get_recent_test_results"
 					results := []byte(wsEmitListen(sysStartServerAddr, command, args[0]))
 					var result map[string]interface{}
@@ -257,17 +257,17 @@ Params: Test number
 					v := sc.Values[0]
 
 					for j := 0; j < len(v); j++ {
-						println(string(j) + " -- " + fmt.Sprint(c[j]) + " : " + fmt.Sprint(v[j]))
+						fmt.Println(string(j) + " -- " + fmt.Sprint(c[j]) + " : " + fmt.Sprint(v[j]))
 					}
-					println("v[9] = " + fmt.Sprint(v[9]))
+					fmt.Println("v[9] = " + fmt.Sprint(v[9]))
 
 					//unit test this
 
-					println(fmt.Sprint(v[1]) + " =?= " + fmt.Sprint(avgTestTime))
+					fmt.Println(fmt.Sprint(v[1]) + " =?= " + fmt.Sprint(avgTestTime))
 					if fmt.Sprint(v[1]) != avgTestTime {
 						avgTestTime = fmt.Sprint(v[1])
 						if fmt.Sprint(v[9]) == "0" {
-							println("0 success code")
+							fmt.Println("0 success code")
 							if y > 50 {
 								xI = (xI - y)
 								xS = fmt.Sprintf("%d", xI)
@@ -276,17 +276,17 @@ Params: Test number
 								fmt.Println(xI)
 								fmt.Println(y)
 								fmt.Println(xS)
-								println("getting out of 0 y>50")
+								fmt.Println("getting out of 0 y>50")
 								break
 							} else {
 								fmt.Println(xI)
 								fmt.Println(y)
 								fmt.Println(xS)
-								println("getting out of 0 y<50")
+								fmt.Println("getting out of 0 y<50")
 								break
 							}
 						} else if fmt.Sprint(v[9]) == "1" {
-							println("1 success code")
+							fmt.Println("1 success code")
 							xI = (xI + y)
 							y = y / 2
 							xS = fmt.Sprintf("%d", xI)
@@ -295,11 +295,11 @@ Params: Test number
 							fmt.Println(xI)
 							fmt.Println(y)
 							fmt.Println(xS)
-							println("getting out of 1")
+							fmt.Println("getting out of 1")
 							break
 						}
 					} else {
-						println("avgTestTime is equal")
+						fmt.Println("avgTestTime is equal")
 						break
 					}
 				}
@@ -308,11 +308,11 @@ Params: Test number
 				break
 			}
 			// for j := 0; j < len(v); j++ {
-			// 	println(string(j) + " -- " + " : " + fmt.Sprint(v[j]))
+			// 	fmt.Println(string(j) + " -- " + " : " + fmt.Sprint(v[j]))
 			// }
 
 		}
-		println(z)
+		fmt.Println(z)
 	},
 }
 

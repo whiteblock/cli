@@ -1,10 +1,15 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"strconv"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -60,5 +65,33 @@ func init() {
 }
 
 func initConfig() {
+	home, err := homedir.Dir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
+	viper.AddConfigPath("./.config/whiteblock")
+	viper.AddConfigPath(home + "/.config/whiteblock")
+	viper.SetConfigName("config")
+
+	b, err := ioutil.ReadFile(home + "/.config/whiteblock/config.json")
+	if err != nil {
+		fmt.Print(err)
+	}
+	var config Config
+	json.Unmarshal(b, &config)
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		fmt.Println("Default parameters are not set. Please continue and enter build fields.")
+	}
+	viper.ReadInConfig()
+	server = strconv.Itoa(config.Servers[0])
+	blockchain = config.Blockchain
+	nodes = config.Nodes
+	image = config.Image
+
+	viper.WatchConfig()
+	viper.AutomaticEnv()
 }

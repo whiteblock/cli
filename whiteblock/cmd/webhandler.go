@@ -26,7 +26,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	)
 
 	if err != nil {
-		println(err.Error())
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
@@ -43,7 +43,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			}
 		})
 		if err != nil {
-			println(err.Error())
+			fmt.Println(err.Error())
 			os.Exit(1)
 		}
 		err = c.On("build_status", func(h *gosocketio.Channel, args string) {
@@ -66,7 +66,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
 				// out = args
-				println(args)
+				fmt.Println(args)
 				mutex.Unlock()
 			}
 		})
@@ -110,7 +110,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if len(args) > 0 {
 				out = prettyp(args)
 			} else {
-				println(err.Error())
+				fmt.Println(err.Error())
 			}
 			mutex.Unlock()
 		})
@@ -122,7 +122,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if len(args) > 0 {
 				out = args
 			} else {
-				println(err.Error())
+				fmt.Println(err.Error())
 			}
 			mutex.Unlock()
 		})
@@ -134,7 +134,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if len(args) > 0 {
 				out = args
 			} else {
-				println(err.Error())
+				fmt.Println(err.Error())
 			}
 			mutex.Unlock()
 		})
@@ -146,7 +146,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if len(args) > 0 {
 				out = prettyp(args)
 			} else {
-				println(err.Error())
+				fmt.Println(err.Error())
 			}
 			mutex.Unlock()
 		})
@@ -157,9 +157,9 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
 				if strings.Contains(args, "{") {
-					println(prettyp(args))
+					fmt.Println(prettyp(args))
 				} else {
-					println(args)
+					fmt.Println(args)
 				}
 				mutex.Unlock()
 			}

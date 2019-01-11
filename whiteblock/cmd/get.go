@@ -34,7 +34,7 @@ Get will ouput server and network information and statstics.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		println("\nNo command given. Please choose a command from the list above.\n")
+		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
 		cmd.Help()
 		return
 	},
@@ -52,7 +52,7 @@ Server will ouput server information.
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "get_servers"
 
-		println(prettyp(wsEmitListen(serverAddr, command, "")))
+		fmt.Println(prettyp(wsEmitListen(serverAddr, command, "")))
 	},
 }
 
@@ -68,7 +68,7 @@ Nodes will output all of the nodes in the current network.
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "get_nodes"
-		println(wsEmitListen(serverAddr, command, ""))
+		fmt.Println(wsEmitListen(serverAddr, command, ""))
 	},
 }
 
@@ -83,7 +83,7 @@ Response: true or false, on whether or not a test is running; The name of the te
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -91,8 +91,8 @@ Response: true or false, on whether or not a test is running; The name of the te
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command1 := "state::is_running"
 		command2 := "state::what_is_running"
-		println(wsEmitListen(serverAddr, command1, ""))
-		println(wsEmitListen(serverAddr, command2, ""))
+		fmt.Println(wsEmitListen(serverAddr, command1, ""))
+		fmt.Println(wsEmitListen(serverAddr, command2, ""))
 
 	},
 }
@@ -110,15 +110,15 @@ Response: stdout and stderr of the blockchain process
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "log"
-		param := "{\"server\":" + fmt.Sprintf("%d", server) + ",\"node\":" + args[0] + "}"
-		println(wsEmitListen(serverAddr, command, param))
+		param := "{\"server\":" + fmt.Sprintf(server) + ",\"node\":" + args[0] + "}"
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -136,14 +136,14 @@ Response: The params as a list of key value params, of name and type respectivel
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "get_defaults"
-		println(wsEmitListen(serverAddr, command, args[0]))
+		fmt.Println(wsEmitListen(serverAddr, command, args[0]))
 	},
 }
 
@@ -156,7 +156,7 @@ Response: The params as a list of key value params, of name and type respectivel
 // 	`,
 
 // 	Run: func(cmd *cobra.Command, args []string) {
-// 		println("\nNo command given. Please choose a command from the list above.\n")
+// 		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
 // 		cmd.Help()
 // 		return
 // 	},
@@ -175,7 +175,7 @@ Response: The params as a list of key value params, of name and type respectivel
 
 // 	Run: func(cmd *cobra.Command, args []string) {
 // 		if len(args) < 2 || len(args) > 3 {
-// 			println("\nError: Invalid number of arguments given\n")
+// 			fmt.Println("\nError: Invalid number of arguments given\n")
 // 			cmd.Help()
 // 			return
 // 		} else if len(args) == 2 {
@@ -208,7 +208,7 @@ Response: The params as a list of key value params, of name and type respectivel
 
 // 	Run: func(cmd *cobra.Command, args []string) {
 // 		if len(args) < 2 || len(args) > 3 {
-// 			println("\nError: Invalid number of arguments given\n")
+// 			fmt.Println("\nError: Invalid number of arguments given\n")
 // 			cmd.Help()
 // 			return
 // 		} else if len(args) == 2 {
@@ -238,7 +238,7 @@ Response: The params as a list of key value params, of name and type respectivel
 
 // 	Run: func(cmd *cobra.Command, args []string) {
 // 		if len(args) > 1 {
-// 			println("\nError: Invalid number of arguments given\n")
+// 			fmt.Println("\nError: Invalid number of arguments given\n")
 // 			cmd.Help()
 // 			return
 // 		} else if len(args) == 0 {
@@ -267,7 +267,7 @@ Response: JSON representation of network statistics
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		println("\nError: Invalid number of arguments given\n")
+		fmt.Println("\nError: Invalid number of arguments given\n")
 		cmd.Help()
 		return
 	},
@@ -287,7 +287,7 @@ Response: JSON representation of network statistics
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 2 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -296,7 +296,7 @@ Response: JSON representation of network statistics
 		command := "stats"
 		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
 		data := wsEmitListen(serverAddr, command, param)
-		println(data)
+		fmt.Println(data)
 	},
 }
 
@@ -314,7 +314,7 @@ Response: JSON representation of network statistics
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 2 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -323,7 +323,7 @@ Response: JSON representation of network statistics
 		command := "stats"
 		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
 		data := wsEmitListen(serverAddr, command, param)
-		println(data)
+		fmt.Println(data)
 	},
 }
 
@@ -340,7 +340,7 @@ Response: JSON representation of network statistics
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "all_stats"
 		data := wsEmitListen(serverAddr, command, "")
-		println(data)
+		fmt.Println(data)
 	},
 }
 
