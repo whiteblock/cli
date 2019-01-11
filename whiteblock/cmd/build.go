@@ -183,7 +183,15 @@ var buildCmd = &cobra.Command{
 		// fmt.Println(defaultCpus)
 		// fmt.Println(defaultMemory)
 
-		server = string(getServer())
+		if len(server) < 0 {
+			server = string(getServer())
+		}
+
+		println(len(server))
+
+		fmt.Println(server)
+		fmt.Println(getServer())
+
 		// fmt.Println(server)
 		buildOpt := []string{}
 		defOpt := []string{}

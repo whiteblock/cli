@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -49,8 +50,14 @@ SSH will allow the user to go into the contianer where the specified node exists
 		param := "{\"server\":" + server + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
+		_, err = exec.Command("bash", "-c", "rm $HOME/.ssh/known_hosts").Output()
+		if err != nil {
+			fmt.Println("No known hosts")
+		}
+
 		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
+		println(nodeNumber)
 	},
 }
 

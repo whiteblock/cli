@@ -147,6 +147,115 @@ Response: The params as a list of key value params, of name and type respectivel
 	},
 }
 
+var getStatsCmd = &cobra.Command{
+	Use:   "stats <command>",
+	Short: "Get stastics of a blockchain",
+	Long: `
+Stats will allow the user to get statistics regarding the network.
+
+Response: JSON representation of network statistics
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("\nError: Invalid number of arguments given\n")
+		cmd.Help()
+		return
+	},
+}
+
+var statsByTimeCmd = &cobra.Command{
+	Use:   "time <start time> <end time>",
+	Short: "Get stastics by time",
+	Long: `
+Stats time will allow the user to get statistics by specifying a start time and stop time (unix time stamp).
+
+Params: Unix time stamps
+Format: <start unix time stamp> <end unix time stamp>
+
+Response: JSON representation of network statistics
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 2 {
+			fmt.Println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "stats"
+		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
+		data := wsEmitListen(serverAddr, command, param)
+		fmt.Println(data)
+	},
+}
+
+var statsByBlockCmd = &cobra.Command{
+	Use:   "block <start block> <end block>",
+	Short: "Get stastics of a blockchain",
+	Long: `
+Stats block will allow the user to get statistics regarding the network.
+
+Params: Block numbers
+Format: <start block number> <end block number>
+
+Response: JSON representation of network statistics
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 2 {
+			fmt.Println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "stats"
+		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
+		data := wsEmitListen(serverAddr, command, param)
+		fmt.Println(data)
+	},
+}
+
+var statsAllCmd = &cobra.Command{
+	Use:   "all",
+	Short: "Get all stastics of a blockchain",
+	Long: `
+Stats all will allow the user to get all the statistics regarding the network.
+
+Response: JSON representation of network statistics
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "all_stats"
+		data := wsEmitListen(serverAddr, command, "")
+		fmt.Println(data)
+	},
+}
+
+func init() {
+	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	getServerCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	getNodesCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+
+	// getDataCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	// dataByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	// dataByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	// dataAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+
+	getStatsCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	statsByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	statsByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	statsAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
+	// getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
+	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsAllCmd)
+
+	RootCmd.AddCommand(getCmd)
+}
+
 // var getDataCmd = &cobra.Command{
 // 	Use:   "data <command>",
 // 	Short: "Data will pull data from the network and output into a file.",
@@ -256,112 +365,3 @@ Response: The params as a list of key value params, of name and type respectivel
 // 		cwFile(args[0], data)
 // 	},
 // }
-
-var getStatsCmd = &cobra.Command{
-	Use:   "stats <command>",
-	Short: "Get stastics of a blockchain",
-	Long: `
-Stats will allow the user to get statistics regarding the network.
-
-Response: JSON representation of network statistics
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nError: Invalid number of arguments given\n")
-		cmd.Help()
-		return
-	},
-}
-
-var statsByTimeCmd = &cobra.Command{
-	Use:   "time <start time> <end time>",
-	Short: "Get stastics by time",
-	Long: `
-Stats time will allow the user to get statistics by specifying a start time and stop time (unix time stamp).
-
-Params: Unix time stamps
-Format: <start unix time stamp> <end unix time stamp>
-
-Response: JSON representation of network statistics
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "stats"
-		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
-		data := wsEmitListen(serverAddr, command, param)
-		fmt.Println(data)
-	},
-}
-
-var statsByBlockCmd = &cobra.Command{
-	Use:   "block <start block> <end block>",
-	Short: "Get stastics of a blockchain",
-	Long: `
-Stats block will allow the user to get statistics regarding the network.
-
-Params: Block numbers
-Format: <start block number> <end block number>
-
-Response: JSON representation of network statistics
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "stats"
-		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
-		data := wsEmitListen(serverAddr, command, param)
-		fmt.Println(data)
-	},
-}
-
-var statsAllCmd = &cobra.Command{
-	Use:   "all",
-	Short: "Get all stastics of a blockchain",
-	Long: `
-Stats all will allow the user to get all the statistics regarding the network.
-
-Response: JSON representation of network statistics
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "all_stats"
-		data := wsEmitListen(serverAddr, command, "")
-		fmt.Println(data)
-	},
-}
-
-func init() {
-	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	getServerCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	getNodesCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
-	// getDataCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// dataByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// dataByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// dataAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
-	getStatsCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	statsByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	statsByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	statsAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
-	// getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
-	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsAllCmd)
-
-	RootCmd.AddCommand(getCmd)
-}
