@@ -87,9 +87,6 @@ var buildCmd = &cobra.Command{
 									"cpus (empty for no limit)", "memory (empty for no limit)"}
 			defOpt = []string{fmt.Sprintf(server), blockchain, "10", blockchain + ":latest", "", ""}
 		}
-		
-
-		
 
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {
@@ -141,37 +138,31 @@ var buildCmd = &cobra.Command{
 
 			for i := 0; i < len(paramlist); i++ {
 				for key, value := range paramlist[i] {
-					fmt.Print(key, " ("+value+"): ")
+					fmt.Printf("%s (%s): ",key,value)
 					scanner.Scan()
 					text := scanner.Text()
-					if value == "string" {
-						if len(text) != 0 {
+					if len(text) == 0 {
+						continue
+					}
+					switch(value){
+						case "string":
 							if fmt.Sprint(reflect.TypeOf(text)) != "string" {
-								fmt.Println("bad type")
-								os.Exit(2)
+								fmt.Println("Entry must be a string")
+								i--;
+								continue;
 							}
 							paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
-						} else {
-							continue
-						}
-					} else if value == "[]string" {
-						if len(text) != 0 {
+						case "[]string":
 							tmp := strings.Replace(text, " ", ",", -1)
 							paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
-						} else {
-							continue
-						}
-					} else if value == "int" {
-						if len(text) != 0 {
-							_, err := strconv.Atoi(text)
+						case "int":
+							_, err := strconv.ParseInt(text,0,64)
 							if err != nil {
-								fmt.Println("bad type")
-								os.Exit(2)
+								fmt.Println("Entry must be an integer")
+								i--;
+								continue;
 							}
 							paramArr = append(paramArr, "\""+key+"\""+": "+text)
-						} else {
-							continue
-						}
 					}
 				}
 			}
