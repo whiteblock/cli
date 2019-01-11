@@ -56,7 +56,7 @@ func readPrevCmdFile() (string, error) {
 	cwd := os.Getenv("HOME")
 	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/previous_build.txt")
 	if err != nil {
-		fmt.Print(err)
+		//fmt.Print(err)
 	}
 	return string(b), nil
 }
@@ -85,7 +85,7 @@ func readConfigFile() ([]byte, error) {
 	cwd := os.Getenv("HOME")
 	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/config.json")
 	if err != nil {
-		fmt.Print(err)
+		//fmt.Print(err)
 	}
 	/*
 		fmt.Println(string(b))
@@ -167,7 +167,7 @@ var buildCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-
+		//fmt.Println("")
 		var config Config
 		json.Unmarshal(configFile, &config)
 		defaultBlockchain := string(config.Blockchain)
@@ -187,10 +187,10 @@ var buildCmd = &cobra.Command{
 			server = string(getServer())
 		}
 
-		println(len(server))
+		//println(len(server))
 
-		fmt.Println(server)
-		fmt.Println(getServer())
+		//fmt.Println(server)
+		//fmt.Println(getServer())
 
 		// fmt.Println(server)
 		buildOpt := []string{}

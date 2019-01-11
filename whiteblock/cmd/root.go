@@ -77,16 +77,17 @@ func initConfig() {
 
 	b, err := ioutil.ReadFile(home + "/.config/whiteblock/config.json")
 	if err != nil {
-		fmt.Print(err)
+		//fmt.Print(err)
 	}
 	var config Config
 	json.Unmarshal(b, &config)
 
 	err = viper.ReadInConfig()
 	if err != nil {
-		fmt.Println("Default parameters are not set. Please continue and enter build fields.")
+		//fmt.Println("Default parameters are not set. Please continue and enter build fields.")
+		return
 	}
-	viper.ReadInConfig()
+
 	if len(config.Servers) > 0 {
 		server = strconv.Itoa(config.Servers[0])
 	}
