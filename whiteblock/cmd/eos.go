@@ -8,7 +8,7 @@ var eosCmd = &cobra.Command{
 	Use:   "eos <command>",
 	Short: "Run eos commands",
 	Long: `
-Eos will allow the user to get infromation and run geth commands.
+Eos will allow the user to get infromation and run EOS commands.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -42,7 +42,7 @@ Response: Block data for that block`,
 }
 
 var eosGetInfoCmd = &cobra.Command{
-	Use:   "get_info [node]",
+	Use:   "get_info <node>",
 	Short: "Get EOS info",
 	Long: `
 Roughly equivalent to calling cleos get info
@@ -56,7 +56,7 @@ Response: EOS Info`,
 		command := "eos::get_info"
 		param := args[0]
 		// fmt.Println(command, param)
-		if len(args) > 1 {
+		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
@@ -138,7 +138,7 @@ Response: success or error`,
 }
 
 var eosGetBlockNumCmd = &cobra.Command{
-	Use:   "get_block_number [node]",
+	Use:   "get_block_number <node>",
 	Short: "Send continuous transactions",
 	Long: `
 This command will get the block number.
@@ -152,7 +152,7 @@ Response: Data on the last x test results`,
 		command := "eos::get_block_number"
 		param := args[0]
 		// fmt.Println(command, param)
-		if len(args) > 1 {
+		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
