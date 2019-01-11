@@ -247,15 +247,16 @@ var buildCmd = &cobra.Command{
 		offset++
 		memory := buildArr[offset]
 		offset++
-
+Params:
 		fmt.Print("Use default parameters? (y/n) ")
 		scanner.Scan()
 		ask := scanner.Text()
 		ask = strings.Trim(ask,"\n\t\r\v ")
+
 		switch(ask){
-			case "y":
+			case "n":
 				fallthrough
-			case "yes":
+			case "no":
 				getParamCommand := "get_params"
 				bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
 				var paramlist []map[string]string
@@ -294,13 +295,12 @@ var buildCmd = &cobra.Command{
 						}
 					}
 				}
-			case "n":
+			case "y":
 				fallthrough
-			case "no":
-				return
+			case "yes":
 			default:
 				fmt.Println("Unknown Option")
-				return
+				goto Params
 		}
 
 
