@@ -47,27 +47,6 @@ func readFile() (string, error) {
 	return string(b), nil
 }
 
-// func checkServ(server string) string {
-// 	servList := make([]string, 0)
-// 	servList = append(servList, "GUI to view stats and network information found here:")
-// 	if strings.Contains(server, "1") {
-// 		servList = append(servList, " 172.16.1.5:3000")
-// 	}
-// 	if strings.Contains(server, "2") {
-// 		servList = append(servList, " 172.16.2.5:3000")
-// 	}
-// 	if strings.Contains(server, "3") {
-// 		servList = append(servList, " 172.16.3.5:3000")
-// 	}
-// 	if strings.Contains(server, "4") {
-// 		servList = append(servList, " 172.16.4.5:3000")
-// 	}
-// 	if strings.Contains(server, "5") {
-// 		servList = append(servList, " 172.16.5.5:3000")
-// 	}
-// 	return strings.Join(servList, " ")
-// }
-
 func boolInput(input string) bool {
 	output := false
 	strings.ToLower(input)
