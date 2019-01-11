@@ -87,7 +87,10 @@ func initConfig() {
 		fmt.Println("Default parameters are not set. Please continue and enter build fields.")
 	}
 	viper.ReadInConfig()
-	server = strconv.Itoa(config.Servers[0])
+	if len(config.Servers) > 0 {
+		server = strconv.Itoa(config.Servers[0])
+	}
+	
 	blockchain = config.Blockchain
 	nodes = config.Nodes
 	image = config.Image
