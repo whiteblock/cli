@@ -297,13 +297,11 @@ Params: The amount of transactions to send in a second, the value of each transa
 			cmd.Help()
 			return
 		}
-		weiToInt, err := strconv.Atoi(args[1])
-		weiToEth := weiToInt * 1000000000000000000
-		args[1] = strconv.Itoa(weiToEth)
-		if err != nil {
-			panic(err)
-		}
+
+		args[0] = args[0] + "000000000000000000"
 		param := strings.Join(args[:], " ")
+
+		println(args[0])
 		wsEmitListen(serverAddr, command, param)
 	},
 }

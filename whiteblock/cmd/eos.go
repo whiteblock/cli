@@ -8,7 +8,7 @@ var eosCmd = &cobra.Command{
 	Use:   "eos <command>",
 	Short: "Run eos commands",
 	Long: `
-Eos will allow the user to get infromation and run EOS commands.
+Eos will allow the user to get information and run EOS commands.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -90,13 +90,13 @@ Response: EOS Info`,
 }
 
 var eosSendBurstTxCmd = &cobra.Command{
-	Use:   "send_burst_transaction <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]",
+	Use:   "send_burst_transaction <tps> [tx size]",
 	Short: "Send burst transactions",
 	Long: `
-This command will send a burst of transactions from one account to another. Additional arguments are required.
+This command will send a burst of transactions. Additional arguments are optional.
 
-Params: node number, from address, to address, amount, symbol, code, memo
-Format: <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]
+Params: number of transactions to send per second, transaction size
+Format: <tps>, [tx size]
 
 Response: EOS Info`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -114,13 +114,13 @@ Response: EOS Info`,
 }
 
 var eosConstTpsCmd = &cobra.Command{
-	Use:   "run_constant_tps <tps>",
+	Use:   "run_constant_tps <tps> [tx size]",
 	Short: "Send continuous transactions",
 	Long: `
 This command will have all nodes send continous transactions at a constant rate.
 
-Params: number to transactions per second
-Format: <tps>
+Params: number of transactions to send per second, transaction size
+Format: <tps>, [tx size]
 
 Response: success or error`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -161,11 +161,30 @@ Response: Data on the last x test results`,
 	},
 }
 
+var eosStopTxCmd = &cobra.Command{
+	Use:   "stop_transactions",
+	Short: "Stop transactions",
+	Long: `
+Stops the sending of transactions if transactions are currently being sent`,
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eth::stop_transactions"
+		param := ""
+		// fmt.Println(command)
+		if len(args) >= 1 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+		wsEmitListen(serverAddr, command, param)
+	},
+}
+
 func init() {
 	eosCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//eos subcommands
-	eosCmd.AddCommand(eosGetBlockCmd, eosGetInfoCmd, eosSendTxCmd, eosSendBurstTxCmd, eosConstTpsCmd, eosGetBlockNumCmd)
+	eosCmd.AddCommand(eosGetBlockCmd, eosGetInfoCmd, eosSendTxCmd, eosSendBurstTxCmd, eosConstTpsCmd, eosGetBlockNumCmd, stopTxCmd)
 
 	RootCmd.AddCommand(eosCmd)
 }
