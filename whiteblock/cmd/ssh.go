@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"strconv"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
@@ -45,12 +44,8 @@ SSH will allow the user to go into the contianer where the specified node exists
 			panic(err)
 		}
 
-		_, err = exec.Command("bash", "-c", "rm $HOME/.ssh/known_hosts").Output()
-		if err != nil {
-			fmt.Println("No known hosts")
-		}
-
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.whiteblock", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.whiteblock", "-o", "StrictHostKeyChecking no", 
+			"-o","UserKnownHostsFile=/dev/null","root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
 		fmt.Println(nodeNumber)
 	},
