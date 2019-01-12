@@ -45,11 +45,15 @@ Params: sending node, receiving node
 			panic(err)
 		}
 
-		for i := 0; i < 2; i++ {
+		/*for i := 0; i < 2; i++ {
 			command2 := "exec"
 			param := "{\"server\":" + fmt.Sprintf("%d", server) + ",\"node\":" + args[i] + ",\"command\":\"service ssh start\"}"
 			wsEmitListen(serverAddr, command2, param)
-		}
+
+			param = "{\"server\":" + server + ",\"node\":" + args[0] + 
+				",\"command\":\"bash -c \\\"echo \\\\\\\""+strings.Trim(string(dat),"\n\t\r\v")+"\\\\\\\">> /root/.ssh/authorized_keys\\\"\"}"
+			wsEmitListen(serverAddr, command2, param)
+		}*/
 
 		wg.Add(2)
 		go func() {

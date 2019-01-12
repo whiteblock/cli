@@ -39,10 +39,6 @@ Params: server number, node number, file/dir source, file/dir destination
 			panic(err)
 		}
 
-		command2 := "exec"
-		param := "{\"server\":" + server + ",\"node\":" + args[1] + ",\"command\":\"service ssh start\"}"
-		wsEmitListen(serverAddr, command2, param)
-
 		err = unix.Exec("/usr/bin/scp", []string{"scp", "-r", "-o", "StrictHostKeyChecking no", args[2], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[3]}, os.Environ())
 		log.Fatal(err)
 	},

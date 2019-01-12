@@ -7,8 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
-	"io/ioutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
@@ -46,20 +44,6 @@ SSH will allow the user to go into the contianer where the specified node exists
 		if err != nil {
 			panic(err)
 		}
-		val,_ := os.LookupEnv("HOME")
-		dat, err := ioutil.ReadFile(val+"/.ssh/id_rsa.pub")
-
-		if err != nil {
-			fmt.Println("Run ssh-keygen first!")
-			os.Exit(1)
-		}
-		command2 := "exec"
-		param := "{\"server\":" + server + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
-		wsEmitListen(serverAddr, command2, param)
-
-		param = "{\"server\":" + server + ",\"node\":" + args[0] + 
-				",\"command\":\"bash -c \\\"echo \\\\\\\""+strings.Trim(string(dat),"\n\t\r\v")+"\\\\\\\">> /root/.ssh/authorized_keys\\\"\"}"
-		wsEmitListen(serverAddr, command2, param)
 
 		_, err = exec.Command("bash", "-c", "rm $HOME/.ssh/known_hosts").Output()
 		if err != nil {
