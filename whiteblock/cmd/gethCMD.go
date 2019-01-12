@@ -164,14 +164,16 @@ Response: The transaction hash`,
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::send_transaction"
-		param := strings.Join(args[:], " ")
+		
 
-		weiToInt, err := strconv.Atoi(args[4])
+		_, err := strconv.Atoi(args[4])
 		if err != nil {
 			panic(err)
 		}
-		weiToEth := weiToInt * 1000000000000000000
-		args[1] = strconv.Itoa(weiToEth)
+		//convert ether to wei
+		args[4] = args[4] + "000000000000000000"
+
+		param := strings.Join(args[:], " ")
 
 		wsEmitListen(serverAddr, command, param)
 	},
