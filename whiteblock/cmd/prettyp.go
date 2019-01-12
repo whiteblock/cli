@@ -11,7 +11,7 @@ func prettyp(s string) string {
 
 	err := json.Unmarshal([]byte(s), &temp)
 	if err != nil {
-		panic(err)
+		return s
 	}
 
 	pps, _ := prettyjson.Marshal(temp)

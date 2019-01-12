@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"fmt"
+	/*"fmt"
 	"os/exec"
 
-	solc "github.com/ethereum/go-ethereum/common/compiler"
-	"github.com/spf13/cobra"
+	//solc "github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/spf13/cobra"*/
 )
 
 /*
@@ -13,7 +13,7 @@ should figure out how to identify which blockchain for compile
 - have them input the type of blockchain as args
 - have program figure out what blockchain the smart contract corresponds to
 */
-
+/*
 func compile(path, filename string) {
 	out, err := solc.CompileSolidity("solc", path+"/"+filename)
 	if err != nil {
@@ -78,7 +78,7 @@ Compiles the specified smart contract.
 		compile(args[0], args[1])
 	},
 }
-
+*/
 func init() {
 	// solcCMD.AddCommand(addSolcCMD, compileSolcCMD)
 

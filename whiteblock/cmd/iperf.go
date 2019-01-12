@@ -55,6 +55,7 @@ Params: sending node, receiving node
 			if err != nil {
 				panic(err)
 			}
+			defer client.Close()
 			result, err := client.Run(iPerfcmd)
 			if err != nil {
 				fmt.Println(result)
@@ -73,6 +74,7 @@ Params: sending node, receiving node
 			if err != nil {
 				panic(err)
 			}
+			defer client.Close()
 			result, err := client.Run(iPerfcmd)
 			if err != nil {
 				fmt.Println(result)
