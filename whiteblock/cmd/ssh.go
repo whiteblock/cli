@@ -44,7 +44,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 			panic(err)
 		}
 
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.whiteblock", "-o", "StrictHostKeyChecking no", 
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.customer", "-o", "StrictHostKeyChecking no", 
 			"-o","UserKnownHostsFile=/dev/null","root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
 		fmt.Println(nodeNumber)
