@@ -35,7 +35,7 @@ Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -67,7 +67,7 @@ Response: The block number`,
 		param := ""
 		// fmt.Println(command, param)
 		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -91,7 +91,7 @@ Response: JSON Representation of the block.`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -112,7 +112,7 @@ Response: A JSON array of the accounts`,
 		param := ""
 		// fmt.Println(command)
 		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -136,7 +136,7 @@ Response: The integer balance of the account in wei`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -157,7 +157,7 @@ Response: The transaction hash`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command)
 		if len(args) != 5 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -195,7 +195,7 @@ Response: The transaction count`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 2 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -219,7 +219,7 @@ Response: JSON representation of the transaction.`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -243,7 +243,7 @@ Response: JSON representation of the transaction receipt.`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) < 1 || len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -264,7 +264,7 @@ Response: The hash rate of a single node in the network`,
 		param := ""
 		// fmt.Println(command)
 		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -286,7 +286,7 @@ Params: The amount of transactions to send in a second, the value of each transa
 		command := "eth::start_transactions"
 		// fmt.Println(command)
 		if len(args) <= 1 || len(args) > 3 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -294,7 +294,7 @@ Params: The amount of transactions to send in a second, the value of each transa
 		args[0] = args[0] + "000000000000000000"
 		param := strings.Join(args[:], " ")
 
-		println(args[0])
+		fmt.Println(args[0])
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -310,7 +310,7 @@ Stops the sending of transactions if transactions are currently being sent`,
 		param := ""
 		// fmt.Println(command)
 		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -373,7 +373,7 @@ Response: Will emit on eth::block_listener for every block after the given block
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
@@ -398,7 +398,7 @@ Response: JSON object of transaction data`,
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		if len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
+			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
