@@ -44,7 +44,7 @@ Response: Block data for that block`,
 }
 
 var eosGetInfoCmd = &cobra.Command{
-	Use:   "get_info <node>",
+	Use:   "get_info [node]",
 	Short: "Get EOS info",
 	Long: `
 Roughly equivalent to calling cleos get info
@@ -52,17 +52,20 @@ Roughly equivalent to calling cleos get info
 Params: The node to get info from
 Format: [node]
 
-Response: EOS Info`,
+Response: eos blockchain state info`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command, param)
-		if len(args) != 1 {
+		if len(args) > 1 {
 			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eos::get_info"
-		param := args[0]
+		param := ""
+		if len(args) == 1 {
+			param = args[0]
+		}
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -76,7 +79,7 @@ This command will send a single transaction from one account to another. Additio
 Params: node number, from account, to account, amount, symbol, code, memo
 Format: <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]
 
-Response: EOS Info`,
+Response: The txid`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command, param)
 		if len(args) < 4 {
@@ -100,7 +103,7 @@ This command will send a burst of transactions. Additional arguments are optiona
 Params: number of transactions to send per second, transaction size
 Format: <tps>, [tx size]
 
-Response: EOS Info`,
+Response: success or ERROR`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command, param)
 		if len(args) < 1 {
@@ -126,7 +129,7 @@ This command will have all nodes send continous transactions at a constant rate.
 Params: number of transactions to send per second, transaction size
 Format: <tps>, [tx size]
 
-Response: success or error`,
+Response: success or ERROR`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command, param)
 		if len(args) < 1 {
@@ -142,7 +145,7 @@ Response: success or error`,
 }
 
 var eosGetBlockNumCmd = &cobra.Command{
-	Use:   "get_block_number <node>",
+	Use:   "get_block_number [node]",
 	Short: "Send continuous transactions",
 	Long: `
 This command will get the block number.
@@ -153,14 +156,17 @@ Format: [node]
 Response: Data on the last x test results`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command, param)
-		if len(args) != 1 {
+		if len(args) > 1 {
 			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eos::get_block_number"
-		param := args[0]
+		param := ""
+		if len(args) > 0 {
+			param = args[0]
+		}
 		wsEmitListen(serverAddr, command, param)
 	},
 }
