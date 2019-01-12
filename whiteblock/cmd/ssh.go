@@ -50,9 +50,9 @@ SSH will allow the user to go into the contianer where the specified node exists
 			fmt.Println("No known hosts")
 		}
 
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.whiteblock", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
-		println(nodeNumber)
+		fmt.Println(nodeNumber)
 	},
 }
 

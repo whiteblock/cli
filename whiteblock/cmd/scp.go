@@ -39,7 +39,7 @@ Params: server number, node number, file/dir source, file/dir destination
 			panic(err)
 		}
 
-		err = unix.Exec("/usr/bin/scp", []string{"scp", "-r", "-o", "StrictHostKeyChecking no", args[2], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[3]}, os.Environ())
+		err = unix.Exec("/usr/bin/scp", []string{"scp","-i","/home/master-secrets/id.whiteblock", "-r", "-o", "StrictHostKeyChecking no", args[2], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[3]}, os.Environ())
 		log.Fatal(err)
 	},
 }
