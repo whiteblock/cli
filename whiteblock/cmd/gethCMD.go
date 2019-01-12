@@ -160,19 +160,28 @@ var sendTxCmd = &cobra.Command{
 Send a transaction between two accounts
 
 Format: <from> <to> <gas> <gas price> <value>
-Params: Sending account, receiving account, gas, gas price, amount to send, transaction data, nonce
+Params: Sending account, receiving account, gas, gas price, amount to send in ETH
 
 Response: The transaction hash`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::send_transaction"
-		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		if len(args) <= 4 || len(args) > 5 {
+		if len(args) != 5 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eth::send_transaction"
+		param := strings.Join(args[:], " ")
+
+		weiToInt, err := strconv.Atoi(args[4])
+		if err != nil {
+			panic(err)
+		}
+		weiToEth := weiToInt * 1000000000000000000
+		args[1] = strconv.Itoa(weiToEth)
+
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -411,8 +420,8 @@ func init() {
 	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
-	gethCmd.AddCommand(getBlockNumberCmd, getBlockCmd, getAccountCmd, getBalanceCmd, sendTxCmd, getTxCountCmd, getTxCmd, getTxReceiptCmd, 
-					   getHashRateCmd, startTxCmd, stopTxCmd, startMiningCmd, stopMiningCmd, blockListenerCmd, getRecentSentTxCmd)
+	gethCmd.AddCommand(getBlockNumberCmd, getBlockCmd, getAccountCmd, getBalanceCmd, sendTxCmd, getTxCountCmd, getTxCmd, getTxReceiptCmd,
+		getHashRateCmd, startTxCmd, stopTxCmd, startMiningCmd, stopMiningCmd, blockListenerCmd, getRecentSentTxCmd)
 
 	RootCmd.AddCommand(gethCmd)
 }

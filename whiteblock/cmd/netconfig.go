@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,9 +14,9 @@ var netropyCmd = &cobra.Command{
 	Long: `
 Netconfig will introduce persisting network conditions for testing.
 	
-	bandwidth <engine number> <path number> <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
-	delay <engine number> <path number> <amount> 				Specifies the latency to add [ms];
-	loss <engine number> <path number> <percent>				Specifies the amount of packet loss to add [%];
+	bandwidth <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
+	delay <amount> 				Specifies the latency to add [ms];
+	loss <percent>				Specifies the amount of packet loss to add [%];
 	
 	`,
 
@@ -79,8 +80,15 @@ Latency will introduce delay to the network. You will specify the amount of late
 			return
 		}
 
-		msg1 := "engine 1 path 1 set delay constant " + args[0] + " port 1 to port 2"
-		msg2 := "engine 1 path 1 set delay constant " + args[0] + " port 2 to port 1"
+		delayInt, err := strconv.Atoi(args[0])
+		if err != nil {
+			panic(err)
+		}
+		delayInt = delayInt / 2
+		delayStr := strconv.Itoa(delayInt)
+
+		msg1 := "engine 1 path 1 set delay constant " + delayStr + " port 1 to port 2"
+		msg2 := "engine 1 path 1 set delay constant " + delayStr + " port 2 to port 1"
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)
