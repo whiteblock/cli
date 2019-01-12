@@ -28,15 +28,15 @@ Format: <block number>
 
 Response: Block data for that block`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::get_block"
-		param := args[0]
 		// fmt.Println(command, param)
 		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eos::get_block"
+		param := args[0]
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -52,15 +52,15 @@ Format: [node]
 
 Response: EOS Info`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::get_info"
-		param := args[0]
 		// fmt.Println(command, param)
 		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eos::get_info"
+		param := args[0]
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -76,15 +76,15 @@ Format: <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]
 
 Response: EOS Info`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::send_transaction"
-		param := args[0]
 		// fmt.Println(command, param)
 		if len(args) < 4 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eos::send_transaction"
+		param := args[0]
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -100,15 +100,15 @@ Format: <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]
 
 Response: EOS Info`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::run_burst_tx"
-		param := args[0]
 		// fmt.Println(command, param)
 		if len(args) < 4 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eos::run_burst_tx"
+		param := args[0]
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -124,15 +124,15 @@ Format: <tps>
 
 Response: success or error`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::run_constant_tps"
-		param := args[0]
 		// fmt.Println(command, param)
 		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eos::run_constant_tps"
+		param := args[0]
 		wsEmitListen(serverAddr, command, param)
 	},
 }
@@ -148,15 +148,15 @@ Format: [node]
 
 Response: Data on the last x test results`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::get_block_number"
-		param := args[0]
 		// fmt.Println(command, param)
 		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return
 		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "eos::get_block_number"
+		param := args[0]
 		wsEmitListen(serverAddr, command, param)
 	},
 }
