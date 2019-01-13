@@ -27,7 +27,6 @@ SSH will allow the user to go into the contianer where the specified node exists
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
 		if len(args) != 1 {
 			fmt.Println("\nError: Invalid number of arguments given")
 			cmd.Help()
@@ -35,18 +34,20 @@ SSH will allow the user to go into the contianer where the specified node exists
 		}
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command1 := "nodes"
-		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
+
+		out1 := []byte(wsEmitListen(serverAddr, "nodes", ""))
 		var node Node
 		json.Unmarshal(out1, &node)
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Println("Invalid Argument "+args[0])
+			cmd.Help()
+			return
 		}
 
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.customer", "-o", "StrictHostKeyChecking no", 
-			"-o","UserKnownHostsFile=/dev/null","root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ()))
-		fmt.Println(nodeNumber)
+							"-o","UserKnownHostsFile=/dev/null","-o","PasswordAuthentication no","-y",
+							"root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ()))
 	},
 }
 
