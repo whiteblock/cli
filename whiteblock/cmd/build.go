@@ -172,7 +172,7 @@ var buildCmd = &cobra.Command{
 		json.Unmarshal(configFile, &config)
 		defaultBlockchain := string(config.Blockchain)
 		defaultNodes := strconv.Itoa(config.Nodes)
-		defaultImage := string(config.Image)
+		//defaultImage := string(config.Image)
 		defaultCpus := string(config.Resources.Cpus)
 		defaultMemory := string(config.Resources.Memory)
 
@@ -203,14 +203,14 @@ var buildCmd = &cobra.Command{
 		buildOpt = append(buildOpt, []string{
 			"blockchain" + tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"),
 			"nodes" + tern((defaultNodes == "0"), "", " ("+defaultNodes+")"),
-			"docker image" + tern((len(defaultImage) == 0), "", " ("+defaultImage+")"),
+			//"docker image" + tern((len(defaultImage) == 0), "", " ("+defaultImage+")"),
 			"cpus" + tern((len(defaultCpus) == 0), "(empty for no limit)", " ("+defaultCpus+")"),
 			"memory" + tern((len(defaultMemory) == 0), "(empty for no limit)", " ("+defaultMemory+")"),
 		}...)
 
-		defOpt = append(defOpt, []string{defaultBlockchain, defaultNodes, defaultImage, defaultCpus, defaultMemory}...)
+		defOpt = append(defOpt, []string{defaultBlockchain, defaultNodes, defaultCpus, defaultMemory}...)
 
-		allowEmpty = append(allowEmpty, []bool{false, false, false, true, true}...)
+		allowEmpty = append(allowEmpty, []bool{false, false, true, true}...)
 
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {
@@ -238,8 +238,7 @@ var buildCmd = &cobra.Command{
 		offset++
 		nodes := buildArr[offset]
 		offset++
-		image := buildArr[offset]
-		offset++
+		image := blockchain
 		cpu := buildArr[offset]
 		offset++
 		memory := buildArr[offset]
