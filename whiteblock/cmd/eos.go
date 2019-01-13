@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"strings"
 	"fmt"
+	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 var eosCmd = &cobra.Command{
@@ -39,7 +40,7 @@ Response: Block data for that block`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eos::get_block"
 		param := args[0]
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -66,7 +67,7 @@ Response: eos blockchain state info`,
 		if len(args) == 1 {
 			param = args[0]
 		}
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -90,7 +91,7 @@ Response: The txid`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eos::send_transaction"
 		param := args[0]
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -116,7 +117,7 @@ Response: success or ERROR`,
 
 		param := strings.Join(args[:], " ")
 
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -140,7 +141,7 @@ Response: success or ERROR`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eos::run_constant_tps"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -167,7 +168,7 @@ Response: Data on the last x test results`,
 		if len(args) > 0 {
 			param = args[0]
 		}
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -186,7 +187,7 @@ Stops the sending of transactions if transactions are currently being sent`,
 			cmd.Help()
 			return
 		}
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 

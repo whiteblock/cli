@@ -65,8 +65,21 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	if strings.HasPrefix(cmd, "eos::") {
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
-				// out = args
-				fmt.Println(args)
+				out = prettyp(args)
+			}
+			mutex.Unlock()
+		})
+	}
+
+	// gethcmd
+	if strings.HasPrefix(cmd, "eth::") {
+		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
+			if len(args) > 0 {
+				if strings.Contains(args, "{") {
+					fmt.Println(prettyp(args))
+				} else {
+					fmt.Println(args)
+				}
 				mutex.Unlock()
 			}
 		})
@@ -99,7 +112,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	// get nodes
 	if cmd == "get_nodes" {
 		err = c.On("get_nodes", func(h *gosocketio.Channel, args string) {
-			out = prettypArr(args)
+			out = prettyp(args)
 			mutex.Unlock()
 		})
 	}
@@ -149,20 +162,6 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 				fmt.Println(err.Error())
 			}
 			mutex.Unlock()
-		})
-	}
-
-	// gethcmd
-	if strings.HasPrefix(cmd, "eth::") {
-		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
-			if len(args) > 0 {
-				if strings.Contains(args, "{") {
-					fmt.Println(prettyp(args))
-				} else {
-					fmt.Println(args)
-				}
-				mutex.Unlock()
-			}
 		})
 	}
 
