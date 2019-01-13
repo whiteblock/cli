@@ -99,7 +99,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	// get nodes
 	if cmd == "get_nodes" {
 		err = c.On("get_nodes", func(h *gosocketio.Channel, args string) {
-			out = args
+			out = prettypArr(args)
 			mutex.Unlock()
 		})
 	}
@@ -128,7 +128,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 		})
 	}
 
-	// get nodes
+	// nodes
 	if cmd == "nodes" {
 		err = c.On("nodes", func(h *gosocketio.Channel, args string) {
 			if len(args) > 0 {
