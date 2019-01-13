@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"os"
-
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,7 @@ This command will rest the configuration file when called.
 		if err != nil {
 			panic(err)
 		}
-		println("Configuration file has been reset. Run a command to be prompted to create a new one.")
+		fmt.Println("Configuration file has been reset. Run a command to be prompted to create a new one.")
 	},
 }
 

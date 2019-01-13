@@ -38,13 +38,15 @@ Params: sending node, receiving node
 
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("Invalid Argument "+args[0])
+			InvalidArgument(args[0])
 			cmd.Help()
 			return
 		}
 		receivingNodeNumber, err := strconv.Atoi(args[1])
 		if err != nil {
-			panic(err)
+			InvalidArgument(args[1])
+			cmd.Help()
+			return
 		}
 		
 		wg.Add(2)

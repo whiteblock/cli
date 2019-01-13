@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
@@ -36,11 +35,15 @@ Params: sending node, receiving node
 		json.Unmarshal(out1, &node)
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			InvalidArgument(args[0])
+			cmd.Help()
+			return
 		}
 		receivingNodeNumber, err := strconv.Atoi(args[1])
 		if err != nil {
-			panic(err)
+			InvalidArgument(args[1])
+			cmd.Help()
+			return
 		}
 		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.customer",
 												"-o","UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking no", 

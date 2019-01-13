@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 	"time"
-
+	"strconv"
 	"github.com/spf13/cobra"
 )
 
@@ -199,7 +199,7 @@ Stats block will allow the user to get statistics regarding the network.
 Params: Block numbers
 Format: <start block number> <end block number>
 
-Response: JSON representation of network statistics
+Response: JSON representation of statistics
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -212,6 +212,41 @@ Response: JSON representation of network statistics
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "stats"
 		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
+		data := wsEmitListen(serverAddr, command, param)
+		fmt.Println(data)
+	},
+}
+
+var statsPastBlocksCmd = &cobra.Command{
+	Use:   "past <blocks> ",
+	Short: "Get stastics of a blockchain from the past x blocks",
+	Long: `
+Stats block will allow the user to get statistics regarding the network.
+
+Params: Number of blocks 
+Format: <blocks>
+
+Response: JSON representation of statistics
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			fmt.Println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := "stats"
+
+		blocks, err := strconv.Atoi(args[0])
+		if err != nil {
+			InvalidArgument(args[0])
+			cmd.Help()
+			return
+		}
+		blocks *= -1
+		param := fmt.Sprintf("{\"startTime\":0,\"endTime\":0,\"startBlock\":%d,\"endBlock\":0}",blocks)
 		data := wsEmitListen(serverAddr, command, param)
 		fmt.Println(data)
 	},
@@ -251,7 +286,7 @@ func init() {
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
 	// getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
-	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsAllCmd)
+	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd,statsPastBlocksCmd, statsAllCmd)
 
 	RootCmd.AddCommand(getCmd)
 }
