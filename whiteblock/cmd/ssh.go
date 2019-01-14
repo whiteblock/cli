@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
@@ -40,14 +41,14 @@ SSH will allow the user to go into the contianer where the specified node exists
 		json.Unmarshal(out1, &node)
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("Invalid Argument "+args[0])
+			fmt.Println("Invalid Argument " + args[0])
 			cmd.Help()
 			return
 		}
 
-		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.customer", "-o", "StrictHostKeyChecking no", 
-							"-o","UserKnownHostsFile=/dev/null","-o","PasswordAuthentication no","-y",
-							"root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ()))
+		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.customer", "-o", "StrictHostKeyChecking no",
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
+			"root@" + fmt.Sprintf(node[nodeNumber].IP)}, os.Environ()))
 	},
 }
 

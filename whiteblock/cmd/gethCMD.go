@@ -103,7 +103,7 @@ Params: directory, file name
 
 		fmt.Println(bashCommand)
 
-		out, err := exec.Command("bash", "-c", "echo"+bashCommand).Output()
+		out, err := exec.Command("bash", "-c", "echo "+bashCommand).Output()
 		if err != nil {
 			panic(err)
 		}
