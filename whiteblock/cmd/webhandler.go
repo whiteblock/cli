@@ -50,7 +50,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
         err = c.On("build_status", func(h *gosocketio.Channel, args string) {
             var status BuildStatus
             json.Unmarshal([]byte(args), &status)
-            if len(status.Stage) == 0 {
+            if status.Progress == 0.0 {
                 fmt.Printf("Sending build context to Whiteblock\r")
             }else{
                 fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\a\r",status.Stage, status.Progress)
