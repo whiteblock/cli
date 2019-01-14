@@ -57,11 +57,7 @@ Response: stdout of geth console`,
 			panic(err)
 		}
 
-		command2 := "exec"
-		param := "{\"server\":" + server + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
-		wsEmitListen(serverAddr, command2, param)
-
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP), "tmux", "attach", "-t", "whiteblock"}, os.Environ())
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-t", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP), "tmux", "attach", "-t", "whiteblock"}, os.Environ())
 		log.Fatal(err)
 	},
 }
