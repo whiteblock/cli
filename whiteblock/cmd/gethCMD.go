@@ -128,7 +128,7 @@ Response: The block number`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_block_number"
 		param := ""
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -152,7 +152,7 @@ Response: JSON Representation of the block.`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_block"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -173,7 +173,7 @@ Response: A JSON array of the accounts`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_accounts"
 		param := ""
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -197,7 +197,7 @@ Response: The integer balance of the account in wei`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_balance"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -221,7 +221,7 @@ Response: The transaction hash`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::send_transaction"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -245,7 +245,7 @@ Response: The transaction count`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_transaction_count"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -269,7 +269,7 @@ Response: JSON representation of the transaction.`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_transaction"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -293,7 +293,7 @@ Response: JSON representation of the transaction receipt.`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_transaction_receipt"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -314,7 +314,7 @@ Response: The hash rate of a single node in the network`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_hash_rate"
 		param := ""
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -343,7 +343,7 @@ Params: The amount of transactions to send in a second, the value of each transa
 			panic(err)
 		}
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -362,7 +362,7 @@ Stops the sending of transactions if transactions are currently being sent`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::stop_transactions"
 		param := ""
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -381,7 +381,7 @@ Response: The number of nodes which successfully received the signal to start mi
 		command := "eth::start_mining"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -401,7 +401,7 @@ Response: The number of nodes which successfully received the signal to stop min
 		command := "eth::stop_mining"
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -425,7 +425,7 @@ Response: Will emit on eth::block_listener for every block after the given block
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::block_listener"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
@@ -450,7 +450,7 @@ Response: JSON object of transaction data`,
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::get_recent_sent_tx"
 		param := strings.Join(args[:], " ")
-		wsEmitListen(serverAddr, command, param)
+		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
