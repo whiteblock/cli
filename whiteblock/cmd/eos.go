@@ -182,11 +182,6 @@ Stops the sending of transactions if transactions are currently being sent`,
 		command := "eth::stop_transactions"
 		param := ""
 		// fmt.Println(command)
-		if len(args) >= 1 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
 		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
