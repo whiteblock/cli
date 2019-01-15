@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,6 @@ var (
 	memoryFlag     	int
 	paramsFile 		string
 	validators		int
-
 )
 
 type Config struct {
@@ -221,22 +221,18 @@ var buildCmd = &cobra.Command{
 		// fmt.Println(defaultCpus)
 		// fmt.Println(defaultMemory)
 
-		if len(server) == 0 {
-			server = string(getServer())
-		}
-
 		// fmt.Println(server)
 		buildOpt := []string{}
 		defOpt := []string{}
 		allowEmpty := []bool{}
 
-		if !serversEnabled {
-			allowEmpty = []bool{false}
-			buildOpt = []string{
-				"servers" + tern((len(server) == 0), "", " ("+server+")"),
-			}
-			defOpt = append(defOpt, fmt.Sprintf(server))
-		}
+		// if !serversEnabled {
+		// 	allowEmpty = []bool{false}
+		// 	buildOpt = []string{
+		// 		"servers" + tern((len(server) == 0), "", " ("+server+")"),
+		// 	}
+		// 	defOpt = append(defOpt, fmt.Sprintf(server))
+		// }
 		if !blockchainEnabled {
 			allowEmpty = append(allowEmpty, false)
 			buildOpt = append(buildOpt, "blockchain"+tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"))
@@ -291,12 +287,13 @@ var buildCmd = &cobra.Command{
 			}
 		}
 
+		if len(serversFlag) == 0 {
+			server = string(getServer())
+		}
+
 		var offset = 0
 		if serversEnabled {
 			server = serversFlag
-		} else {
-			server = buildArr[offset]
-			offset++
 		}
 		if blockchainEnabled {
 			blockchain = blockchainFlag
@@ -322,12 +319,13 @@ var buildCmd = &cobra.Command{
 		}
 		params := "{}"
 
-		if len(paramsFile) != 0{
-			raw,err := ioutil.ReadFile(paramsFile)
-			if err != nil{
+		if len(paramsFile) != 0 {
+			raw, err := ioutil.ReadFile(paramsFile)
+			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+
 			err = json.Unmarshal(raw,&paramArr)
 			if err != nil{
 				fmt.Println(err)
@@ -408,9 +406,9 @@ var buildCmd = &cobra.Command{
 
 		
 
-		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + 
-				",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory + 
-					"\"},\"params\":" +params+ "}"
+		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes +
+			",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory +
+			"\"},\"params\":" + params + "}"
 		stat := wsEmitListen(serverAddr, bldcommand, param)
 
 		/*fmt.Println(blockchain)
@@ -493,7 +491,6 @@ func init() {
 	buildCmd.Flags().IntVarP(&memoryFlag, "memory", "m", 0, "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators,"validators","v",-1,"set the number of validators")
-
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
 
