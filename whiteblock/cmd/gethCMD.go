@@ -160,7 +160,7 @@ var sendTxCmd = &cobra.Command{
 Send a transaction between two accounts
 
 Format: <from> <to> <gas> <gas price> <value>
-Params: Sending account, receiving account, gas, gas price, amount to send, transaction data, nonce
+Params: Sending account, receiving account, gas, gas price, amount to send in ETH
 
 Response: The transaction hash`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -172,6 +172,8 @@ Response: The transaction hash`,
 		}
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eth::send_transaction"
+		weiToEth := args[4] + "000000000000000000"
+		args[4] = weiToEth
 		param := strings.Join(args[:], " ")
 		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
@@ -288,12 +290,9 @@ Params: The amount of transactions to send in a second, the value of each transa
 			cmd.Help()
 			return
 		}
-		weiToInt, err := strconv.Atoi(args[1])
-		weiToEth := weiToInt * 1000000000000000000
-		args[1] = strconv.Itoa(weiToEth)
-		if err != nil {
-			panic(err)
-		}
+		weiToEth := args[1] + "000000000000000000"
+		args[1] = weiToEth
+
 		param := strings.Join(args[:], " ")
 		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
