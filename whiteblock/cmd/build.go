@@ -306,7 +306,8 @@ var buildCmd = &cobra.Command{
 			nodes = buildArr[offset]
 			offset++
 		}
-		image := blockchain
+		image := "gcr.io/whiteblock/" + blockchain + ":master"
+		// image := blockchain
 		if !cpusEnabled {
 			cpus = buildArr[offset]
 			offset++

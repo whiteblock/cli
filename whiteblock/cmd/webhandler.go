@@ -83,6 +83,8 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			fmt.Println("Started mining. Please wait for the DAG to be generated. Number of miners started: ")
 		} else if cmd == "eth::stop_mining" {
 			fmt.Println("Stopped mining. Number of miners stopped: ")
+		} else if cmd == "eth::start_transactions" {
+			fmt.Println("Please make sure that mining has started for the transactions to be included in the blocks.")
 		}
 
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
