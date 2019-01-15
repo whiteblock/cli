@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
+
 	"github.com/spf13/cobra"
 )
 
@@ -246,7 +247,7 @@ Response: JSON representation of statistics
 			return
 		}
 		blocks *= -1
-		param := fmt.Sprintf("{\"startTime\":0,\"endTime\":0,\"startBlock\":%d,\"endBlock\":0}",blocks)
+		param := fmt.Sprintf("{\"startTime\":0,\"endTime\":0,\"startBlock\":%d,\"endBlock\":0}", blocks)
 		data := wsEmitListen(serverAddr, command, param)
 		fmt.Println(data)
 	},
@@ -286,7 +287,7 @@ func init() {
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
 	// getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
-	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd,statsPastBlocksCmd, statsAllCmd)
+	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	RootCmd.AddCommand(getCmd)
 }

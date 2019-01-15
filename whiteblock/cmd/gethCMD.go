@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 
@@ -15,9 +14,6 @@ import (
 
 var (
 	gethcommand string
-	abi         bool
-	bin         bool
-	overwrite   bool
 )
 
 var gethCmd = &cobra.Command{
@@ -61,53 +57,9 @@ Response: stdout of geth console`,
 		param := "{\"server\":" + server + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
 
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP), "tmux", "attach", "-t", "whiteblock"}, os.Environ())
-		log.Fatal(err)
-	},
-}
-
-var gethSolc = &cobra.Command{
-	Use:   "solc <directory> <.sol file>",
-	Short: "Deploy a smart contract",
-	Long: `
-Solc will deploy a smart contract and generate the abi and binary. The abi and bin will generated only if declared as a flag. The generated files will be outputted into the ./solc directory.
-
-Format: <directory>, <.sol file>
-Params: directory, file name
-`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		if len(args) != 2 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
-		cwd := os.Getenv("HOME")
-		err := os.MkdirAll(cwd+"/solc/", 0755)
-		if err != nil {
-			log.Fatalf("could not create directory: %s", err)
-		}
-
-		bashCommand := "solc " + args[0] + args[1]
-		if abi {
-			bashCommand = bashCommand + " --abi"
-		}
-		if bin {
-			bashCommand = bashCommand + " --bin"
-		}
-		if overwrite {
-			bashCommand = bashCommand + " --overwrite"
-		}
-		bashCommand = bashCommand + " -o " + cwd + "/solc/"
-
-		fmt.Println(bashCommand)
-
-		out, err := exec.Command("bash", "-c", "echo "+bashCommand).Output()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(out)
+		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.customer", "-o", "StrictHostKeyChecking no",
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
+			"root@" + fmt.Sprintf(node[nodeNumber].IP), "-t", "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
 	},
 }
 
@@ -457,12 +409,9 @@ Response: JSON object of transaction data`,
 func init() {
 	// gethCmd.Flags().StringVarP(&gethcommand, "command", "c", "", "Geth command")
 	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	gethSolc.Flags().BoolVarP(&abi, "abi", "A", false, "generate ABI with solc")
-	gethSolc.Flags().BoolVarP(&bin, "bin", "b", false, "generate BIN with solc")
-	gethSolc.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "overwrite existing artifacts")
 
 	//geth subcommands
-	gethCmd.AddCommand(getBlockNumberCmd, getBlockCmd, getAccountCmd, getBalanceCmd, sendTxCmd, getTxCountCmd, getTxCmd, getTxReceiptCmd, getHashRateCmd, startTxCmd, stopTxCmd, startMiningCmd, stopMiningCmd, blockListenerCmd, getRecentSentTxCmd, gethConsole, gethSolc)
+	gethCmd.AddCommand(getBlockNumberCmd, getBlockCmd, getAccountCmd, getBalanceCmd, sendTxCmd, getTxCountCmd, getTxCmd, getTxReceiptCmd, getHashRateCmd, startTxCmd, stopTxCmd, startMiningCmd, stopMiningCmd, blockListenerCmd, getRecentSentTxCmd, gethConsole)
 
 	RootCmd.AddCommand(gethCmd)
 }

@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
 var resetConfCmd = &cobra.Command{
-	Use:   "reset-conf",
-	Short: "Reset the configuration file.",
+	Use:   "config",
+	Short: "Edit the configuration file for default parameters.",
 	Long: `
 
 This command will rest the configuration file when called.
