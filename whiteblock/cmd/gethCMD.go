@@ -53,7 +53,6 @@ Response: stdout of geth console`,
 			panic(err)
 		}
 
-<<<<<<< HEAD
 		command2 := "exec"
 		param := "{\"server\":" + server + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
 		wsEmitListen(serverAddr, command2, param)
@@ -61,55 +60,6 @@ Response: stdout of geth console`,
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.customer", "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
 			"root@" + fmt.Sprintf(node[nodeNumber].IP), "-t", "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
-=======
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-t", "-o", "StrictHostKeyChecking no", "root@" + fmt.Sprintf(node[nodeNumber].IP), "tmux", "attach", "-t", "whiteblock"}, os.Environ())
-		log.Fatal(err)
-	},
-}
-
-var gethSolc = &cobra.Command{
-	Use:   "solc <directory> <.sol file>",
-	Short: "Deploy a smart contract",
-	Long: `
-Solc will deploy a smart contract and generate the abi and binary. The abi and bin will generated only if declared as a flag. The generated files will be outputted into the ./solc directory.
-
-Format: <directory>, <.sol file>
-Params: directory, file name
-`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		if len(args) != 2 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
-		cwd := os.Getenv("HOME")
-		err := os.MkdirAll(cwd+"/solc/", 0755)
-		if err != nil {
-			log.Fatalf("could not create directory: %s", err)
-		}
-
-		bashCommand := "solc " + args[0] + args[1]
-		if abi {
-			bashCommand = bashCommand + " --abi"
-		}
-		if bin {
-			bashCommand = bashCommand + " --bin"
-		}
-		if overwrite {
-			bashCommand = bashCommand + " --overwrite"
-		}
-		bashCommand = bashCommand + " -o " + cwd + "/solc/"
-
-		fmt.Println(bashCommand)
-
-		out, err := exec.Command("bash", "-c", "echo"+bashCommand).Output()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(out)
->>>>>>> 59fc90fe6d025bf33dc5980f04f59f53d44e30f9
 	},
 }
 
