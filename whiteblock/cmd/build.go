@@ -22,18 +22,20 @@ var (
 	cpusFlag       	int
 	memoryFlag     	int
 	paramsFile 		string
+	validators		int
+
 )
 
 type Config struct {
-	Servers    []int
-	Blockchain string
-	Nodes      int
-	Image      string
-	Resources  struct {
-		Cpus   string
-		Memory string
+	Servers    	[]int
+	Blockchain 	string
+	Nodes      	int
+	Image      	string
+	Resources  	struct {
+		Cpus   		string
+		Memory 		string
 	}
-	Params interface{}
+	Params 		interface{}
 }
 
 func writePrevCmdFile(prevBuild string) {
@@ -195,7 +197,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		buildArr := make([]string, 0)
-		paramArr := make([]string, 0)
+		paramArr := make(map[string]string)
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		bldcommand := "build"
 
@@ -255,6 +257,8 @@ var buildCmd = &cobra.Command{
 			buildOpt = append(buildOpt, "memory"+tern((defaultMemory == ""), "(empty for no limit)", " ("+defaultMemory+")"))
 			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 		}
+
+		
 
 		/*
 			buildOpt = append(buildOpt, []string{
@@ -324,7 +328,11 @@ var buildCmd = &cobra.Command{
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			params = string(raw)
+			err = json.Unmarshal(raw,&paramArr)
+			if err != nil{
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}else if !previousYesAll {
 		Params:
 			fmt.Print("Use default parameters? (y/n) ")
@@ -359,10 +367,9 @@ var buildCmd = &cobra.Command{
 								i--
 								continue
 							}
-							paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
+							paramArr[key] = "\""+text+"\"";
 						case "[]string":
-							tmp := strings.Replace(text, " ", ",", -1)
-							paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
+							paramArr[key] = "["+strings.Replace(text, " ", ",", -1) + "]"
 						case "int":
 							_, err := strconv.ParseInt(text, 0, 64)
 							if err != nil {
@@ -370,7 +377,7 @@ var buildCmd = &cobra.Command{
 								i--
 								continue
 							}
-							paramArr = append(paramArr, "\""+key+"\""+": "+text)
+							paramArr[key] = text
 						}
 					}
 				}
@@ -381,8 +388,25 @@ var buildCmd = &cobra.Command{
 				fmt.Println("Unknown Option")
 				goto Params
 			}
-			params = "{"+strings.Join(paramArr[:], ",") +"}"
 		}
+		if validators >= 0 {
+			paramArr["validators"] = fmt.Sprintf("%d",validators)
+		}
+		
+		params = "{"
+		first := true
+		for key,value := range paramArr {
+			if first {
+				first = false
+			}else{
+				params += ","
+			}
+			params += fmt.Sprintf("\"%s\":%s",key,value)
+		}
+		params += "}"
+		
+
+		
 
 		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + 
 				",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory + 
@@ -468,6 +492,7 @@ func init() {
 	buildCmd.Flags().IntVarP(&cpusFlag, "cpus", "c", 0, "specify number of cpus")
 	buildCmd.Flags().IntVarP(&memoryFlag, "memory", "m", 0, "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
+	buildCmd.Flags().IntVarP(&validators,"validators","v",-1,"set the number of validators")
 
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
