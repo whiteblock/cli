@@ -53,7 +53,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if status.Progress == 0.0 {
 				fmt.Printf("Sending build context to Whiteblock\r")
 			} else {
-				fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\a\r", status.Stage, status.Progress)
+                fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r",status.Stage, status.Progress)
 			}
 
 			if status.Error != nil {
@@ -61,7 +61,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 				fmt.Println("\n" + what)
 				mutex.Unlock()
 			} else if status.Progress == 100.0 {
-				fmt.Println("")
+                fmt.Println("\a")
 				mutex.Unlock()
 			}
 		})
