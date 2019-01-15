@@ -1,0 +1,23 @@
+{
+	"options":[
+		"server",
+		"regtest",
+		"listen",
+		"rest"
+	],
+	"extras":[],
+	"senderOptions":[
+		"tpstest",
+		"addressindex"
+	],
+	"receiverOptions":[
+		"tpstest"
+	],
+	"mnOptions":[],
+	"senderExtras":[],
+	"receiverExtras":[],
+	"mnExtras":[],
+	"masterNodeConns":25,
+	"nodeConns":8,
+	"percentMasternodes":90
+}

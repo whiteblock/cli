@@ -10,18 +10,18 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
 	"github.com/spf13/cobra"
 )
 
 var (
-	serverAddr     string
-	previousYesAll bool
-	serversFlag    string
-	blockchainFlag string
-	nodesFlag      string
-	cpusFlag       int
-	memoryFlag     int
+	serverAddr     	string
+	previousYesAll 	bool
+	serversFlag    	string
+	blockchainFlag 	string
+	nodesFlag      	string
+	cpusFlag       	int
+	memoryFlag     	int
+	paramsFile 		string
 )
 
 type Config struct {
@@ -313,8 +313,16 @@ var buildCmd = &cobra.Command{
 			memory = buildArr[offset]
 			offset++
 		}
+		params := "{}"
 
-		if !previousYesAll {
+		if len(paramsFile) != 0{
+			raw,err := ioutil.ReadFile(paramsFile)
+			if err != nil{
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			params = string(raw)
+		}else if !previousYesAll {
 		Params:
 			fmt.Print("Use default parameters? (y/n) ")
 			scanner.Scan()
@@ -370,9 +378,12 @@ var buildCmd = &cobra.Command{
 				fmt.Println("Unknown Option")
 				goto Params
 			}
+			params = "{"+strings.Join(paramArr[:], ",") +"}"
 		}
 
-		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + 
+				",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory + 
+					"\"},\"params\":" +params+ "}"
 		stat := wsEmitListen(serverAddr, bldcommand, param)
 
 		/*fmt.Println(blockchain)
@@ -453,6 +464,8 @@ func init() {
 	buildCmd.Flags().StringVarP(&nodesFlag, "nodes", "n", "", "specify number of nodes")
 	buildCmd.Flags().IntVarP(&cpusFlag, "cpus", "c", 0, "specify number of cpus")
 	buildCmd.Flags().IntVarP(&memoryFlag, "memory", "m", 0, "specify memory allocated")
+	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
+
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
 
