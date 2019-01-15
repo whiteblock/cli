@@ -410,7 +410,9 @@ func init() {
 	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
-	gethCmd.AddCommand(getBlockNumberCmd, getBlockCmd, getAccountCmd, getBalanceCmd, sendTxCmd, getTxCountCmd, getTxCmd, getTxReceiptCmd, getHashRateCmd, startTxCmd, stopTxCmd, startMiningCmd, stopMiningCmd, blockListenerCmd, getRecentSentTxCmd, gethConsole)
+	gethCmd.AddCommand(getBlockNumberCmd, getBlockCmd, getAccountCmd, getBalanceCmd, sendTxCmd,
+		getTxCountCmd, getTxCmd, getTxReceiptCmd, getHashRateCmd, startTxCmd, stopTxCmd,
+		startMiningCmd, stopMiningCmd, blockListenerCmd, getRecentSentTxCmd, gethConsole)
 
 	RootCmd.AddCommand(gethCmd)
 }
