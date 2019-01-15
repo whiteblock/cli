@@ -98,7 +98,7 @@ Optional Parameters:
 
 var startGeneralizedBurstTxCmd = &cobra.Command{
 	Hidden: true,
-	Use:    "send_burst_transaction",
+	Use:    "send_burst_tx",
 	Short:  "Send burst transactions",
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
@@ -131,7 +131,7 @@ Required Parameters:
 
 var sendGeneralizedTxCmd = &cobra.Command{
 	Hidden: true,
-	Use:    "send_transaction",
+	Use:    "send_tx",
 	Short:  "Sends a single transaction",
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
@@ -170,7 +170,7 @@ Optional Parameters:
 
 var stopGeneralizedTxCmd = &cobra.Command{
 	Hidden: true,
-	Use:    "stop_transactions",
+	Use:    "stop_tx",
 	Short:  "Stop transactions",
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
