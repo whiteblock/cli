@@ -48,7 +48,7 @@ Params: sending node, receiving node
 			cmd.Help()
 			return
 		}
-		
+
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
@@ -60,6 +60,9 @@ Params: sending node, receiving node
 				panic(err)
 			}
 			defer client.Close()
+
+			client.Run("pkill -9 iperf3")
+
 			result, err := client.Run(iPerfcmd)
 			if err != nil {
 				fmt.Println(result)
@@ -79,6 +82,9 @@ Params: sending node, receiving node
 				panic(err)
 			}
 			defer client.Close()
+
+			client.Run("pkill -9 iperf3")
+
 			result, err := client.Run(iPerfcmd)
 			if err != nil {
 				fmt.Println(result)

@@ -141,8 +141,8 @@ Fomat:
 			return
 		}
 
-		msg1 := "engine 1 path 1 set bw fixed " + args[0] + args[1] + " port 1 to port 2"
-		msg2 := "engine 1 path 1 set bw fixed " + args[0] + args[1] + " port 2 to port 1"
+		msg1 := "engine 1 path 1 set bw fixed " + args[0] + args[1] + " port 1 out"
+		msg2 := "engine 1 path 1 set bw fixed " + args[0] + args[1] + " port 2 out"
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)

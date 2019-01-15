@@ -48,7 +48,7 @@ testing script that will be able to automate transaction tests.
 
 var startGeneralizedTxCmd = &cobra.Command{
 	Hidden:  true,
-	Use:     "start_const_tx",
+	Use:     "send_const_tx",
 	Aliases: []string{"servers"},
 	Short:   "Send continuous transactions",
 	Long: `
