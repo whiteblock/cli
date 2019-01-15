@@ -219,22 +219,18 @@ var buildCmd = &cobra.Command{
 		// fmt.Println(defaultCpus)
 		// fmt.Println(defaultMemory)
 
-		if len(server) == 0 {
-			server = string(getServer())
-		}
-
 		// fmt.Println(server)
 		buildOpt := []string{}
 		defOpt := []string{}
 		allowEmpty := []bool{}
 
-		if !serversEnabled {
-			allowEmpty = []bool{false}
-			buildOpt = []string{
-				"servers" + tern((len(server) == 0), "", " ("+server+")"),
-			}
-			defOpt = append(defOpt, fmt.Sprintf(server))
-		}
+		// if !serversEnabled {
+		// 	allowEmpty = []bool{false}
+		// 	buildOpt = []string{
+		// 		"servers" + tern((len(server) == 0), "", " ("+server+")"),
+		// 	}
+		// 	defOpt = append(defOpt, fmt.Sprintf(server))
+		// }
 		if !blockchainEnabled {
 			allowEmpty = append(allowEmpty, false)
 			buildOpt = append(buildOpt, "blockchain"+tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"))
@@ -287,12 +283,13 @@ var buildCmd = &cobra.Command{
 			}
 		}
 
+		if len(serversFlag) == 0 {
+			server = string(getServer())
+		}
+
 		var offset = 0
 		if serversEnabled {
 			server = serversFlag
-		} else {
-			server = buildArr[offset]
-			offset++
 		}
 		if blockchainEnabled {
 			blockchain = blockchainFlag
