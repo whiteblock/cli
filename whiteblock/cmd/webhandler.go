@@ -79,24 +79,10 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 
 	// gethcmd
 	if strings.HasPrefix(cmd, "eth::") {
-
-		switch cmd {
-		case "eth::start_mining":
+		if cmd == "eth::start_mining" {
 			fmt.Println("Started mining. Please wait for the DAG to be generated. Number of miners started: ")
-		case "eth::stop_mining":
+		} else if cmd == "eth::stop_mining" {
 			fmt.Println("Stopped mining. Number of miners stopped: ")
-		case "eth::get_accounts":
-			break
-		case "eth::get_balance":
-			break
-		default:
-			c.Emit("eth::get_block_number", "")
-			err = c.On("eth::get_block_number", func(h *gosocketio.Channel, args string) {
-				if len(args) > 0 && args == "0" {
-					fmt.Print("No blocks have been created yet. Please start mining and wait for the DAG to be generated.")
-					mutex.Unlock()
-				}
-			})
 		}
 
 		err = c.On(cmd, func(h *gosocketio.Channel, args string) {

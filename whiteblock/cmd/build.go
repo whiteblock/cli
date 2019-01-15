@@ -16,8 +16,12 @@ import (
 
 var (
 	serverAddr     string
-	serversEnabled bool
 	previousYesAll bool
+	serversFlag    string
+	blockchainFlag string
+	nodesFlag      string
+	cpusFlag       int
+	memoryFlag     int
 )
 
 type Config struct {
@@ -102,6 +106,7 @@ func readConfigFile() ([]byte, error) {
 	return b, nil
 }
 
+/*
 func boolInput(input string) bool {
 	output := false
 	strings.ToLower(input)
@@ -110,6 +115,7 @@ func boolInput(input string) bool {
 	}
 	return output
 }
+*/
 
 func getServer() string {
 	idList := make([]string, 0)
@@ -151,6 +157,36 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
+		serversEnabled := false
+		blockchainEnabled := false
+		nodesEnabled := false
+		cpusEnabled := false
+		memoryEnabled := false
+		if len(serversFlag) > 0 {
+			serversEnabled = true
+		}
+		if len(blockchainFlag) > 0 {
+			blockchainEnabled = true
+		}
+		if len(nodesFlag) > 0 {
+			nodesEnabled = true
+		}
+		if cpusFlag >= 0 {
+			if cpusFlag == 0 {
+				cpus = ""
+			} else {
+				cpus = strconv.Itoa(cpusFlag)
+			}
+			cpusEnabled = true
+		}
+		if memoryFlag >= 0 {
+			if memoryFlag == 0 {
+				memory = ""
+			} else {
+				memory = strconv.Itoa(memoryFlag)
+			}
+			memoryEnabled = true
+		}
 
 		if len(args) != 0 {
 			fmt.Println("\nError: Invalid number of arguments given\n")
@@ -167,7 +203,7 @@ var buildCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		//fmt.Println("")
+
 		var config Config
 		json.Unmarshal(configFile, &config)
 		defaultBlockchain := string(config.Blockchain)
@@ -192,25 +228,47 @@ var buildCmd = &cobra.Command{
 		defOpt := []string{}
 		allowEmpty := []bool{}
 
-		if serversEnabled {
+		if !serversEnabled {
 			allowEmpty = []bool{false}
 			buildOpt = []string{
 				"servers" + tern((len(server) == 0), "", " ("+server+")"),
 			}
-			defOpt = []string{fmt.Sprintf(server)}
+			defOpt = append(defOpt, fmt.Sprintf(server))
+		}
+		if !blockchainEnabled {
+			allowEmpty = append(allowEmpty, false)
+			buildOpt = append(buildOpt, "blockchain"+tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"))
+			defOpt = append(defOpt, fmt.Sprintf(defaultBlockchain))
+		}
+		if !nodesEnabled {
+			allowEmpty = append(allowEmpty, false)
+			buildOpt = append(buildOpt, "nodes"+tern((defaultNodes == "0"), "", " ("+defaultNodes+")"))
+			defOpt = append(defOpt, fmt.Sprintf(defaultNodes))
+		}
+		if !cpusEnabled {
+			allowEmpty = append(allowEmpty, true)
+			buildOpt = append(buildOpt, "cpus"+tern((defaultCpus == ""), "(empty for no limit)", " ("+defaultCpus+")"))
+			defOpt = append(defOpt, fmt.Sprintf(defaultCpus))
+		}
+		if !memoryEnabled {
+			allowEmpty = append(allowEmpty, true)
+			buildOpt = append(buildOpt, "memory"+tern((defaultMemory == ""), "(empty for no limit)", " ("+defaultMemory+")"))
+			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 		}
 
-		buildOpt = append(buildOpt, []string{
-			"blockchain" + tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"),
-			"nodes" + tern((defaultNodes == "0"), "", " ("+defaultNodes+")"),
-			//"docker image" + tern((len(defaultImage) == 0), "", " ("+defaultImage+")"),
-			"cpus" + tern((len(defaultCpus) == 0), "(empty for no limit)", " ("+defaultCpus+")"),
-			"memory" + tern((len(defaultMemory) == 0), "(empty for no limit)", " ("+defaultMemory+")"),
-		}...)
+		/*
+			buildOpt = append(buildOpt, []string{
+				"blockchain" + tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"),
+				"nodes" + tern((defaultNodes == "0"), "", " ("+defaultNodes+")"),
+				"docker image" + tern((len(defaultImage) == 0), "", " ("+defaultImage+")"),
+				"cpus" + tern((len(defaultCpus) == 0), "(empty for no limit)", " ("+defaultCpus+")"),
+				"memory" + tern((len(defaultMemory) == 0), "(empty for no limit)", " ("+defaultMemory+")"),
+			}...)
+		*/
 
-		defOpt = append(defOpt, []string{defaultBlockchain, defaultNodes, defaultCpus, defaultMemory}...)
+		// defOpt = append(defOpt, []string{defaultCpus, defaultMemory}...)
 
-		allowEmpty = append(allowEmpty, []bool{false, false, true, true}...)
+		// allowEmpty = append(allowEmpty, []bool{true, true}...)
 
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {
@@ -231,75 +289,92 @@ var buildCmd = &cobra.Command{
 
 		var offset = 0
 		if serversEnabled {
+			server = serversFlag
+		} else {
 			server = buildArr[offset]
 			offset++
 		}
-		blockchain := buildArr[offset]
-		offset++
-		nodes := buildArr[offset]
-		offset++
+		if blockchainEnabled {
+			blockchain = blockchainFlag
+		} else {
+			blockchain = buildArr[offset]
+			offset++
+		}
+		if nodesEnabled {
+			nodes = nodesFlag
+		} else {
+			nodes = buildArr[offset]
+			offset++
+		}
 		image := blockchain
-		cpu := buildArr[offset]
-		offset++
-		memory := buildArr[offset]
-		offset++
-	Params:
-		fmt.Print("Use default parameters? (y/n) ")
-		scanner.Scan()
-		ask := scanner.Text()
-		ask = strings.Trim(ask, "\n\t\r\v ")
-
-		switch ask {
-		case "n":
-			fallthrough
-		case "no":
-			getParamCommand := "get_params"
-			bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
-			var paramlist []map[string]string
-
-			json.Unmarshal(bcparam, &paramlist)
-
-			scanner := bufio.NewScanner(os.Stdin)
-
-			for i := 0; i < len(paramlist); i++ {
-				for key, value := range paramlist[i] {
-					fmt.Printf("%s (%s): ", key, value)
-					scanner.Scan()
-					text := scanner.Text()
-					if len(text) == 0 {
-						continue
-					}
-					switch value {
-					case "string":
-						if fmt.Sprint(reflect.TypeOf(text)) != "string" {
-							fmt.Println("Entry must be a string")
-							i--
-							continue
-						}
-						paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
-					case "[]string":
-						tmp := strings.Replace(text, " ", ",", -1)
-						paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
-					case "int":
-						_, err := strconv.ParseInt(text, 0, 64)
-						if err != nil {
-							fmt.Println("Entry must be an integer")
-							i--
-							continue
-						}
-						paramArr = append(paramArr, "\""+key+"\""+": "+text)
-					}
-				}
-			}
-		case "y":
-			fallthrough
-		case "yes":
-		default:
-			fmt.Println("Unknown Option")
-			goto Params
+		if !cpusEnabled {
+			cpus = buildArr[offset]
+			offset++
+		}
+		if !memoryEnabled {
+			memory = buildArr[offset]
+			offset++
 		}
 
-		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpu + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
+		if !previousYesAll {
+		Params:
+			fmt.Print("Use default parameters? (y/n) ")
+			scanner.Scan()
+			ask := scanner.Text()
+			ask = strings.Trim(ask, "\n\t\r\v ")
+
+			switch ask {
+			case "n":
+				fallthrough
+			case "no":
+				getParamCommand := "get_params"
+				bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
+				var paramlist []map[string]string
+
+				json.Unmarshal(bcparam, &paramlist)
+
+				scanner := bufio.NewScanner(os.Stdin)
+
+				for i := 0; i < len(paramlist); i++ {
+					for key, value := range paramlist[i] {
+						fmt.Printf("%s (%s): ", key, value)
+						scanner.Scan()
+						text := scanner.Text()
+						if len(text) == 0 {
+							continue
+						}
+						switch value {
+						case "string":
+							if fmt.Sprint(reflect.TypeOf(text)) != "string" {
+								fmt.Println("Entry must be a string")
+								i--
+								continue
+							}
+							paramArr = append(paramArr, "\""+key+"\""+": "+"\""+text+"\"")
+						case "[]string":
+							tmp := strings.Replace(text, " ", ",", -1)
+							paramArr = append(paramArr, "\""+key+"\""+": "+"["+tmp+"]")
+						case "int":
+							_, err := strconv.ParseInt(text, 0, 64)
+							if err != nil {
+								fmt.Println("Entry must be an integer")
+								i--
+								continue
+							}
+							paramArr = append(paramArr, "\""+key+"\""+": "+text)
+						}
+					}
+				}
+			case "y":
+				fallthrough
+			case "yes":
+			default:
+				fmt.Println("Unknown Option")
+				goto Params
+			}
+		}
+
+		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes + ",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory + "\"},\"params\":{" + strings.Join(paramArr[:], ",") + "}}"
 		stat := wsEmitListen(serverAddr, bldcommand, param)
 
 		/*fmt.Println(blockchain)
@@ -374,7 +449,13 @@ Build previous will recreate and deploy the previously built blockchain and spec
 
 func init() {
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	buildCmd.Flags().BoolVarP(&serversEnabled, "servers", "s", false, "display server options")
+	buildCmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
+	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
+	buildCmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
+	buildCmd.Flags().StringVarP(&nodesFlag, "nodes", "n", "", "specify number of nodes")
+	buildCmd.Flags().IntVarP(&cpusFlag, "cpus", "c", 0, "specify number of cpus")
+	buildCmd.Flags().IntVarP(&memoryFlag, "memory", "m", 0, "specify memory allocated")
+
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
 
 	buildCmd.AddCommand(previousCmd)

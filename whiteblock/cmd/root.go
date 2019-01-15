@@ -15,10 +15,10 @@ import (
 var (
 	blockchain string
 	server     string
-	nodes      int
+	nodes      string
 	image      string
-	cpus       int
-	memory     int
+	cpus       string
+	memory     string
 )
 
 type Iface struct {
@@ -91,10 +91,12 @@ func initConfig() {
 	if len(config.Servers) > 0 {
 		server = strconv.Itoa(config.Servers[0])
 	}
-	
+
 	blockchain = config.Blockchain
-	nodes = config.Nodes
+	nodes = fmt.Sprintf("%d", config.Nodes)
 	image = config.Image
+	cpus = config.Resources.Cpus
+	memory = config.Resources.Memory
 
 	viper.WatchConfig()
 	viper.AutomaticEnv()
