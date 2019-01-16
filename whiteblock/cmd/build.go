@@ -15,27 +15,27 @@ import (
 )
 
 var (
-	serverAddr     	string
-	previousYesAll 	bool
-	serversFlag    	string
-	blockchainFlag 	string
-	nodesFlag      	string
-	cpusFlag       	int
-	memoryFlag     	int
-	paramsFile 		string
-	validators		int
+	serverAddr     string
+	previousYesAll bool
+	serversFlag    string
+	blockchainFlag string
+	nodesFlag      string
+	cpusFlag       int
+	memoryFlag     int
+	paramsFile     string
+	validators     int
 )
 
 type Config struct {
-	Servers    	[]int
-	Blockchain 	string
-	Nodes      	int
-	Image      	string
-	Resources  	struct {
-		Cpus   		string
-		Memory 		string
+	Servers    []int
+	Blockchain string
+	Nodes      int
+	Image      string
+	Resources  struct {
+		Cpus   string
+		Memory string
 	}
-	Params 		interface{}
+	Params interface{}
 }
 
 func writePrevCmdFile(prevBuild string) {
@@ -197,7 +197,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		buildArr := make([]string, 0)
-		paramArr := make(map[string]string)
+		paramArr := make(map[string]interface{})
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		bldcommand := "build"
 
@@ -253,8 +253,6 @@ var buildCmd = &cobra.Command{
 			buildOpt = append(buildOpt, "memory"+tern((defaultMemory == ""), "(empty for no limit)", " ("+defaultMemory+")"))
 			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 		}
-
-		
 
 		/*
 			buildOpt = append(buildOpt, []string{
@@ -321,18 +319,20 @@ var buildCmd = &cobra.Command{
 		params := "{}"
 
 		if len(paramsFile) != 0 {
-			raw, err := ioutil.ReadFile(paramsFile)
+			f, err := os.Open(paramsFile)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 
-			err = json.Unmarshal(raw,&paramArr)
-			if err != nil{
+			decoder := json.NewDecoder(f)
+			decoder.UseNumber()
+			err = decoder.Decode(&paramArr)
+			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-		}else if !previousYesAll {
+		} else if !previousYesAll {
 		Params:
 			fmt.Print("Use default parameters? (y/n) ")
 			scanner.Scan()
@@ -366,9 +366,9 @@ var buildCmd = &cobra.Command{
 								i--
 								continue
 							}
-							paramArr[key] = "\""+text+"\"";
+							paramArr[key] = "\"" + text + "\""
 						case "[]string":
-							paramArr[key] = "["+strings.Replace(text, " ", ",", -1) + "]"
+							paramArr[key] = "[" + strings.Replace(text, " ", ",", -1) + "]"
 						case "int":
 							_, err := strconv.ParseInt(text, 0, 64)
 							if err != nil {
@@ -389,21 +389,20 @@ var buildCmd = &cobra.Command{
 			}
 		}
 		if validators >= 0 {
-			paramArr["validators"] = fmt.Sprintf("%d",validators)
+			paramArr["validators"] = fmt.Sprintf("%d", validators)
 		}
-		
+
 		params = "{"
 		first := true
-		for key,value := range paramArr {
+		for key, value := range paramArr {
 			if first {
 				first = false
-			}else{
+			} else {
 				params += ","
 			}
-			params += fmt.Sprintf("\"%s\":%s",key,value)
+			params += fmt.Sprintf("\"%s\""+":"+"%v", key, value)
 		}
 		params += "}"
-		
 
 		if blockchain == "eos" {
 			ns,_ := strconv.Atoi(nodes)
@@ -499,7 +498,7 @@ func init() {
 	buildCmd.Flags().IntVarP(&cpusFlag, "cpus", "c", 0, "specify number of cpus")
 	buildCmd.Flags().IntVarP(&memoryFlag, "memory", "m", 0, "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
-	buildCmd.Flags().IntVarP(&validators,"validators","v",-1,"set the number of validators")
+	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
 
