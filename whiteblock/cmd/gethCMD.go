@@ -18,8 +18,8 @@ var (
 )
 
 type Balances struct {
-	Address string
-	Balance string
+	Address string `json:",omitempty"`
+	Balance string `json:",omitempty"`
 }
 
 var gethCmd = &cobra.Command{
@@ -169,23 +169,9 @@ Response: The integer balance of the account in wei`,
 				Balance: balance,
 			})
 		}
-		// AccJson := strings.Join(AccBalances, ",")
-		fmt.Println(AccBalances)
-		// println(AccBalances)
 
-		// var temp []string
-		// err := json.Unmarshal([]byte(accounts), &temp)
-		// if err != nil {
-		// 	fmt.Println("err")
-		// 	// fmt.Println(accounts)
-		// }
-
-		// log.Printf("Unmarshaled: %v", temp)
-		// // println(temp[:])
-
-		// command := "eth::get_balance"
-		// param := strings.Join(args[:], " ")
-		// fmt.Println(wsEmitListen(serverAddr, command, param))
+		balances, _ := json.Marshal(AccBalances)
+		fmt.Println(prettyp(string(balances)))
 	},
 }
 
