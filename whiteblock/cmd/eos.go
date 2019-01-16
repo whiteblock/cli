@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -136,6 +137,15 @@ Response: success or ERROR`,
 		if len(args) < 1 {
 			fmt.Println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
+			return
+		}
+		tps, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Invalid argument given.")
+			return
+		}
+		if tps > 5000 {
+			fmt.Println("The limit for tps is set to 5000. Please input a lower value.")
 			return
 		}
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
