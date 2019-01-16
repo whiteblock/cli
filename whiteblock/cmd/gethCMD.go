@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -15,6 +16,11 @@ import (
 var (
 	gethcommand string
 )
+
+type Balances struct {
+	Address string
+	Balance string
+}
 
 var gethCmd = &cobra.Command{
 	Use:   "geth <command>",
@@ -63,7 +69,7 @@ Response: stdout of geth console`,
 	},
 }
 
-var getBlockNumberCmd = &cobra.Command{
+var gethGetBlockNumberCmd = &cobra.Command{
 	Use:   "get_block_number",
 	Short: "Get block number",
 	Long: `
@@ -84,7 +90,7 @@ Response: The block number`,
 	},
 }
 
-var getBlockCmd = &cobra.Command{
+var gethGetBlockCmd = &cobra.Command{
 	Use:   "get_block <block number>",
 	Short: "Get block information",
 	Long: `
@@ -108,7 +114,7 @@ Response: JSON Representation of the block.`,
 	},
 }
 
-var getAccountCmd = &cobra.Command{
+var gethGetAccountCmd = &cobra.Command{
 	Use:   "get_accounts",
 	Short: "Get account information",
 	Long: `
@@ -129,7 +135,7 @@ Response: A JSON array of the accounts`,
 	},
 }
 
-var getBalanceCmd = &cobra.Command{
+var gethGetBalanceCmd = &cobra.Command{
 	Use:   "get_balance <address>",
 	Short: "Get account balance information",
 	Long: `
@@ -141,19 +147,49 @@ Params: Account address
 Response: The integer balance of the account in wei`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command)
-		if len(args) < 1 || len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
+		// if len(args) < 1 || len(args) > 1 {
+		// 	println("\nError: Invalid number of arguments given\n")
+		// 	cmd.Help()
+		// 	return
+		// }
+
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_balance"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+
+		accountcmd := "eth::get_accounts"
+		accounts := fmt.Sprintf("%q", wsEmitListen(serverAddr, accountcmd, ""))
+
+		re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
+		accList := re.FindAllString(accounts, -1)
+
+		AccBalances := make([]interface{}, 0)
+		for i := range accList {
+			balance := wsEmitListen(serverAddr, "eth::get_balance", accList[i])
+			AccBalances = append(AccBalances, Balances{
+				Address: accList[i],
+				Balance: balance,
+			})
+		}
+		// AccJson := strings.Join(AccBalances, ",")
+		fmt.Println(AccBalances)
+		// println(AccBalances)
+
+		// var temp []string
+		// err := json.Unmarshal([]byte(accounts), &temp)
+		// if err != nil {
+		// 	fmt.Println("err")
+		// 	// fmt.Println(accounts)
+		// }
+
+		// log.Printf("Unmarshaled: %v", temp)
+		// // println(temp[:])
+
+		// command := "eth::get_balance"
+		// param := strings.Join(args[:], " ")
+		// fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
-var sendTxCmd = &cobra.Command{
+var gethSendTxCmd = &cobra.Command{
 	Use:   "send_transaction <from address> <to address> <gas> <gas price> <value to send>",
 	Short: "Sends a transaction",
 	Long: `
@@ -179,7 +215,7 @@ Response: The transaction hash`,
 	},
 }
 
-var getTxCountCmd = &cobra.Command{
+var gethGetTxCountCmd = &cobra.Command{
 	Use:   "get_transaction_count <address> [block number]",
 	Short: "Get transaction count",
 	Long: `
@@ -203,7 +239,7 @@ Response: The transaction count`,
 	},
 }
 
-var getTxCmd = &cobra.Command{
+var gethGetTxCmd = &cobra.Command{
 	Use:   "get_transaction <hash>",
 	Short: "Get transaction information",
 	Long: `
@@ -227,7 +263,7 @@ Response: JSON representation of the transaction.`,
 	},
 }
 
-var getTxReceiptCmd = &cobra.Command{
+var gethGetTxReceiptCmd = &cobra.Command{
 	Use:   "get_transaction_receipt <hash>",
 	Short: "Get transaction receipt",
 	Long: `
@@ -251,7 +287,7 @@ Response: JSON representation of the transaction receipt.`,
 	},
 }
 
-var getHashRateCmd = &cobra.Command{
+var gethGetHashRateCmd = &cobra.Command{
 	Use:   "get_hash_rate",
 	Short: "Get hash rate",
 	Long: `
@@ -272,7 +308,7 @@ Response: The hash rate of a single node in the network`,
 	},
 }
 
-var startTxCmd = &cobra.Command{
+var gethStartTxCmd = &cobra.Command{
 	Use:   "start_transactions <tx/s> <value> [destination]",
 	Short: "Start transactions",
 	Long: `
@@ -298,7 +334,7 @@ Params: The amount of transactions to send in a second, the value of each transa
 	},
 }
 
-var stopTxCmd = &cobra.Command{
+var gethStopTxCmd = &cobra.Command{
 	Use:   "stop_transactions",
 	Short: "Stop transactions",
 	Long: `
@@ -317,7 +353,7 @@ Stops the sending of transactions if transactions are currently being sent`,
 	},
 }
 
-var startMiningCmd = &cobra.Command{
+var gethStartMiningCmd = &cobra.Command{
 	Use:   "start_mining [node 1 number] [node 2 number]...",
 	Short: "Start Mining",
 	Long: `
@@ -336,7 +372,7 @@ Response: The number of nodes which successfully received the signal to start mi
 	},
 }
 
-var stopMiningCmd = &cobra.Command{
+var gethStopMiningCmd = &cobra.Command{
 	Use:   "stop_mining [node 1 number] [node 2 number]...",
 	Short: "Stop mining",
 	Long: `
@@ -356,7 +392,7 @@ Response: The number of nodes which successfully received the signal to stop min
 	},
 }
 
-var blockListenerCmd = &cobra.Command{
+var gethBlockListenerCmd = &cobra.Command{
 	Use:   "block_listener [block number]",
 	Short: "Get block listener",
 	Long: `
@@ -380,7 +416,7 @@ Response: Will emit on eth::block_listener for every block after the given block
 	},
 }
 
-var getRecentSentTxCmd = &cobra.Command{
+var gethGetRecentSentTxCmd = &cobra.Command{
 	Use:   "get_recent_sent_tx [number]",
 	Short: "Get recently sent transaction",
 	Long: `
@@ -410,9 +446,9 @@ func init() {
 	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
-	gethCmd.AddCommand(getBlockNumberCmd, getBlockCmd, getAccountCmd, getBalanceCmd, sendTxCmd,
-		getTxCountCmd, getTxCmd, getTxReceiptCmd, getHashRateCmd, startTxCmd, stopTxCmd,
-		startMiningCmd, stopMiningCmd, blockListenerCmd, getRecentSentTxCmd, gethConsole)
+	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethGetBalanceCmd, gethSendTxCmd,
+		gethGetTxCountCmd, gethGetTxCmd, gethGetTxReceiptCmd, gethGetHashRateCmd, gethStartTxCmd, gethStopTxCmd,
+		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole)
 
 	RootCmd.AddCommand(gethCmd)
 }
