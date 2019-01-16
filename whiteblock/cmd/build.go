@@ -409,8 +409,6 @@ var buildCmd = &cobra.Command{
 			}
 			nodes = fmt.Sprintf("%d",ns)
 		}
-		fmt.Printf("memory = %s\n",memory)
-		fmt.Printf("memoryFlag = %s\n",memoryFlag)
 		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes +
 			",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory +
 			"\"},\"params\":" + params + "}"
