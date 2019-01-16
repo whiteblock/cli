@@ -23,7 +23,7 @@ Eos will allow the user to get information and run EOS commands.
 
 var eosGetBlockCmd = &cobra.Command{
 	Use:   "get_block <block number>",
-	Short: "Get block number",
+	Short: "Get block information",
 	Long: `
 Roughly equivalent to calling cleos get block <block number>
 
@@ -157,7 +157,7 @@ Response: success or ERROR`,
 
 var eosGetBlockNumCmd = &cobra.Command{
 	Use:   "get_block_number [node]",
-	Short: "Send continuous transactions",
+	Short: "Gets the most current block number",
 	Long: `
 This command will get the block number.
 
