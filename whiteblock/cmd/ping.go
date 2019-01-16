@@ -45,7 +45,7 @@ Params: sending node, receiving node
 			cmd.Help()
 			return
 		}
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.customer",
+		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.master",
 												"-o","UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking no", 
 												"root@" + fmt.Sprintf(node[sendingNodeNumber].IP), "ping", 
 												 fmt.Sprintf(node[receivingNodeNumber].IP)}, os.Environ())
