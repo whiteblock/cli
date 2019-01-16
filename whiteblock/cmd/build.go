@@ -406,7 +406,7 @@ var buildCmd = &cobra.Command{
 
 		if blockchain == "eos" {
 			ns,_ := strconv.Atoi(nodes)
-			if validators == 0 {
+			if validators < 0 {
 				ns += 21
 			}else{
 				ns += validators
