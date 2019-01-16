@@ -1,0 +1,11 @@
+{
+  "chainId": 15468,
+  "difficulty": 100,
+  "eip155Block": 0,
+  "eip158Block": 0,
+  "gasLimit": 400,
+  "homesteadBlock": 0,
+  "initBalance": 99,
+  "maxPeers": 1000,
+  "networkId": 15468
+}
