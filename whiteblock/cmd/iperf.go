@@ -10,6 +10,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	bw          string
+	testTime    string
+	udpEnabled  bool
+	dualEnabled bool
+)
+
 var iPerfCmd = &cobra.Command{
 	Use:   "iperf <sending node> <receiving node>",
 	Short: "iperf will show network conditions.",
@@ -50,10 +57,16 @@ Params: sending node, receiving node
 		}
 
 		wg.Add(2)
+		// command to run iperf as a server
 		go func() {
 			defer wg.Done()
 
-			iPerfcmd := "iperf3 -s " + fmt.Sprintf(node[sendingNodeNumber].IP) + " -1"
+			iPerfcmd := "iperf3 -s "
+			if udpEnabled {
+				iPerfcmd = iPerfcmd + "-u "
+			}
+
+			iPerfcmd = iPerfcmd + fmt.Sprintf(node[sendingNodeNumber].IP) + " -1"
 
 			client, err := NewSshClient(fmt.Sprintf(node[sendingNodeNumber].IP))
 			if err != nil {
@@ -73,9 +86,29 @@ Params: sending node, receiving node
 		}()
 
 		go func() {
+			// command to run iperf as a client
 			time.Sleep(5 * time.Second)
 			defer wg.Done()
-			iPerfcmd := "iperf3 -c " + fmt.Sprintf(node[sendingNodeNumber].IP)
+
+			iPerfcmd := "iperf3 -c "
+			if udpEnabled {
+				iPerfcmd = iPerfcmd + " -u "
+			}
+			if bw != "" && udpEnabled {
+				_, err := strconv.Atoi(bw)
+				if err != nil {
+					fmt.Println("Invalid format given for bandwidth flag.")
+					return
+				}
+				iPerfcmd = iPerfcmd + " -b " + bw
+			} else if bw != "" && !udpEnabled {
+				fmt.Println("udp needs to be enabled to set bandwidth.")
+			}
+			if dualEnabled {
+				iPerfcmd = iPerfcmd + " -d "
+			}
+
+			iPerfcmd = iPerfcmd + fmt.Sprintf(node[sendingNodeNumber].IP)
 
 			client, err := NewSshClient(fmt.Sprintf(node[receivingNodeNumber].IP))
 			if err != nil {
@@ -99,6 +132,10 @@ Params: sending node, receiving node
 
 func init() {
 	iPerfCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	iPerfCmd.Flags().StringVarP(&bw, "bandwidth", "b", "", "set target bandwidth in bits/sec (default 1 Mbit/sec); requires udp enabled")
+	iPerfCmd.Flags().BoolVarP(&dualEnabled, "dualtest", "d", false, "enable bidirectional test simultaneously")
+	iPerfCmd.Flags().StringVarP(&testTime, "time", "t", "", "how long to run test for")
+	iPerfCmd.Flags().BoolVarP(&udpEnabled, "udp", "u", false, "enable udp")
 
 	RootCmd.AddCommand(iPerfCmd)
 }

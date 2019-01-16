@@ -405,13 +405,13 @@ var buildCmd = &cobra.Command{
 		params += "}"
 
 		if blockchain == "eos" {
-			ns,_ := strconv.Atoi(nodes)
+			ns, _ := strconv.Atoi(nodes)
 			if validators < 0 {
 				ns += 21
-			}else{
+			} else {
 				ns += validators
 			}
-			nodes = fmt.Sprintf("%d",ns)
+			nodes = fmt.Sprintf("%d", ns)
 		}
 
 		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes +
@@ -500,7 +500,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 
-	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
+	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
 	buildCmd.AddCommand(previousCmd)
 	RootCmd.AddCommand(buildCmd)
