@@ -276,7 +276,7 @@ var startTxCmd = &cobra.Command{
 	Use:   "start_transactions <tx/s> <value> [destination]",
 	Short: "Start transactions",
 	Long: `
-Start sending transactions according to the given parameters, value = -1 means randomize value.
+Start sending transactions according to the given parameters.
 
 Format: <tx/s> <value> [destination]
 Params: The amount of transactions to send in a second, the value of each transaction in wei, the destination for the transaction
@@ -290,8 +290,8 @@ Params: The amount of transactions to send in a second, the value of each transa
 			cmd.Help()
 			return
 		}
-		weiToEth := args[1] + "000000000000000000"
-		args[1] = weiToEth
+
+		args[1] = args[1] + "000000000000000000"
 
 		param := strings.Join(args[:], " ")
 		fmt.Println(wsEmitListen(serverAddr, command, param))
