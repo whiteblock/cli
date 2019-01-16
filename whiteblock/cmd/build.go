@@ -305,6 +305,7 @@ var buildCmd = &cobra.Command{
 			nodes = buildArr[offset]
 			offset++
 		}
+
 		image := "gcr.io/whiteblock/" + blockchain + ":master"
 		// image := blockchain
 		if !cpusEnabled {
@@ -402,6 +403,16 @@ var buildCmd = &cobra.Command{
 			params += fmt.Sprintf("\"%s\""+":"+"%v", key, value)
 		}
 		params += "}"
+
+		if blockchain == "eos" {
+			ns,_ := strconv.Atoi(nodes)
+			if validators < 0 {
+				ns += 21
+			}else{
+				ns += validators
+			}
+			nodes = fmt.Sprintf("%d",ns)
+		}
 
 		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes +
 			",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory +
