@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -118,62 +117,56 @@ var gethGetAccountCmd = &cobra.Command{
 	Use:   "get_accounts",
 	Short: "Get account information",
 	Long: `
-Get a list of all unlocked accounts
+Get a list of all unlocked accounts, current balance of accounts, tx counts, and other relevant information.
 
 Response: A JSON array of the accounts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_accounts"
+		command := "eth::accounts_status"
 		param := ""
 		fmt.Println(wsEmitListen(serverAddr, command, param))
 	},
 }
 
-var gethGetBalanceCmd = &cobra.Command{
-	Use:   "get_balance <address>",
-	Short: "Get account balance information",
-	Long: `
-Get the current balance of an account
+// var gethGetBalanceCmd = &cobra.Command{
+// 	Use:   "get_balance <address>",
+// 	Short: "Get account balance information",
+// 	Long: `
+// Get the current balance of an account
 
-Format: <address>
-Params: Account address
+// Format: <address>
+// Params: Account address
 
-Response: The integer balance of the account in wei`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		// if len(args) < 1 || len(args) > 1 {
-		// 	println("\nError: Invalid number of arguments given\n")
-		// 	cmd.Help()
-		// 	return
-		// }
+// Response: The integer balance of the account in wei`,
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		// fmt.Println(command)
+// 		// if len(args) < 1 || len(args) > 1 {
+// 		// 	println("\nError: Invalid number of arguments given\n")
+// 		// 	cmd.Help()
+// 		// 	return
+// 		// }
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
-		accountcmd := "eth::get_accounts"
-		accounts := fmt.Sprintf("%q", wsEmitListen(serverAddr, accountcmd, ""))
+// 		accountcmd := "eth::get_accounts"
+// 		accounts := fmt.Sprintf("%q", wsEmitListen(serverAddr, accountcmd, ""))
 
-		re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
-		accList := re.FindAllString(accounts, -1)
+// 		re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
+// 		accList := re.FindAllString(accounts, -1)
 
-		AccBalances := make([]interface{}, 0)
-		for i := range accList {
-			balance := wsEmitListen(serverAddr, "eth::get_balance", accList[i])
-			AccBalances = append(AccBalances, Balances{
-				Address: accList[i],
-				Balance: balance,
-			})
-		}
+// 		AccBalances := make([]interface{}, 0)
+// 		for i := range accList {
+// 			balance := wsEmitListen(serverAddr, "eth::get_balance", accList[i])
+// 			AccBalances = append(AccBalances, Balances{
+// 				Address: accList[i],
+// 				Balance: balance,
+// 			})
+// 		}
 
-		balances, _ := json.Marshal(AccBalances)
-		fmt.Println(prettyp(string(balances)))
-	},
-}
+// 		balances, _ := json.Marshal(AccBalances)
+// 		fmt.Println(prettyp(string(balances)))
+// 	},
+// }
 
 var gethSendTxCmd = &cobra.Command{
 	Use:   "send_transaction <from address> <to address> <gas> <gas price> <value to send>",
@@ -432,7 +425,7 @@ func init() {
 	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
-	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethGetBalanceCmd, gethSendTxCmd,
+	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethSendTxCmd,
 		gethGetTxCountCmd, gethGetTxCmd, gethGetTxReceiptCmd, gethGetHashRateCmd, gethStartTxCmd, gethStopTxCmd,
 		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole)
 
