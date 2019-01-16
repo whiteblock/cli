@@ -495,7 +495,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 
-	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
+	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default settings.")
 
 	buildCmd.AddCommand(previousCmd)
 	RootCmd.AddCommand(buildCmd)
