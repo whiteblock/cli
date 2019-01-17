@@ -95,8 +95,12 @@ Latency will introduce delay to the network. You will specify the amount of late
 			delayStr = strconv.Itoa(delayInt)
 		} else if randomPing && len(args) == 0 {
 			delayStr = "25"
+		} else if randomPing && len(args) != 0 {
+			fmt.Println("Cannot use random ping flag with given arguments")
+			return
 		} else {
-			fmt.Println("No argument was given")
+			fmt.Println("No arguments was given")
+			return
 		}
 
 		msg1 := "engine 1 path 1 set delay constant " + delayStr + " port 1 to port 2"
