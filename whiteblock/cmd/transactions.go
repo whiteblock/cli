@@ -29,7 +29,7 @@ Tx will run commands relavent to sending transactions.
 Please use the help commands to make sure you provide the correct flags. If the blockchain is not listed in the help command, the transaction command is not supported for that blockchain. 
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list above.")
+		fmt.Println("\nNo command given. Please choose a command from the list below.")
 		cmd.Help()
 		return
 	},
@@ -54,8 +54,8 @@ The user must specify the flags that will be used for sending transactions.
 Send a transaction between two accounts.
 
 Required Parameters: 
-	ethereum:  --from <address>  --to <address> --gas <gas> --gasprice <gas price> --value <amount>
-	eos:  --node <node number> --from <address> --to <address> --value <amount> 
+	ethereum:  --from <address>  --destination <address> --gas <gas> --gasprice <gas price> --value <amount>
+	eos:  --node <node number> --from <address> --destination <address> --value <amount> 
 	
 Optional Parameters:
 	eos:  --symbol [symbol=SYS] --code [code=eosio.token] --memo [memo=]
@@ -83,6 +83,7 @@ Optional Parameters:
 			param = nodeFlag + " " + fromFlag + " " + toFlag + " " + strconv.Itoa(valueFlag)
 		case "syscoin":
 			fmt.Println("This function is not supported for the syscoin client.")
+			return
 		default:
 			println(blockchain)
 			fmt.Println("No blockchain found. Please use the build function to create one")
@@ -100,7 +101,7 @@ var startTxCmd = &cobra.Command{
 The user must specify the flags that will be used for sending transactions.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list above.")
+		fmt.Println("\nNo command given. Please choose a command from the list below.")
 		cmd.Help()
 		return
 	},
@@ -120,7 +121,7 @@ Required Parameters:
 	eos:  --tps <tps> 
 
 Optional Parameters:
-	ethereum:  --to [address]
+	ethereum:  --destination [address]
 	eos:  --size [tx size]
 	`,
 
@@ -171,6 +172,7 @@ Optional Parameters:
 			}
 		case "syscoin":
 			command = "sys::start_test"
+			return
 			// I think we need to change how the test will be sent in the backend if we want to generalize the transactions for syscoin
 			// param = "{\"waitTime\":" + args[0] + ",\"minCompletePercent\":" + args[1] + ",\"numberOfTransactions\":" + args[2] + "}"
 		default:
@@ -198,10 +200,7 @@ Optional Parameters:
 		command := ""
 		param := ""
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		if !(len(blockchain) > 0) {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
+
 		switch blockchain {
 		case "ethereum":
 			fmt.Println("This function is not supported for the ethereum client.")
@@ -227,6 +226,7 @@ Optional Parameters:
 			}
 		case "syscoin":
 			fmt.Println("This function is not supported for the syscoin client.")
+			return
 		default:
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
@@ -254,6 +254,7 @@ Stops the sending of transactions if transactions are currently being sent
 			command = "eth::stop_transactions"
 		case "syscoin":
 			fmt.Println("This function is not supported for the syscoin client.")
+			return
 		default:
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return

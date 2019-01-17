@@ -101,7 +101,7 @@ Params: Block number
 Response: JSON Representation of the block.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command)
-		if len(args) < 1 || len(args) > 1 {
+		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return

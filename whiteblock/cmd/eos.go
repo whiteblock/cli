@@ -147,7 +147,7 @@ Response: success or ERROR`,
 
 var eosGetBlockNumCmd = &cobra.Command{
 	Use:   "get_block_number [node]",
-	Short: "Send continuous transactions",
+	Short: "Get current block number",
 	Long: `
 This command will get the block number.
 

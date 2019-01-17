@@ -35,7 +35,7 @@ Get will ouput server and network information and statstics.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
+		fmt.Println("\nNo command given. Please choose a command from the list below.\n")
 		cmd.Help()
 		return
 	},
@@ -270,15 +270,225 @@ Response: JSON representation of network statistics
 	},
 }
 
+/*
+Work underway on generalized use commands to consolidate all the different
+commands separated by blockchains.
+*/
+
+var getBlockCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "block",
+	Short: "Get information regarding blocks",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("\nNo command given. Please choose a command from the list below.")
+		cmd.Help()
+		return
+	},
+}
+
+var getBlockNumCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "number",
+	Short: "Get the block number",
+	Long: `
+Gets the most recent block number that had been added to the blockchain.
+
+Response: block number
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := ""
+		switch blockchain {
+		case "ethereum":
+			command = "eth::get_block_number"
+		case "eos":
+			command = "eos::get_block_number"
+		case "syscoin":
+			fmt.Println("This function is not supported for the syscoin client.")
+			return
+		default:
+			fmt.Println("No blockchain found. Please use the build function to create one")
+			return
+		}
+		data := wsEmitListen(serverAddr, command, "")
+		fmt.Println(data)
+	},
+}
+
+var getBlockInfoCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "info <block number>",
+	Short: "Get the infomration of a block",
+	Long: `
+Gets the information inside a block including transactions and other information relevant to the currently connected blockchain.
+
+Format: <Block Number>
+Params: Block number
+
+Response: JSON representation of the block
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := ""
+		switch blockchain {
+		case "ethereum":
+			command = "eth::get_block"
+		case "eos":
+			command = "eos::get_block"
+		case "syscoin":
+			fmt.Println("This function is not supported for the syscoin client.")
+			return
+		default:
+			fmt.Println("No blockchain found. Please use the build function to create one")
+			return
+		}
+		if len(args) != 1 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+		data := wsEmitListen(serverAddr, command, args[0])
+		fmt.Println(data)
+	},
+}
+
+var getTxCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "tx",
+	Short: "Get information regarding transactions",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("\nNo command given. Please choose a command from the list below.")
+		cmd.Help()
+		return
+	},
+}
+
+var getTxInfoCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "info <tx hash>",
+	Short: "Get transaction information",
+	Long: `
+Get a transaction by its hash. The user can find the transaction hash by viewing block information. To view block information, the command 'get block info <block number>' can be used.
+
+Format: <hash>
+Params: The transaction hash
+
+Response: JSON representation of the transaction.
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := ""
+		switch blockchain {
+		case "ethereum":
+			command = "eth::get_transaction"
+		case "eos":
+			fmt.Println("This function is not supported for the eos client.")
+			return
+		case "syscoin":
+			fmt.Println("This function is not supported for the syscoin client.")
+			return
+		default:
+			fmt.Println("No blockchain found. Please use the build function to create one")
+			return
+		}
+		if len(args) != 1 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+		data := wsEmitListen(serverAddr, command, args[0])
+		fmt.Println(data)
+	},
+}
+
+// eth::get_transaction_receipt does not work.
+/*
+var getTxReceiptCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "receipt <tx hash>",
+	Short: "Get the transaction receipt",
+	Long: `
+Get the transaction receipt by the tx hash. The user can find the transaction hash by viewing block information. To view block information, the command 'get block info <block number>' can be used.
+
+Format: <hash>
+Params: The transaction hash
+
+Response: JSON representation of the transaction receipt.
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := ""
+		switch blockchain {
+		case "ethereum":
+			command = "eth::get_transaction_receipt"
+		case "eos":
+			fmt.Println("This function is not supported for the syscoin client.")
+		case "syscoin":
+			fmt.Println("This function is not supported for the syscoin client.")
+		default:
+			fmt.Println("No blockchain found. Please use the build function to create one")
+			return
+		}
+		data := wsEmitListen(serverAddr, command, args[0])
+		fmt.Println(data)
+	},
+}
+*/
+
+var getAccountCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "account",
+	Short: "Get account information",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("\nNo command given. Please choose a command from the list below.")
+		cmd.Help()
+		return
+	},
+}
+
+var getAccountInfoCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "info",
+	Short: "Get account information",
+	Long: `
+Gets the account information relevant to the currently connected blockchain.
+
+Response: JSON representation of the accounts information.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+		command := ""
+		switch blockchain {
+		case "ethereum":
+			command = "eth::accounts_status"
+			data := wsEmitListen(serverAddr, command, "")
+			fmt.Println(data)
+		case "eos":
+			nodenum, _ := strconv.Atoi(nodes)
+			AccBalances := make([]interface{}, 0)
+			for i := 0; i < nodenum; i++ {
+				AccBalances = append(AccBalances, wsEmitListen(serverAddr, "eos::get_info", strconv.Itoa(i)))
+			}
+			fmt.Println(AccBalances)
+		case "syscoin":
+			fmt.Println("This function is not supported for the syscoin client.")
+			return
+		default:
+			fmt.Println("No blockchain found. Please use the build function to create one")
+			return
+		}
+	},
+}
+
 func init() {
 	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	getServerCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	getNodesCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
-	// getDataCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// dataByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// dataByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// dataAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	getStatsCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
@@ -286,118 +496,13 @@ func init() {
 	statsAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getNetworkDefaultsCmd, getRunningCmd, getLogCmd)
-	// getDataCmd.AddCommand(dataByTimeCmd, dataByBlockCmd, dataAllCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
+
+	// dev commands that are currently being implemented
+	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd)
+	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
+	getTxCmd.AddCommand(getTxInfoCmd)
+	getAccountCmd.AddCommand(getAccountInfoCmd)
 
 	RootCmd.AddCommand(getCmd)
 }
-
-// var getDataCmd = &cobra.Command{
-// 	Use:   "data <command>",
-// 	Short: "Data will pull data from the network and output into a file.",
-// 	Long: `
-// Data will pull specific or all block data from the network and output into a file. You will specify the directory where the file will be downloaded.
-
-// 	`,
-
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
-// 		cmd.Help()
-// 		return
-// 	},
-// }
-
-// var dataByTimeCmd = &cobra.Command{
-// 	Use:   "time <start time> <end time> [path]",
-// 	Short: "Data time will pull data from the network and output into a file.",
-// 	Long: `
-// Data time will pull block data from the network from a given start and end time and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
-
-// Params: Unix time stamps
-// Format: <start unix time stamp> <end unix time stamp>
-
-// 	`,
-
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		if len(args) < 2 || len(args) > 3 {
-// 			fmt.Println("\nError: Invalid number of arguments given\n")
-// 			cmd.Help()
-// 			return
-// 		} else if len(args) == 2 {
-// 			usr, err := user.Current()
-// 			if err != nil {
-// 				log.Fatal(err)
-// 			}
-// 			args = append(args, usr.HomeDir+"/Downloads/")
-// 		}
-
-// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-// 		command := "stats"
-// 		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
-// 		data := wsEmitListen(serverAddr, command, param)
-
-// 		cwFile(args[2], data)
-// 	},
-// }
-
-// var dataByBlockCmd = &cobra.Command{
-// 	Use:   "block <start block> <end block> [path]",
-// 	Short: "Data block will pull data from the network and output into a file.",
-// 	Long: `
-// Data block will pull block data from the network from a given start and end block and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
-
-// Params: Unix time stamps
-// Format: <start unix time stamp> <end unix time stamp>
-
-// 	`,
-
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		if len(args) < 2 || len(args) > 3 {
-// 			fmt.Println("\nError: Invalid number of arguments given\n")
-// 			cmd.Help()
-// 			return
-// 		} else if len(args) == 2 {
-// 			usr, err := user.Current()
-// 			if err != nil {
-// 				log.Fatal(err)
-// 			}
-// 			args = append(args, usr.HomeDir+"/Downloads/")
-// 		}
-
-// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-// 		command := "stats"
-// 		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
-// 		data := wsEmitListen(serverAddr, command, param)
-
-// 		cwFile(args[2], data)
-// 	},
-// }
-
-// var dataAllCmd = &cobra.Command{
-// 	Use:   "all [path]",
-// 	Short: "All will pull data from the network and output into a file.",
-// 	Long: `
-// Data all will pull all data from the network and output into a file. The directory where the file will be downloaded will need to be specified. If no directory is provided, default directory is set to ~/Downloads.
-
-// 	`,
-
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		if len(args) > 1 {
-// 			fmt.Println("\nError: Invalid number of arguments given\n")
-// 			cmd.Help()
-// 			return
-// 		} else if len(args) == 0 {
-// 			usr, err := user.Current()
-// 			if err != nil {
-// 				log.Fatal(err)
-// 			}
-// 			args = append(args, usr.HomeDir+"/Downloads/")
-// 		}
-
-// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-// 		command := "all_stats"
-// 		data := wsEmitListen(serverAddr, command, "")
-
-// 		cwFile(args[0], data)
-// 	},
-// }
