@@ -277,7 +277,7 @@ commands separated by blockchains.
 
 var getBlockCmd = &cobra.Command{
 	// Hidden: true,
-	Use:   "block",
+	Use:   "block <command>",
 	Short: "Get information regarding blocks",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("\nNo command given. Please choose a command from the list below.")
@@ -354,7 +354,7 @@ Response: JSON representation of the block
 
 var getTxCmd = &cobra.Command{
 	// Hidden: true,
-	Use:   "tx",
+	Use:   "tx <command",
 	Short: "Get information regarding transactions",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("\nNo command given. Please choose a command from the list below.")
@@ -442,7 +442,7 @@ Response: JSON representation of the transaction receipt.
 
 var getAccountCmd = &cobra.Command{
 	// Hidden: true,
-	Use:   "account",
+	Use:   "account <command>",
 	Short: "Get account information",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("\nNo command given. Please choose a command from the list below.")
