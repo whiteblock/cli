@@ -348,6 +348,16 @@ Response: The number of nodes which successfully received the signal to start mi
 		param := strings.Join(args[:], " ")
 		// fmt.Println(command)
 		fmt.Println(wsEmitListen(serverAddr, command, param))
+
+		DagReady := false
+		for !DagReady {
+			fmt.Printf("\rDAG is being generated...")
+			blocknum, _ := strconv.Atoi(wsEmitListen(serverAddr, "eth::get_block_number", ""))
+			if blocknum > 4 {
+				DagReady = true
+			}
+		}
+		fmt.Println("\rDAG has been successfully generated.")
 	},
 }
 
