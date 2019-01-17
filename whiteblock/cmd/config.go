@@ -8,8 +8,9 @@ import (
 )
 
 var resetConfCmd = &cobra.Command{
-	Use:   "config",
-	Short: "Edit the configuration file for default parameters.",
+	Hidden: true,
+	Use:    "config",
+	Short:  "Edit the configuration file for default parameters.",
 	Long: `
 
 This command will rest the configuration file when called.
