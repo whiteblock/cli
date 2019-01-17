@@ -65,6 +65,7 @@ func init() {
 }
 
 func initConfig() {
+	fmt.Println("INITCONFIG")
 	home, err := homedir.Dir()
 	if err != nil {
 		fmt.Println(err)
@@ -100,4 +101,5 @@ func initConfig() {
 
 	viper.WatchConfig()
 	viper.AutomaticEnv()
+	println(blockchain)
 }

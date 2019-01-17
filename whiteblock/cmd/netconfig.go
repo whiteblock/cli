@@ -79,12 +79,8 @@ Latency will introduce delay to the network. You will specify the amount of late
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		// if len(args) != 1 {
-		// 	println("\nError: Invalid number of arguments given\n")
-		// 	cmd.Help()
-		// 	return
-		// }
-
+		// for demo purposes only. Take out for production.
+		// ==================================================================
 		delayStr := ""
 		if !randomPing && len(args) != 0 {
 			delayInt, err := strconv.Atoi(args[0])
@@ -102,6 +98,23 @@ Latency will introduce delay to the network. You will specify the amount of late
 			fmt.Println("No arguments was given")
 			return
 		}
+		// ==================================================================
+
+		// for production. uncomment this and comment out the above demo code.
+		/*
+			if len(args) != 1 {
+				println("\nError: Invalid number of arguments given\n")
+				cmd.Help()
+				return
+			}
+
+			delayInt, err := strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+			delayInt = delayInt / 2
+			delayStr = strconv.Itoa(delayInt)
+		*/
 
 		msg1 := "engine 1 path 1 set delay constant " + delayStr + " port 1 to port 2"
 		msg2 := "engine 1 path 1 set delay constant " + delayStr + " port 2 to port 1"
@@ -168,6 +181,7 @@ Fomat:
 func init() {
 	latencyCmd.Flags().BoolVarP(&randomPing, "random", "r", false, "apply random latency")
 
+	// randomizing flag for demo purposes. Take out for production
 	netropyCmd.AddCommand(emulationOnCmd, emulationOffCmd, latencyCmd, packetLossCmd, bandwCmd)
 
 	RootCmd.AddCommand(netropyCmd)

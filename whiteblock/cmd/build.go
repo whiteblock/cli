@@ -93,18 +93,6 @@ func readConfigFile() ([]byte, error) {
 	if err != nil {
 		//fmt.Print(err)
 	}
-	/*
-		fmt.Println(string(b))
-
-		fmt.Println("get some of this:")
-
-		fmt.Println(config.Servers)
-		fmt.Println(config.Blockchain)
-		fmt.Println(config.Nodes)
-		fmt.Println(config.Image)
-		fmt.Println(config.Resources.Cpus)
-		fmt.Println(config.Resources.Memory)
-	*/
 	return b, nil
 }
 
@@ -139,7 +127,6 @@ func getServer() string {
 	}
 
 	server = strings.Join(idList, ",")
-	//fmt.Println("server is: " + server)
 	return server
 }
 
@@ -210,25 +197,19 @@ var buildCmd = &cobra.Command{
 		defaultCpus := string(config.Resources.Cpus)
 		defaultMemory := string(config.Resources.Memory)
 
-		// fmt.Println(defaultBlockchain)
-		// fmt.Println(server)
-		// fmt.Println(defaultNodes)
-		// fmt.Println(defaultImage)
-		// fmt.Println(defaultCpus)
-		// fmt.Println(defaultMemory)
-
-		// fmt.Println(server)
 		buildOpt := []string{}
 		defOpt := []string{}
 		allowEmpty := []bool{}
 
-		// if !serversEnabled {
-		// 	allowEmpty = []bool{false}
-		// 	buildOpt = []string{
-		// 		"servers" + tern((len(server) == 0), "", " ("+server+")"),
-		// 	}
-		// 	defOpt = append(defOpt, fmt.Sprintf(server))
-		// }
+		/*
+			if !serversEnabled {
+				allowEmpty = []bool{false}
+				buildOpt = []string{
+					"servers" + tern((len(server) == 0), "", " ("+server+")"),
+				}
+				defOpt = append(defOpt, fmt.Sprintf(server))
+			}
+		*/
 		if !blockchainEnabled {
 			allowEmpty = append(allowEmpty, false)
 			buildOpt = append(buildOpt, "blockchain"+tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"))
@@ -250,6 +231,7 @@ var buildCmd = &cobra.Command{
 			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 		}
 
+		// the code that was used when flag options were not implemented
 		/*
 			buildOpt = append(buildOpt, []string{
 				"blockchain" + tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"),
@@ -258,11 +240,10 @@ var buildCmd = &cobra.Command{
 				"cpus" + tern((len(defaultCpus) == 0), "(empty for no limit)", " ("+defaultCpus+")"),
 				"memory" + tern((len(defaultMemory) == 0), "(empty for no limit)", " ("+defaultMemory+")"),
 			}...)
+
+			defOpt = append(defOpt, []string{defaultCpus, defaultMemory}...)
+			allowEmpty = append(allowEmpty, []bool{true, true}...)
 		*/
-
-		// defOpt = append(defOpt, []string{defaultCpus, defaultMemory}...)
-
-		// allowEmpty = append(allowEmpty, []bool{true, true}...)
 
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {
@@ -414,16 +395,6 @@ var buildCmd = &cobra.Command{
 			"\"},\"params\":" + params + "}"
 		stat := wsEmitListen(serverAddr, bldcommand, param)
 
-		/*fmt.Println(blockchain)
-		fmt.Println(server)
-		fmt.Println(nodes)
-		fmt.Println(image)
-		fmt.Println(cpus)
-		fmt.Println(memory)
-
-		fmt.Println(bldcommand)
-		fmt.Println(param)*/
-
 		if stat == "" {
 			writePrevCmdFile(param)
 			writeConfigFile(param)
@@ -487,7 +458,7 @@ Build previous will recreate and deploy the previously built blockchain and spec
 func init() {
 	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	buildCmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
-	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
+	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	buildCmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
 	buildCmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
 	buildCmd.Flags().Float32VarP(&cpusFlag, "cpus", "c", 0, "specify number of cpus")
@@ -495,6 +466,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 
+	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
 	buildCmd.AddCommand(previousCmd)

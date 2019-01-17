@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+
 	//"strings"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
@@ -28,11 +29,11 @@ SSH will allow the user to go into the contianer where the specified node exists
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		/*if len(args) != 1 {
+		if len(args) < 1 {
 			fmt.Println("\nError: Invalid number of arguments given")
 			cmd.Help()
 			return
-		}*/
+		}
 
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
@@ -50,9 +51,9 @@ SSH will allow the user to go into the contianer where the specified node exists
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
 			"root@" + fmt.Sprintf(node[nodeNumber].IP)}
 
-		sshArgs = append(sshArgs,args[1:]...)
+		sshArgs = append(sshArgs, args[1:]...)
 		//fmt.Println(strings.Join(sshArgs," "))
-		log.Fatal(unix.Exec("/usr/bin/ssh",sshArgs, os.Environ()))
+		log.Fatal(unix.Exec("/usr/bin/ssh", sshArgs, os.Environ()))
 	},
 }
 
