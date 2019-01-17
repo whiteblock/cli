@@ -51,6 +51,7 @@ var emulationOnCmd = &cobra.Command{
 		msg := "engine 1 emulation on"
 
 		wsEmitListen(serverAddr, command, msg)
+		fmt.Println("Network condition emulation turned on.")
 	},
 }
 
@@ -64,6 +65,7 @@ var emulationOffCmd = &cobra.Command{
 		msg := "engine 1 emulation off"
 
 		wsEmitListen(serverAddr, command, msg)
+		fmt.Println("Network condition emulation turned off.")
 	},
 }
 
@@ -121,6 +123,7 @@ Latency will introduce delay to the network. You will specify the amount of late
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)
+		fmt.Println("Network latency of " + delayStr + " has been set. Please use 'netconfig on' to enable network configuration.")
 	},
 }
 
@@ -146,6 +149,7 @@ Packetloss will drop packets in the network. You will specify the amount of pack
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)
+		fmt.Println("Packet loss of " + args[0] + " has been set. Please use 'netconfig on' to enable network configuration.")
 	},
 }
 
@@ -175,6 +179,7 @@ Fomat:
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)
+		fmt.Println("Network bandwidth of " + args[0] + " " + args[1] + " has been set. Please use 'netconfig on' to enable network configuration.")
 	},
 }
 
