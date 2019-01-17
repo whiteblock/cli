@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -22,7 +23,7 @@ Eos will allow the user to get information and run EOS commands.
 
 var eosGetBlockCmd = &cobra.Command{
 	Use:   "get_block <block number>",
-	Short: "Get block number",
+	Short: "Get block information",
 	Long: `
 Roughly equivalent to calling cleos get block <block number>
 
@@ -138,6 +139,15 @@ Response: success or ERROR`,
 			cmd.Help()
 			return
 		}
+		tps, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Invalid argument given.")
+			return
+		}
+		if tps > 5000 {
+			fmt.Println("The limit for tps is set to 5000. Please input a lower value.")
+			return
+		}
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "eos::run_constant_tps"
 		param := strings.Join(args[:], " ")
@@ -147,7 +157,11 @@ Response: success or ERROR`,
 
 var eosGetBlockNumCmd = &cobra.Command{
 	Use:   "get_block_number [node]",
+<<<<<<< HEAD
 	Short: "Get current block number",
+=======
+	Short: "Gets the most current block number",
+>>>>>>> 5e678d5ce2abfa4ac6706ede8d4d58026fcfad58
 	Long: `
 This command will get the block number.
 
