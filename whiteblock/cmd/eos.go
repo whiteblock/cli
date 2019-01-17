@@ -157,11 +157,7 @@ Response: success or ERROR`,
 
 var eosGetBlockNumCmd = &cobra.Command{
 	Use:   "get_block_number [node]",
-<<<<<<< HEAD
 	Short: "Get current block number",
-=======
-	Short: "Gets the most current block number",
->>>>>>> 5e678d5ce2abfa4ac6706ede8d4d58026fcfad58
 	Long: `
 This command will get the block number.
 
