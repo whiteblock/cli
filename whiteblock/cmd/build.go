@@ -177,7 +177,7 @@ var buildCmd = &cobra.Command{
 			if cpusFlag == 0 {
 				cpus = ""
 			} else {
-				cpus = fmt.Sprintf("%f",cpusFlag)
+				cpus = fmt.Sprintf("%f", cpusFlag)
 			}
 			cpusEnabled = true
 		}
@@ -495,11 +495,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 
-<<<<<<< HEAD
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
-=======
-	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default settings.")
->>>>>>> 5e678d5ce2abfa4ac6706ede8d4d58026fcfad58
 
 	buildCmd.AddCommand(previousCmd)
 	RootCmd.AddCommand(buildCmd)
