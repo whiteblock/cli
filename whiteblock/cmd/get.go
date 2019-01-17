@@ -318,7 +318,7 @@ Response: block number
 var getBlockInfoCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "info <block number>",
-	Short: "Get the infomration of a block",
+	Short: "Get the information of a block",
 	Long: `
 Gets the information inside a block including transactions and other information relevant to the currently connected blockchain.
 
