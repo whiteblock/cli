@@ -406,19 +406,19 @@ Response: Will emit on eth::block_listener for every block after the given block
 }
 
 var gethGetRecentSentTxCmd = &cobra.Command{
-	Use:   "get_recent_sent_tx [number]",
+	Use:   "get_recent_sent_tx <number>",
 	Short: "Get recently sent transaction",
 	Long: `
 Get a number of the most recent transactions sent
 
-Format: [number]
+Format: <number>
 Params: The number of transactions to retrieve
 
 Response: JSON object of transaction data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command)
-		if len(args) > 1 {
+		if len(args) != 1 {
 			println("\nError: Invalid number of arguments given\n")
 			cmd.Help()
 			return

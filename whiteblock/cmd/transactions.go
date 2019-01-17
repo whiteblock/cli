@@ -70,6 +70,7 @@ Optional Parameters:
 		case "ethereum":
 			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
 				fmt.Println("Required flags were not provided. Please input the required flags.")
+				cmd.Help()
 				return
 			}
 			command = "eth::send_transaction"
@@ -98,6 +99,7 @@ var startTxCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Send transactions",
 	Long: `
+This command will be used to automate transactions and will require require flags to execute. There are two modes of sending transactions: stream and burst. 
 The user must specify the flags that will be used for sending transactions.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -114,7 +116,7 @@ var startStreamTxCmd = &cobra.Command{
 	Aliases: []string{"cont", "continuous"},
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
-This command will start sending a continual stream of transactions according to the given flags, --value = -1 means randomize value.
+This command will start sending a continual stream of transactions according to the given flags. Stream will send transactions as a continuous flow of tps. The user will need to run the command tx stop to stop running transactions.
 
 Required Parameters: 
 	ethereum:  --tps <tps> --value <amount>
@@ -134,14 +136,17 @@ Optional Parameters:
 			//error handling for invalid flags
 			if !(txSizeFlag == 0) {
 				fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
+				cmd.Help()
 				return
 			}
 			if valueFlag == 0 {
 				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
+				cmd.Help()
 				return
 			}
 			if tpsFlag == 0 {
 				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+				cmd.Help()
 				return
 			}
 
@@ -155,10 +160,12 @@ Optional Parameters:
 			//error handling for invalid flags
 			if valueFlag != 0 {
 				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
+				cmd.Help()
 				return
 			}
 			if tpsFlag == 0 {
 				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+				cmd.Help()
 				return
 			}
 
@@ -189,10 +196,10 @@ var startBurstTxCmd = &cobra.Command{
 	Short: "Send burst transactions",
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
-This command will send a burst of transactions. Additional flags are optional.
+This command will send a burst of transactions. Additional flags are optional. Burst will send one burst of transactions to the blockchain to fill the transaction pool.
 
 Required Parameters: 
-	eos:  --tps <tps>  
+	eos:  --tps <number of tx>  
 Optional Parameters:
 	--size [tx size]
 `,
@@ -209,10 +216,12 @@ Optional Parameters:
 			//error handling for invalid flags
 			if valueFlag != 0 {
 				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
+				cmd.Help()
 				return
 			}
 			if tpsFlag == 0 {
 				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+				cmd.Help()
 				return
 			}
 

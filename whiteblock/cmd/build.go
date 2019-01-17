@@ -19,7 +19,7 @@ var (
 	previousYesAll bool
 	serversFlag    string
 	blockchainFlag string
-	nodesFlag      string
+	nodesFlag      int
 	cpusFlag       float32
 	memoryFlag     string
 	paramsFile     string
@@ -170,7 +170,7 @@ var buildCmd = &cobra.Command{
 		if len(blockchainFlag) > 0 {
 			blockchainEnabled = true
 		}
-		if len(nodesFlag) > 0 {
+		if nodesFlag > 0 {
 			nodesEnabled = true
 		}
 		if cpusFlag >= 0 {
@@ -296,7 +296,7 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 		if nodesEnabled {
-			nodes = nodesFlag
+			nodes = strconv.Itoa(nodesFlag)
 		} else {
 			nodes = buildArr[offset]
 			offset++
@@ -489,7 +489,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
 	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts")
 	buildCmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
-	buildCmd.Flags().StringVarP(&nodesFlag, "nodes", "n", "", "specify number of nodes")
+	buildCmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
 	buildCmd.Flags().Float32VarP(&cpusFlag, "cpus", "c", 0, "specify number of cpus")
 	buildCmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
