@@ -1,10 +1,15 @@
 package cmd
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
+)
+
+var (
+	randomPing bool
 )
 
 var netropyCmd = &cobra.Command{
@@ -74,18 +79,25 @@ Latency will introduce delay to the network. You will specify the amount of late
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
 
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
+		// if len(args) != 1 {
+		// 	println("\nError: Invalid number of arguments given\n")
+		// 	cmd.Help()
+		// 	return
+		// }
 
-		delayInt, err := strconv.Atoi(args[0])
-		if err != nil {
-			panic(err)
+		delayStr := ""
+		if !randomPing && len(args) != 0 {
+			delayInt, err := strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+			delayInt = delayInt / 2
+			delayStr = strconv.Itoa(delayInt)
+		} else if randomPing && len(args) == 0 {
+			delayStr = "25"
+		} else {
+			fmt.Println("No argument was given")
 		}
-		delayInt = delayInt / 2
-		delayStr := strconv.Itoa(delayInt)
 
 		msg1 := "engine 1 path 1 set delay constant " + delayStr + " port 1 to port 2"
 		msg2 := "engine 1 path 1 set delay constant " + delayStr + " port 2 to port 1"
@@ -150,6 +162,8 @@ Fomat:
 }
 
 func init() {
+	latencyCmd.Flags().BoolVarP(&randomPing, "random", "r", false, "apply random latency")
+
 	netropyCmd.AddCommand(emulationOnCmd, emulationOffCmd, latencyCmd, packetLossCmd, bandwCmd)
 
 	RootCmd.AddCommand(netropyCmd)
