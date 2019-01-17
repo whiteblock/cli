@@ -65,7 +65,7 @@ Response: The number of nodes which successfully received the signal to start mi
 }
 
 var minerStopCmd = &cobra.Command{
-	Use:   "stop_mining [node 1 number] [node 2 number]...",
+	Use:   "stop [node 1 number] [node 2 number]...",
 	Short: "Stop mining",
 	Long: `
 Send the stop mining signal to nodes
