@@ -132,7 +132,7 @@ func checkContractDir() {
 	}
 }
 
-func checkContractFiles() bool {
+func checkContractFiles(fileName string) bool {
 	cwd := os.Getenv("HOME")
 	if _, err := os.Stat(cwd + "/smart-contracts/node_modules"); err != nil {
 		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
@@ -148,6 +148,10 @@ func checkContractFiles() bool {
 	}
 	if _, err := os.Stat(cwd + "/smart-contracts/deploy.js"); err != nil {
 		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		return false
+	}
+	if _, err := os.Stat(cwd + "/smart-contracts/" + fileName); err != nil {
+		fmt.Println(fileName + " is not in the directory 'smart-contracts'. Please make sure that the file is located in the directory.")
 		return false
 	}
 	return true
@@ -231,7 +235,7 @@ var gethSolcInitCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize the smart-contracts directory",
 	Long: `
-Init initialize the smart-contracts directory and will download all the necessary dependencies. This may take some time as the files are being pulled. 
+Init initialize the smart-contracts directory and will download all the necessary dependencies. This may take some time as the files are being pulled. All smart contracts should be put into the 'smart-contracts' directory.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Checking Directory")
@@ -256,7 +260,7 @@ Output: Deployed contract address
 			return
 		}
 
-		if checkContractFiles() {
+		if checkContractFiles(args[1]) {
 			serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 			out := []byte(wsEmitListen(serverAddr, "nodes", ""))
 			var node Node
@@ -276,7 +280,7 @@ Output: Deployed contract address
 			ContractList := make([]interface{}, 0)
 			ContractList = append(ContractList, Contracts{
 				DeployedNodeAddress: addrList[0],
-				ContractName: args[1],
+				ContractName:        args[1],
 				ContractAddress:     addrList[1],
 			})
 			contracts, _ := json.Marshal(ContractList)
