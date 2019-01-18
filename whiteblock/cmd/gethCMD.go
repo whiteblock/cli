@@ -3,8 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
 
 	"os/exec"
 	"strconv"
@@ -18,9 +20,10 @@ var (
 	gethcommand string
 )
 
-type Balances struct {
-	Address string `json:",omitempty"`
-	Balance string `json:",omitempty"`
+type Contracts struct {
+	DeployedNodeAddress string `json:",omitempty"`
+	ContractName        string `json:,omitempty`
+	ContractAddress     string `json:",omitempty"`
 }
 
 const (
@@ -55,6 +58,43 @@ const bytecode = output.contracts[':'+contractName].bytecode;
 const abi = JSON.parse(output.contracts[':'+contractName].interface);
 module.exports = {abi, bytecode};`
 )
+
+func writeContractListFile(addrs string) {
+	cwd := os.Getenv("HOME")
+	err := os.MkdirAll(cwd+"/smart-contracts/whiteblock/", 0755)
+	if err != nil {
+		log.Fatalf("could not create directory: %s", err)
+	}
+
+	file, err := os.OpenFile(cwd+"/smart-contracts/whiteblock/contracts.json", os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+	defer file.Close()
+
+	newCont := ""
+	cont, err := ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	contents := fmt.Sprintf("%s", cont)
+	if len(cont) > 0 {
+		contents = strings.TrimRight(contents, "]")
+		addrs = strings.TrimLeft(addrs, "[")
+		addrs = ", " + addrs
+		newCont = contents + addrs
+		_, err = file.WriteString(newCont)
+		if err != nil {
+			log.Fatalf("failed writing to file: %s", err)
+		}
+	} else {
+		_, err = file.WriteString(addrs)
+		if err != nil {
+			log.Fatalf("failed writing to file: %s", err)
+		}
+	}
+
+}
 
 func checkContractDir() {
 	cwd := os.Getenv("HOME")
@@ -149,7 +189,7 @@ func installNpmDeps() {
 
 }
 
-func deployContract(fileName, IP string) {
+func deployContract(fileName, IP string) string {
 	fmt.Println("Deploying Smart Contract: " + fileName)
 	cwd := os.Getenv("HOME")
 	deployCmd := exec.Command("node", "deploy.js", fileName, IP)
@@ -159,6 +199,7 @@ func deployContract(fileName, IP string) {
 		fmt.Println(err)
 	}
 	fmt.Printf("%s", output)
+	return fmt.Sprintf("%s", output)
 }
 
 var gethCmd = &cobra.Command{
@@ -227,7 +268,19 @@ Output: Deployed contract address
 				return
 			}
 			nodeIP := fmt.Sprintf(node[nodeNumber].IP)
-			deployContract(args[1], nodeIP)
+			deployContractOut := deployContract(args[1], nodeIP)
+			re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
+			addrList := re.FindAllString(deployContractOut, -1)
+			// fmt.Println(addrList[:])
+
+			ContractList := make([]interface{}, 0)
+			ContractList = append(ContractList, Contracts{
+				DeployedNodeAddress: addrList[0],
+				ContractName: args[1],
+				ContractAddress:     addrList[1],
+			})
+			contracts, _ := json.Marshal(ContractList)
+			writeContractListFile(fmt.Sprintf("%s", contracts))
 		}
 	},
 }

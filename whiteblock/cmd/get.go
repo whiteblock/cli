@@ -2,15 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"io/ioutil"
 	"os"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 )
 
+/*
 func cwFile(path, data string) {
 	time := time.Now().UTC().String()
 	time = strings.Replace(time, " ", "", -1)
@@ -25,6 +24,16 @@ func cwFile(path, data string) {
 	if err != nil {
 		log.Fatalf("failed writing to file: %s", err)
 	}
+}
+*/
+
+func readContractsFile() ([]byte, error) {
+	cwd := os.Getenv("HOME")
+	b, err := ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
+	if err != nil {
+		//fmt.Print(err)
+	}
+	return b, nil
 }
 
 var getCmd = &cobra.Command{
@@ -470,6 +479,38 @@ Response: JSON representation of the accounts information.
 	},
 }
 
+var getContractsCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "contracts",
+	Short: "Get contracts deployed to network.",
+	Long: `
+Gets the list of contracts that were deployed to the network. The information includes the address that deployed the contract, the contract name, and the contract's address.
+
+Response: JSON representation of the contract information.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		switch blockchain {
+		case "ethereum":
+			contracts, err := readContractsFile()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			fmt.Println(prettyp(string(contracts)))
+
+		case "eos":
+			fmt.Println("This function is not supported for the eos client.")
+			return
+		case "syscoin":
+			fmt.Println("This function is not supported for the syscoin client.")
+			return
+		default:
+			fmt.Println("No blockchain found. Please use the build function to create one")
+			return
+		}
+	},
+}
+
 func init() {
 	getCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	getServerCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
@@ -484,7 +525,7 @@ func init() {
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented
-	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd)
+	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
 	getTxCmd.AddCommand(getTxInfoCmd)
 	getAccountCmd.AddCommand(getAccountInfoCmd)
