@@ -92,6 +92,27 @@ func checkContractDir() {
 	}
 }
 
+func checkContractFiles() bool {
+	cwd := os.Getenv("HOME")
+	if _, err := os.Stat(cwd + "/smart-contracts/node_modules"); err != nil {
+		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		return false
+	}
+	if _, err := os.Stat(cwd + "/smart-contracts/package.json"); err != nil {
+		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		return false
+	}
+	if _, err := os.Stat(cwd + "/smart-contracts/compile.js"); err != nil {
+		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		return false
+	}
+	if _, err := os.Stat(cwd + "/smart-contracts/deploy.js"); err != nil {
+		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		return false
+	}
+	return true
+}
+
 func installNpmDeps() {
 	cwd := os.Getenv("HOME")
 	if _, err := os.Stat(cwd + "/smart-contracts/node_modules"); err == nil {
@@ -153,7 +174,7 @@ Geth will allow the user to get infromation and run geth commands.
 	},
 }
 
-var gethSoclCmd = &cobra.Command{
+var gethSocCmd = &cobra.Command{
 	Use:   "solc",
 	Short: "Smart contract deployment tool",
 	Long: `
@@ -162,6 +183,20 @@ Solc will allow the user to reploy smart contracts to the ethereum blockchain.
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 		return
+	},
+}
+
+var gethSolcInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Initialize the smart-contracts directory",
+	Long: `
+Init initialize the smart-contracts directory and will download all the necessary dependencies. This may take some time as the files are being pulled. 
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Checking Directory")
+		checkContractDir()
+		installNpmDeps()
+		fmt.Println("'smart-contracts' directory is initializd and smart contract deployment is now available.")
 	},
 }
 
@@ -180,24 +215,20 @@ Output: Deployed contract address
 			return
 		}
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-		out := []byte(wsEmitListen(serverAddr, "nodes", ""))
-		var node Node
-		json.Unmarshal(out, &node)
-		nodeNumber, err := strconv.Atoi(args[0])
-		if err != nil {
-			fmt.Println("Invalid Argument " + args[0])
-			cmd.Help()
-			return
+		if checkContractFiles() {
+			serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+			out := []byte(wsEmitListen(serverAddr, "nodes", ""))
+			var node Node
+			json.Unmarshal(out, &node)
+			nodeNumber, err := strconv.Atoi(args[0])
+			if err != nil {
+				fmt.Println("Invalid Argument " + args[0])
+				cmd.Help()
+				return
+			}
+			nodeIP := fmt.Sprintf(node[nodeNumber].IP)
+			deployContract(args[1], nodeIP)
 		}
-
-		nodeIP := fmt.Sprintf(node[nodeNumber].IP)
-
-		fmt.Println("Checking Directory")
-		checkContractDir()
-		installNpmDeps()
-		deployContract(args[1], nodeIP)
 	},
 }
 
@@ -604,8 +635,8 @@ func init() {
 	//geth subcommands
 	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethSendTxCmd,
 		gethGetTxCountCmd, gethGetTxCmd, gethGetTxReceiptCmd, gethGetHashRateCmd, gethStartTxCmd, gethStopTxCmd,
-		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole, gethSoclCmd)
+		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole, gethSocCmd)
 
-	gethSoclCmd.AddCommand(gethSolcDeployCmd)
+	gethSocCmd.AddCommand(gethSolcInitCmd, gethSolcDeployCmd)
 	RootCmd.AddCommand(gethCmd)
 }
