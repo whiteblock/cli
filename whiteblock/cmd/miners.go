@@ -40,8 +40,12 @@ Response: The number of nodes which successfully received the signal to start mi
 		case "ethereum":
 			command = "eth::start_mining"
 			param = strings.Join(args[:], " ")
-			fmt.Println(wsEmitListen(serverAddr, command, param))
+			out := fmt.Sprintf("%s", wsEmitListen(serverAddr, command, param))
 
+			if out == "ERROR" {
+				fmt.Println("There was an error building the DAG.")
+				return
+			}
 			DagReady := false
 			for !DagReady {
 				fmt.Printf("\rDAG is being generated...")
