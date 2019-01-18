@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -21,6 +23,136 @@ type Balances struct {
 	Balance string `json:",omitempty"`
 }
 
+const (
+	exSolFile = `pragma solidity ^0.4.25;
+	contract helloWorld {
+		function renderHelloWorld () public pure returns (string memory) {
+			return "helloWorld";
+		}
+	}
+	`
+	deployJs = `//deploy.js
+const Web3 = require('web3');
+const { abi, bytecode } = require('./compile');
+const web3 = new Web3(new Web3.providers.HttpProvider("http://10.2.0.2:8545"));
+const deploy = async () => {
+	const accounts = await web3.eth.getAccounts();
+	console.log('Attempting to deploy from account', accounts[0]);
+	const result = await new web3.eth.Contract(abi).deploy({ data: '0x' + bytecode}).send({ gas: '1000000', from: accounts[0] });
+	console.log('Contract deployed to', result.options.address);
+};
+deploy();`
+
+	compileJS = `//compile.js
+const path = require('path');
+const fs = require('fs');
+const solc = require('solc');
+const contractName = process.argv[2].split('.')[0];
+const helloWorldPath = path.resolve(__dirname, process.argv[2]);
+const input = fs.readFileSync(helloWorldPath);
+const output = solc.compile(input.toString().toLowerCase(), 1);
+const bytecode = output.contracts[':'+contractName].bytecode;
+const abi = JSON.parse(output.contracts[':'+contractName].interface);
+module.exports = {abi, bytecode};`
+)
+
+func checkContractDir() {
+	cwd := os.Getenv("HOME")
+	if _, err := os.Stat(cwd + "/smart-contracts/"); os.IsNotExist(err) {
+		fmt.Println("'smart-contracts' directory could not be found. Creating the directory 'smart-contracts' in home directory.")
+		fmt.Println("Preparing the dependencies to deploy smart contracts.")
+		err := os.MkdirAll(cwd+"/smart-contracts/", 0755)
+		if err != nil {
+			log.Fatalf("could not create directory: %s", err)
+		}
+		solFile, err := os.Create(cwd + "/smart-contracts/helloworld.sol")
+		if err != nil {
+			log.Fatalf("failed creating file: %s", err)
+		}
+		solFile.Write([]byte(exSolFile))
+		compileFile, err := os.Create(cwd + "/smart-contracts/compile.js")
+		if err != nil {
+			log.Fatalf("failed creating file: %s", err)
+		}
+		compileFile.Write([]byte(compileJS))
+		deployFile, err := os.Create(cwd + "/smart-contracts/deploy.js")
+		if err != nil {
+			log.Fatalf("failed creating file: %s", err)
+		}
+		deployFile.Write([]byte(deployJs))
+
+		defer solFile.Close()
+		defer compileFile.Close()
+		defer deployFile.Close()
+
+		return
+	}
+}
+
+func installNpmDeps() {
+	cwd := os.Getenv("HOME")
+	if _, err := os.Stat(cwd + "/smart-contracts/node_modules"); err == nil {
+		return
+	}
+
+	fmt.Printf("\rDependencies are being loaded...")
+
+	npmInitCmd := exec.Command("npm", "init", "-y")
+	npmInitCmd.Dir = cwd + "/smart-contracts/"
+	_, err := npmInitCmd.Output()
+	if err != nil {
+		log.Println(err)
+	}
+	// fmt.Printf("%s", output)
+
+	npmInstWeb3Cmd := exec.Command("npm", "install", "web3")
+	npmInstWeb3Cmd.Dir = cwd + "/smart-contracts/"
+	_, err = npmInstWeb3Cmd.Output()
+	if err != nil {
+		log.Println(err)
+	}
+	// fmt.Printf("%s", output)
+
+	npmInstSolcCmd := exec.Command("npm", "install", "solc@0.4.25")
+	npmInstSolcCmd.Dir = cwd + "/smart-contracts/"
+	_, err = npmInstSolcCmd.Output()
+	if err != nil {
+		log.Println(err)
+	}
+	// fmt.Printf("%s", output)
+
+	fmt.Println("\rDependencies has been successfully generated.")
+
+}
+
+func deployContract(fileName string) {
+	fmt.Println("Deploying Smart Contract: " + fileName)
+	cwd := os.Getenv("HOME")
+	deployCmd := exec.Command("node", "deploy.js", fileName)
+	deployCmd.Dir = cwd + "/smart-contracts/"
+
+	// stdin, err := deployCmd.StdinPipe()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// defer stdin.Close()
+	// buf := new(bytes.Buffer) // THIS STORES THE NODEJS OUTPUT
+	// deployCmd.Stdout = buf
+	// deployCmd.Stderr = os.Stderr
+
+	// if err = deployCmd.Start(); err != nil {
+	// 	fmt.Println("An error occured: ", err)
+	// }
+
+	// deployCmd.Wait()
+
+	output, err := deployCmd.Output()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%s", output)
+}
+
 var gethCmd = &cobra.Command{
 	Use:   "geth <command>",
 	Short: "Run geth commands",
@@ -31,6 +163,34 @@ Geth will allow the user to get infromation and run geth commands.
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 		return
+	},
+}
+
+var gethSoclCmd = &cobra.Command{
+	Use:   "solc",
+	Short: "Smart contract deployment tool",
+	Long: `
+Solc will allow the user to reploy smart contracts to the ethereum blockchain.
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+		return
+	},
+}
+
+var gethSolcDeployCmd = &cobra.Command{
+	Use:   "deploy",
+	Short: "deploy",
+	Long: `
+Deploy will compile the smart contract and deploy it to the ethereum blockchain. For the smart contract to be successfully deployed, mining needs to be started. This can be done by using the 'miner start' command. 
+
+Output: Deployed contract address
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Checking Directory")
+		checkContractDir()
+		installNpmDeps()
+		deployContract(args[0])
 	},
 }
 
@@ -437,7 +597,8 @@ func init() {
 	//geth subcommands
 	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethSendTxCmd,
 		gethGetTxCountCmd, gethGetTxCmd, gethGetTxReceiptCmd, gethGetHashRateCmd, gethStartTxCmd, gethStopTxCmd,
-		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole)
+		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole, gethSoclCmd)
 
+	gethSoclCmd.AddCommand(gethSolcDeployCmd)
 	RootCmd.AddCommand(gethCmd)
 }
