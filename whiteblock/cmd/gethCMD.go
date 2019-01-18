@@ -34,7 +34,7 @@ const (
 	deployJs = `//deploy.js
 const Web3 = require('web3');
 const { abi, bytecode } = require('./compile');
-const web3 = new Web3(new Web3.providers.HttpProvider("http://10.2.0.2:8545"));
+const web3 = new Web3(new Web3.providers.HttpProvider("http://"+process.argv[3].toString()+":8545"));
 const deploy = async () => {
 	const accounts = await web3.eth.getAccounts();
 	console.log('Attempting to deploy from account', accounts[0]);
@@ -64,15 +64,18 @@ func checkContractDir() {
 		err := os.MkdirAll(cwd+"/smart-contracts/", 0755)
 		if err != nil {
 			log.Fatalf("could not create directory: %s", err)
+			return
 		}
 		solFile, err := os.Create(cwd + "/smart-contracts/helloworld.sol")
 		if err != nil {
 			log.Fatalf("failed creating file: %s", err)
+			return
 		}
 		solFile.Write([]byte(exSolFile))
 		compileFile, err := os.Create(cwd + "/smart-contracts/compile.js")
 		if err != nil {
 			log.Fatalf("failed creating file: %s", err)
+			return
 		}
 		compileFile.Write([]byte(compileJS))
 		deployFile, err := os.Create(cwd + "/smart-contracts/deploy.js")
@@ -125,27 +128,11 @@ func installNpmDeps() {
 
 }
 
-func deployContract(fileName string) {
+func deployContract(fileName, IP string) {
 	fmt.Println("Deploying Smart Contract: " + fileName)
 	cwd := os.Getenv("HOME")
-	deployCmd := exec.Command("node", "deploy.js", fileName)
+	deployCmd := exec.Command("node", "deploy.js", fileName, IP)
 	deployCmd.Dir = cwd + "/smart-contracts/"
-
-	// stdin, err := deployCmd.StdinPipe()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// defer stdin.Close()
-	// buf := new(bytes.Buffer) // THIS STORES THE NODEJS OUTPUT
-	// deployCmd.Stdout = buf
-	// deployCmd.Stderr = os.Stderr
-
-	// if err = deployCmd.Start(); err != nil {
-	// 	fmt.Println("An error occured: ", err)
-	// }
-
-	// deployCmd.Wait()
-
 	output, err := deployCmd.Output()
 	if err != nil {
 		fmt.Println(err)
@@ -179,7 +166,7 @@ Solc will allow the user to reploy smart contracts to the ethereum blockchain.
 }
 
 var gethSolcDeployCmd = &cobra.Command{
-	Use:   "deploy",
+	Use:   "deploy <node number> <file name>",
 	Short: "deploy",
 	Long: `
 Deploy will compile the smart contract and deploy it to the ethereum blockchain. For the smart contract to be successfully deployed, mining needs to be started. This can be done by using the 'miner start' command. 
@@ -187,10 +174,24 @@ Deploy will compile the smart contract and deploy it to the ethereum blockchain.
 Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
+
+		out := []byte(wsEmitListen(serverAddr, "nodes", ""))
+		var node Node
+		json.Unmarshal(out, &node)
+		nodeNumber, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Invalid Argument " + args[0])
+			cmd.Help()
+			return
+		}
+
+		nodeIP := fmt.Sprintf(node[nodeNumber].IP)
+
 		fmt.Println("Checking Directory")
 		checkContractDir()
 		installNpmDeps()
-		deployContract(args[0])
+		deployContract(args[1], nodeIP)
 	},
 }
 
