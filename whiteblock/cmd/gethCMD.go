@@ -174,6 +174,12 @@ Deploy will compile the smart contract and deploy it to the ethereum blockchain.
 Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 2 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 
 		out := []byte(wsEmitListen(serverAddr, "nodes", ""))
