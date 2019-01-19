@@ -20,7 +20,7 @@ var (
 	serversFlag    string
 	blockchainFlag string
 	nodesFlag      int
-	cpusFlag       float32
+	cpusFlag       string
 	memoryFlag     string
 	paramsFile     string
 	validators     int
@@ -160,17 +160,21 @@ var buildCmd = &cobra.Command{
 		if nodesFlag > 0 {
 			nodesEnabled = true
 		}
-		if cpusFlag >= 0 {
-			if cpusFlag == 0 {
-				cpus = ""
+		if len(cpusFlag) != 0 {
+			if cpusFlag == "0" {
+				cpusFlag = ""
 			} else {
-				cpus = fmt.Sprintf("%f", cpusFlag)
+				cpus = cpusFlag
 			}
 			cpusEnabled = true
 		}
-		if len(memoryFlag) >= 0 {
+		if len(memoryFlag) > 0 {
+			if memoryFlag == "0" {
+				memoryFlag = ""
+			} else {
+				memory = memoryFlag
+			}
 			memoryEnabled = true
-			memory = memoryFlag
 		}
 
 		if len(args) != 0 {
@@ -461,7 +465,7 @@ func init() {
 	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	buildCmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
 	buildCmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
-	buildCmd.Flags().Float32VarP(&cpusFlag, "cpus", "c", 0, "specify number of cpus")
+	buildCmd.Flags().StringVarP(&cpusFlag, "cpus", "c", "", "specify number of cpus")
 	buildCmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
