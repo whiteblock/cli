@@ -34,13 +34,13 @@ Params: server number, node number, file/dir source, file/dir destination
 		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
 		var node Node
 		json.Unmarshal(out1, &node)
-		nodeNumber, err := strconv.Atoi(args[1])
+		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
 			panic(err)
 		}
 
 		err = unix.Exec("/usr/bin/scp", []string{"scp","-i","/home/master-secrets/id.master", "-r", "-o","UserKnownHostsFile=/dev/null",
-						"-o", "StrictHostKeyChecking no", args[2], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[3]}, os.Environ())
+						"-o", "StrictHostKeyChecking no", args[1], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[2]}, os.Environ())
 		log.Fatal(err)
 	},
 }
