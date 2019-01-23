@@ -18,7 +18,6 @@ func CheckArguments(args []string,min int,max int){
         PrintStringError("Too many arguments.")
         os.Exit(1)
     }
-    
 }
 
 func InvalidArgument(arg string){

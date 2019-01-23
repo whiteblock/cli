@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -23,33 +22,19 @@ type List struct {
 var sysCMD = &cobra.Command{
 	Use:   "sys <command>",
 	Short: "Run SYS commands.",
-	Long: `
-Sys will allow the user to get infromation and run SYS commands.
-`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
-		cmd.Help()
-		return
-	},
+	Long: "\nSys will allow the user to get information and run SYS commands.\n",
+	Run: PartialCommand,
 }
 
 var sysTestCMD = &cobra.Command{
 	Use:   "test <command>",
 	Short: "SYS test commands.",
-	Long: `
-Sys test will allow the user to get infromation and run SYS tests.
-`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list above.\n")
-		cmd.Help()
-		return
-	},
+	Long: "\nSys test will allow the user to get infromation and run SYS tests.\n",
+	Run:PartialCommand,
 }
 
 var testStartCMD = &cobra.Command{
-	Use:   "start <wait time> <min complete percent> <number of tx>",
+	Use:   "start <minimum latency> <minimum completion percentage> <number of assets to send> <asset sends per block>",
 	Short: "Starts propagation test.",
 	Long: `
 Sys test start will start the propagation test. It will wait for the signal start time, have nodes send messages at the same time, and require to wait a minimum amount of time then check receivers with a completion rate of minimum completion percentage. 
@@ -58,19 +43,9 @@ Format: <wait time> <min complete percent> <number of tx>
 Params: Time in seconds, percentage, number of transactions
 
 `,
-
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "sys::start_test"
-		if len(args) != 3 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		param := "{\"waitTime\":" + args[0] + ",\"minCompletePercent\":" + args[1] + ",\"numberOfTransactions\":" + args[2] + "}"
-		// fmt.Println(command)
-		// fmt.Println(param)
-		wsEmitListen(serverAddr, command, param)
+		CheckArguments(args,4,4)
+		jsonRpcCallAndPrint("sys::start_test",args)
 		return
 	},
 }
@@ -87,32 +62,49 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "sys::get_recent_test_results"
-		if len(args) != 1 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
+		CheckArguments(args,1,1)
+		results,err := jsonRpcCall("sys::get_recent_test_results",args)
+		if err != nil{
+			PrintErrorFatal(err)
 		}
-		results := []byte(wsEmitListen(serverAddr, command, args[0]))
-		var result map[string]interface{}
-		err := json.Unmarshal(results, &result)
-		if err != nil {
-			panic(err)
+		result,ok := results.(map[string]interface{})
+		if !ok {
+			panic(1)
+		}
+		type List struct {
+			Results []struct {
+				Series []struct {
+					Columns []string        `json:"columns"`
+					Values  [][]interface{} `json:"values"`
+				}
+			} `json:"results"`
+		}
+		rc := result["results"].([]interface{})[0]
+		s := rc.(map[string]interface{})["series"]
+		sc := s.([]interface{})[0].(map[string]interface{})
+		c := sc["columns"].([]interface{})
+		v := sc["values"].([]interface{})
+
+		for i := 0; i < len(v); i ++ {
+			fmt.Printf("[%d]\n",i)
+			vv := v[i].([]interface{})
+			for j := 0; j < len(vv); j++ {
+				fmt.Printf("\t%v: %v\n",c[j],vv[j])
+			} 
 		}
 
-		var l List
+		/*var l List
 		json.Unmarshal(results, &l)
 		r := l.Results
 		rc := r[0]
 		s := rc.Series
 		sc := s[0]
 		c := sc.Columns
-		v := sc.Values[0]
+		v := sc.Values[0]*/
 
-		for i := 0; i < len(c); i++ {
+		/*for i := 0; i < len(c); i++ {
 			fmt.Println("\t" + c[i] + ": " + fmt.Sprint(v[i]) + " type is: " + fmt.Sprint(reflect.TypeOf(v[i])))
-		}
+		}*/
 	},
 }
 
