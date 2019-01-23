@@ -123,7 +123,7 @@ Latency will introduce delay to the network. You will specify the amount of late
 
 		wsEmitListen(serverAddr, command, msg1)
 		wsEmitListen(serverAddr, command, msg2)
-		fmt.Println("Network latency of " + delayStr + " has been set. Please use 'netconfig on' to enable network configuration.")
+		fmt.Println("Network latency of " + args[0] + " has been set. Please use 'netconfig on' to enable network configuration.")
 	},
 }
 
