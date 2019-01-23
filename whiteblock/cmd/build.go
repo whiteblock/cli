@@ -110,18 +110,15 @@ func build(buildConfig Config) {
 
 func getServer() string {
 	idList := make([]string, 0)
-	getServerAddr := serverAddr
-	command := "get_servers"
-	serverResults := []byte(wsEmitListen(getServerAddr, command, ""))
-	var result map[string]Server
-	err := json.Unmarshal(serverResults, &result)
+	res,err := jsonRpcCall("get_servers",[]string{})
+	
 	if err != nil {
 		panic(err)
 	}
-
+	servers := res.(map[string]interface{})
 	serverID := 0
-	for _, v := range result {
-		serverID = v.Id
+	for _, v := range servers {
+		serverID = int(v.(map[string]interface{})["id"].(float64))
 		//move this and take out break statement if instance has multiple servers
 		idList = append(idList, fmt.Sprintf("%d", serverID))
 		break
@@ -152,6 +149,7 @@ var buildCmd = &cobra.Command{
 		nodesEnabled := false
 		cpusEnabled := false
 		memoryEnabled := false
+
 		if len(serversFlag) > 0 {
 			serversEnabled = true
 		}
@@ -251,15 +249,14 @@ var buildCmd = &cobra.Command{
 				continue
 			}
 		}
-
-		if len(serversFlag) == 0 {
+		if serversEnabled {
+			server = serversFlag
+		}else{
 			server = string(getServer())
 		}
 
 		var offset = 0
-		if serversEnabled {
-			server = serversFlag
-		}
+		
 		if blockchainEnabled {
 			blockchain = blockchainFlag
 		} else {
@@ -359,8 +356,6 @@ var buildCmd = &cobra.Command{
 							params[key] = val
 					}
 				}
-				
-				
 			case "y":
 				fallthrough
 			case "yes":
