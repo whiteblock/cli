@@ -7,7 +7,8 @@ import (
 	"os"
 	"strings"
 	"sync"
-
+	"net/http"
+	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
 )
@@ -18,11 +19,87 @@ type BuildStatus struct {
 	Stage    string            `json:"stage"`
 }
 
+
+
+func jsonRpcCallAndPrint(method string,params interface{}) {
+	reply,err := jsonRpcCall(method,params)
+	if err != nil {
+		PrintErrorFatal(err)
+	}
+	fmt.Println(prettypi(reply))
+}
+
+func jsonRpcCall(method string,params interface{}) (interface{},error) {
+	//log.Println("URL IS "+url)
+	jrpc,err := json2.EncodeClientRequest(method,params)
+	if err != nil{
+		log.Println(err)
+		return nil,err
+	}
+	body := strings.NewReader(string(jrpc))
+	req, err := http.NewRequest("POST",fmt.Sprintf("http://%s/rpc",serverAddr),body)
+	if err != nil {
+		log.Println(err)
+		return nil,err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	req.Close = true
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Println(err)
+		return nil,err
+	}
+	defer resp.Body.Close()
+	var out interface{}
+	err = json2.DecodeClientResponse(resp.Body,&out)
+	if err != nil {
+		log.Println(err)
+		return nil,err
+	}
+	return out, nil
+}
+
+
+func buildListener(){
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
+	c, err := gosocketio.Dial(
+		"ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket",
+		transport.GetDefaultWebsocketTransport(),
+	)
+	if err != nil {
+		PrintErrorFatal(err)
+	}
+	defer c.Close()
+	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
+		var status BuildStatus
+		json.Unmarshal([]byte(args), &status)
+		if status.Progress == 0.0 {
+			fmt.Printf("Sending build context to Whiteblock\r")
+		} else {
+            fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r",status.Stage, status.Progress)
+		}
+
+		if status.Error != nil {
+			what := status.Error["what"]
+			PrintStringError(what)
+			mutex.Unlock()
+		} else if status.Progress == 100.0 {
+            fmt.Println("\a")
+			mutex.Unlock()
+		}
+	})
+
+	c.Emit("build_status", "")
+	mutex.Lock()
+}
+
 func wsEmitListen(wsaddr, cmd, param string) string {
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
 	c, err := gosocketio.Dial(
-		wsaddr,
+		"ws://" + wsaddr + "/socket.io/?EIO=3&transport=websocket",
 		transport.GetDefaultWebsocketTransport(),
 	)
 
@@ -145,7 +222,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if len(args) > 0 {
 				out = args
 			} else {
-				fmt.Println(err.Error())
+				fmt.Println("Not supported!")
 			}
 			mutex.Unlock()
 		})
@@ -157,7 +234,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if len(args) > 0 {
 				out = args
 			} else {
-				fmt.Println(err.Error())
+				fmt.Println("Command failed")
 			}
 			mutex.Unlock()
 		})

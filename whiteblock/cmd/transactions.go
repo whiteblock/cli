@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"os"
 	"fmt"
 	"strconv"
-
 	"github.com/spf13/cobra"
 )
 
 var (
+	txsFlag      int
 	tpsFlag      int
 	valueFlag    int
 	txSizeFlag   int
@@ -28,11 +29,7 @@ Tx will run commands relavent to sending transactions.
 
 Please use the help commands to make sure you provide the correct flags. If the blockchain is not listed in the help command, the transaction command is not supported for that blockchain. 
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list below.")
-		cmd.Help()
-		return
-	},
+	Run: PartialCommand,
 }
 
 /*
@@ -63,34 +60,31 @@ Optional Parameters:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		command := ""
-		param := ""
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-		switch blockchain {
-		case "ethereum":
-			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
-				fmt.Println("Required flags were not provided. Please input the required flags.")
-				cmd.Help()
-				return
-			}
-			command = "eth::send_transaction"
-			param = fromFlag + " " + toFlag + " " + gasFlag + " " + gasPriceFlag + " " + strconv.Itoa(valueFlag)
-		case "eos":
-			if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
-				fmt.Println("Required flags were not provided. Please input the required flags.")
-				return
-			}
-			command = "eos::send_transaction"
-			param = nodeFlag + " " + fromFlag + " " + toFlag + " " + strconv.Itoa(valueFlag)
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
-			println(blockchain)
+		params := []string{}
+		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
 		}
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		switch blockchain {
+			case "ethereum":
+				if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
+					fmt.Println("Required flags were not provided. Please input the required flags.")
+					cmd.Help()
+					return
+				}
+				command = "eth::send_transaction"
+				params = []string{fromFlag,toFlag,gasFlag,gasPriceFlag,strconv.Itoa(valueFlag)}
+			case "eos":
+				if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
+					fmt.Println("Required flags were not provided. Please input the required flags.")
+					return
+				}
+				command = "eos::send_transaction"
+				params = []string{nodeFlag,fromFlag,toFlag,strconv.Itoa(valueFlag)}
+			default:
+				ClientNotSupported(blockchain)
+		}
+		jsonRpcCallAndPrint(command,params)
 	},
 }
 
@@ -102,11 +96,7 @@ var startTxCmd = &cobra.Command{
 This command will be used to automate transactions and will require require flags to execute. There are two modes of sending transactions: stream and burst. 
 The user must specify the flags that will be used for sending transactions.
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list below.")
-		cmd.Help()
-		return
-	},
+	Run: PartialCommand,
 }
 
 var startStreamTxCmd = &cobra.Command{
@@ -128,65 +118,57 @@ Optional Parameters:
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		command := ""
-		param := ""
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		switch blockchain {
-		case "ethereum":
-			//error handling for invalid flags
-			if !(txSizeFlag == 0) {
-				fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
-				cmd.Help()
-				return
-			}
-			if valueFlag == 0 {
-				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
-				cmd.Help()
-				return
-			}
-			if tpsFlag == 0 {
-				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
-				cmd.Help()
-				return
-			}
-
-			command = "eth::start_transactions"
-			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
-			param = strconv.Itoa(tpsFlag) + " " + toEth
-			if len(toFlag) > 0 {
-				param = param + " " + toFlag
-			}
-		case "eos":
-			//error handling for invalid flags
-			if valueFlag != 0 {
-				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
-				cmd.Help()
-				return
-			}
-			if tpsFlag == 0 {
-				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
-				cmd.Help()
-				return
-			}
-
-			command = "eos::run_constant_tps"
-			param = strconv.Itoa(tpsFlag)
-			if txSizeFlag >= 174 {
-				param = param + " " + strconv.Itoa(txSizeFlag)
-			} else if txSizeFlag > 0 && txSizeFlag < 174 {
-				fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
-				return
-			}
-		case "syscoin":
-			command = "sys::start_test"
+		if tpsFlag == 0 {//TPS will always be required
+			fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+			cmd.Help()
 			return
-			// I think we need to change how the test will be sent in the backend if we want to generalize the transactions for syscoin
-			// param = "{\"waitTime\":" + args[0] + ",\"minCompletePercent\":" + args[1] + ",\"numberOfTransactions\":" + args[2] + "}"
-		default:
+		}
+		command := ""
+
+		params := []string{strconv.Itoa(tpsFlag)}
+		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
 		}
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		switch blockchain {
+			case "ethereum":
+				//error handling for invalid flags
+				if !(txSizeFlag == 0) {
+					fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
+					cmd.Help()
+					return
+				}
+				if valueFlag == 0 {
+					fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
+					cmd.Help()
+					return
+				}
+
+				command = "eth::start_transactions"
+				toEth := strconv.Itoa(valueFlag) + "000000000000000000"
+				params = append(params,toEth)
+				if len(toFlag) > 0 {
+					params = append(params,toFlag)
+				}
+			case "eos":
+				command = "eos::run_constant_tps"
+				//error handling for invalid flags
+				if valueFlag != 0 {
+					fmt.Println("Invalid \"valueFlag\" flag has been provided.")
+					cmd.Help()
+					return
+				}
+				
+				if txSizeFlag >= 174 {
+					params = append(params,strconv.Itoa(txSizeFlag))
+				} else if txSizeFlag > 0 && txSizeFlag < 174 {
+					fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
+					os.Exit(1)
+				}
+			default:
+				ClientNotSupported(blockchain)
+		}
+		jsonRpcCallAndPrint(command,params)
 	},
 }
 
@@ -199,48 +181,41 @@ The user must specify the blockchain flag as well as any other flags that will b
 This command will send a burst of transactions. Additional flags are optional. Burst will send one burst of transactions to the blockchain to fill the transaction pool.
 
 Required Parameters: 
-	eos:  --tps <number of tx>  
+	eos:  --txs <number of tx>  
 Optional Parameters:
 	--size [tx size]
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		command := ""
-		param := ""
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-		switch blockchain {
-		case "ethereum":
-			fmt.Println("This function is not supported for the ethereum client.")
-			return
-		case "eos":
-			//error handling for invalid flags
-			if valueFlag != 0 {
-				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
-				cmd.Help()
-				return
-			}
-			if tpsFlag == 0 {
-				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
-				cmd.Help()
-				return
-			}
-
-			command = "eos::run_burst_tx"
-			param = strconv.Itoa(tpsFlag)
-			if txSizeFlag >= 174 {
-				param = param + " " + strconv.Itoa(txSizeFlag)
-			} else if txSizeFlag > 0 && txSizeFlag < 174 {
-				fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
-				return
-			}
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
+		params := []string{strconv.Itoa(txsFlag)}
+		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
 		}
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		switch blockchain {
+			case "eos":
+				//error handling for invalid flags
+				if valueFlag != 0 {
+					fmt.Println("Invalid \"valueFlag\" flag has been provided.")
+					cmd.Help()
+					return
+				}
+				if tpsFlag == 0 {
+					fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+					cmd.Help()
+					return
+				}
+				command = "eos::run_burst_tx"
+				if txSizeFlag >= 174 {
+					params = append(params,strconv.Itoa(txSizeFlag))
+				} else if txSizeFlag > 0 && txSizeFlag < 174 {
+					fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
+					return
+				}
+			default:
+				ClientNotSupported(blockchain)
+		}
+		jsonRpcCallAndPrint(command,params)
 	},
 }
 
@@ -254,22 +229,20 @@ Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		command := ""
-		param := ""
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		switch blockchain {
-		case "ethereum":
-			command = "eth::stop_transactions"
-		case "eos":
-			command = "eth::stop_transactions"
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
+		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
 		}
+		switch blockchain {
+			case "ethereum":
+				command = "eth::stop_transactions"
+			case "eos":
+				command = "eth::stop_transactions"
+			default:
+				ClientNotSupported(blockchain)
+		}
 		fmt.Println("Stopped transactions.")
-		wsEmitListen(serverAddr, command, param)
+		jsonRpcCallAndPrint(command,[]string{})
 	},
 }
 
@@ -293,7 +266,7 @@ func init() {
 	startBurstTxCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	startBurstTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
 	startBurstTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
-	startBurstTxCmd.Flags().IntVarP(&tpsFlag, "tps", "t", 0, "transactions per second")
+	startBurstTxCmd.Flags().IntVarP(&txsFlag, "txs", "t", 0, "transactions per second")
 	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
 
 	stopTxCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")

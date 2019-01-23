@@ -1,18 +1,15 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
-
-	//"strings"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
 
-type Node []struct {
+type Node struct {
 	ID        int    `json:"id"`
 	TestNetID int    `json:"testNetId"`
 	Server    int    `json:"server"`
@@ -35,21 +32,18 @@ SSH will allow the user to go into the contianer where the specified node exists
 			return
 		}
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-		out1 := []byte(wsEmitListen(serverAddr, "nodes", ""))
-		var node Node
-		json.Unmarshal(out1, &node)
+		nodes,err := GetNodes()
+		if err != nil{
+			PrintErrorFatal(err)
+		}
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("Invalid Argument " + args[0])
-			cmd.Help()
-			return
+			panic(err)
 		}
 
 		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
-			"root@" + fmt.Sprintf(node[nodeNumber].IP)}
+			"root@" + fmt.Sprintf(nodes[nodeNumber].IP)}
 
 		sshArgs = append(sshArgs, args[1:]...)
 		//fmt.Println(strings.Join(sshArgs," "))

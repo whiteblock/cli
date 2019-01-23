@@ -15,7 +15,7 @@ import (
 var (
 	blockchain string
 	server     string
-	nodes      string
+	nodes      int
 	image      string
 	cpus       string
 	memory     string
@@ -93,7 +93,7 @@ func initConfig() {
 	}
 
 	blockchain = config.Blockchain
-	nodes = fmt.Sprintf("%d", config.Nodes)
+	nodes = config.Nodes
 	image = config.Image
 	cpus = config.Resources.Cpus
 	memory = config.Resources.Memory

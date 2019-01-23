@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -22,17 +21,11 @@ Params: sending node, receiving node
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) != 2 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
+		CheckArguments(args,2,2)
+		nodes,err := GetNodes()
+		if err != nil{
+			PrintErrorFatal(err)
 		}
-
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command1 := "nodes"
-		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
-		var node Node
-		json.Unmarshal(out1, &node)
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
 			InvalidArgument(args[0])
@@ -47,8 +40,8 @@ Params: sending node, receiving node
 		}
 		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.master",
 												"-o","UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking no", 
-												"root@" + fmt.Sprintf(node[sendingNodeNumber].IP), "ping", 
-												 fmt.Sprintf(node[receivingNodeNumber].IP)}, os.Environ())
+												"root@" + fmt.Sprintf(nodes[sendingNodeNumber].IP), "ping", 
+												 fmt.Sprintf(nodes[receivingNodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
 	},
 }

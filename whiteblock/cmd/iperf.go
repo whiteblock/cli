@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"sync"
@@ -31,17 +30,12 @@ Params: sending node, receiving node
 	Run: func(cmd *cobra.Command, args []string) {
 		var wg sync.WaitGroup
 
-		if len(args) != 2 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
+		CheckArguments(args,2,2)
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command1 := "nodes"
-		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
-		var node Node
-		json.Unmarshal(out1, &node)
+		nodes,err := GetNodes()
+		if err != nil{
+			PrintErrorFatal(err)
+		}
 
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
@@ -66,9 +60,9 @@ Params: sending node, receiving node
 				iPerfcmd = iPerfcmd + "-u "
 			}
 
-			iPerfcmd = iPerfcmd + fmt.Sprintf(node[sendingNodeNumber].IP) + " -1"
+			iPerfcmd = iPerfcmd + fmt.Sprintf(nodes[sendingNodeNumber].IP) + " -1"
 
-			client, err := NewSshClient(fmt.Sprintf(node[sendingNodeNumber].IP))
+			client, err := NewSshClient(fmt.Sprintf(nodes[sendingNodeNumber].IP))
 			if err != nil {
 				panic(err)
 			}
@@ -108,9 +102,9 @@ Params: sending node, receiving node
 				iPerfcmd = iPerfcmd + " -d "
 			}
 
-			iPerfcmd = iPerfcmd + fmt.Sprintf(node[sendingNodeNumber].IP)
+			iPerfcmd = iPerfcmd + fmt.Sprintf(nodes[sendingNodeNumber].IP)
 
-			client, err := NewSshClient(fmt.Sprintf(node[receivingNodeNumber].IP))
+			client, err := NewSshClient(fmt.Sprintf(nodes[receivingNodeNumber].IP))
 			if err != nil {
 				panic(err)
 			}

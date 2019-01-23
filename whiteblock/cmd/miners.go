@@ -1,10 +1,8 @@
 package cmd
 
 import (
+	"os"
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,11 +13,7 @@ var minerCmd = &cobra.Command{
 	Long: `
 Send commands pertaining to mining. This will be blockchain specific and will only be supported depending on which blockchain had been built.
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list below.")
-		cmd.Help()
-		return
-	},
+	Run: PartialCommand,
 }
 
 var minerStartCmd = &cobra.Command{
@@ -33,37 +27,32 @@ Params: A list of the nodes to start mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to start mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := ""
-		param := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::start_mining"
-			param = strings.Join(args[:], " ")
-			out := fmt.Sprintf("%s", wsEmitListen(serverAddr, command, param))
-
-			if out == "ERROR" {
-				fmt.Println("There was an error building the DAG.")
-				return
-			}
-			DagReady := false
-			for !DagReady {
-				fmt.Printf("\rDAG is being generated...")
-				blocknum, _ := strconv.Atoi(wsEmitListen(serverAddr, "eth::get_block_number", ""))
-				if blocknum > 4 {
-					DagReady = true
-				}
-			}
-			fmt.Println("\rDAG has been successfully generated.")
-		case "eos":
-			fmt.Println("This function is not supported for the eos client.")
-			return
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
+		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
+		}
+		switch blockchain {
+			case "ethereum":
+				res,err := jsonRpcCall("eth::start_mining",args)
+				if err != nil {
+					PrintStringError("There was an error building the DAG.")
+					os.Exit(1)
+				}
+				DagReady := false
+				for !DagReady {
+					fmt.Printf("\rDAG is being generated...")
+					res,err = jsonRpcCall("eth::get_block_number",[]string{})
+					if err != nil {
+						PrintErrorFatal(err)
+					}
+					blocknum := res.(int)
+					if blocknum > 4 {
+						DagReady = true
+					}
+				}
+				fmt.Println("\rDAG has been successfully generated.")
+			default:
+				ClientNotSupported(blockchain)
 		}
 	},
 }
@@ -80,24 +69,18 @@ Params: A list of the nodes to stop mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to stop mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := ""
-		param := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::stop_mining"
-			param = strings.Join(args[:], " ")
-		case "eos":
-			fmt.Println("This function is not supported for the eos client.")
-			return
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
+		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
 		}
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		command := ""
+		switch blockchain {
+			case "ethereum":
+				command = "eth::stop_mining"
+			default:
+				ClientNotSupported(blockchain)
+		}
+		jsonRpcCallAndPrint(command,args)
 	},
 }
 

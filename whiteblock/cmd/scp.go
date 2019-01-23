@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
-
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
@@ -22,25 +20,18 @@ Params: server number, node number, file/dir source, file/dir destination
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		CheckArguments(args,3,3)
 
-		if len(args) != 3 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
+		nodes,err := GetNodes()
+		if err != nil{
+			PrintErrorFatal(err)
 		}
-
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command1 := "nodes"
-		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
-		var node Node
-		json.Unmarshal(out1, &node)
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
 			panic(err)
 		}
-
 		err = unix.Exec("/usr/bin/scp", []string{"scp","-i","/home/master-secrets/id.master", "-r", "-o","UserKnownHostsFile=/dev/null",
-						"-o", "StrictHostKeyChecking no", args[1], "root@" + fmt.Sprintf(node[nodeNumber].IP) + ":" + args[2]}, os.Environ())
+						"-o", "StrictHostKeyChecking no", args[1], "root@" + fmt.Sprintf(nodes[nodeNumber].IP) + ":" + args[2]}, os.Environ())
 		log.Fatal(err)
 	},
 }

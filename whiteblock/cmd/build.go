@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -27,15 +26,17 @@ var (
 )
 
 type Config struct {
-	Servers    []int
-	Blockchain string
-	Nodes      int
-	Image      string
-	Resources  struct {
-		Cpus   string
-		Memory string
-	}
-	Params interface{}
+	Servers    	[]int					`json:"servers"`
+	Blockchain 	string					`json:"blockchain"`
+	Nodes      	int						`json:"nodes"`
+	Image      	string					`json:"image"`
+	Resources 	Resources				`json:"resources"`
+	Params 		map[string]interface{}	`json:"params"`
+}
+
+type Resources struct {
+	Cpus   string	`json:"cpus"`
+	Memory string	`json:"memory"`
 }
 
 func writePrevCmdFile(prevBuild string) {
@@ -63,6 +64,7 @@ func readPrevCmdFile() (string, error) {
 	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/previous_build.txt")
 	if err != nil {
 		//fmt.Print(err)
+		return "",err
 	}
 	return string(b), nil
 }
@@ -96,16 +98,15 @@ func readConfigFile() ([]byte, error) {
 	return b, nil
 }
 
-/*
-func boolInput(input string) bool {
-	output := false
-	strings.ToLower(input)
-	if input == "yes" || input == "on" || input == "true" || input == "y" {
-		output = true
+func build(buildConfig Config) {
+	buildReply,err := jsonRpcCall("build",buildConfig)
+	if err != nil{
+		PrintErrorFatal(err)
 	}
-	return output
+	fmt.Printf("%v\n",buildReply)
+	buildListener()
 }
-*/
+
 
 func getServer() string {
 	idList := make([]string, 0)
@@ -184,9 +185,8 @@ var buildCmd = &cobra.Command{
 		}
 
 		buildArr := make([]string, 0)
-		paramArr := make(map[string]interface{})
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		bldcommand := "build"
+		params := make(map[string]interface{})
+		
 
 		configFile, err := readConfigFile()
 		if err != nil {
@@ -235,20 +235,6 @@ var buildCmd = &cobra.Command{
 			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 		}
 
-		// the code that was used when flag options were not implemented
-		/*
-			buildOpt = append(buildOpt, []string{
-				"blockchain" + tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"),
-				"nodes" + tern((defaultNodes == "0"), "", " ("+defaultNodes+")"),
-				"docker image" + tern((len(defaultImage) == 0), "", " ("+defaultImage+")"),
-				"cpus" + tern((len(defaultCpus) == 0), "(empty for no limit)", " ("+defaultCpus+")"),
-				"memory" + tern((len(defaultMemory) == 0), "(empty for no limit)", " ("+defaultMemory+")"),
-			}...)
-
-			defOpt = append(defOpt, []string{defaultCpus, defaultMemory}...)
-			allowEmpty = append(allowEmpty, []bool{true, true}...)
-		*/
-
 		scanner := bufio.NewScanner(os.Stdin)
 		for i := 0; i < len(buildOpt); i++ {
 			fmt.Print(buildOpt[i] + ": ")
@@ -280,10 +266,14 @@ var buildCmd = &cobra.Command{
 			blockchain = buildArr[offset]
 			offset++
 		}
+
 		if nodesEnabled {
-			nodes = strconv.Itoa(nodesFlag)
+			nodes = nodesFlag
 		} else {
-			nodes = buildArr[offset]
+			nodes,err = strconv.Atoi(buildArr[offset])
+			if err != nil{
+				InvalidInteger("nodes",buildArr[offset],true)
+			}
 			offset++
 		}
 
@@ -297,7 +287,6 @@ var buildCmd = &cobra.Command{
 			memory = buildArr[offset]
 			offset++
 		}
-		params := "{}"
 
 		if len(paramsFile) != 0 {
 			f, err := os.Open(paramsFile)
@@ -308,7 +297,7 @@ var buildCmd = &cobra.Command{
 
 			decoder := json.NewDecoder(f)
 			decoder.UseNumber()
-			err = decoder.Decode(&paramArr)
+			err = decoder.Decode(&params)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -324,43 +313,54 @@ var buildCmd = &cobra.Command{
 			case "n":
 				fallthrough
 			case "no":
-				getParamCommand := "get_params"
-				bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
-				var paramlist []map[string]string
-
-				json.Unmarshal(bcparam, &paramlist)
+				rawOptions,err := jsonRpcCall("get_params",nil)
+				if err != nil{
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				options,ok := rawOptions.([][]string)
+				if !ok {
+					fmt.Println("Unexpected format for params")
+					os.Exit(1)
+				}
 
 				scanner := bufio.NewScanner(os.Stdin)
 
-				for i := 0; i < len(paramlist); i++ {
-					for key, value := range paramlist[i] {
-						fmt.Printf("%s (%s): ", key, value)
-						scanner.Scan()
-						text := scanner.Text()
-						if len(text) == 0 {
-							continue
-						}
-						switch value {
+				for i := 0;i < len(options);i++ {
+					opt := options[0]
+					if len(opt) != 2 {
+						fmt.Println("Unexpected format for params")
+						os.Exit(1)
+					}
+
+					key := opt[0]
+					key_type := opt[1]
+
+					fmt.Printf("%s (%s): ", key, key_type)
+					scanner.Scan()
+					text := scanner.Text()
+					if len(text) == 0 {
+						continue
+					}
+					switch key_type {
 						case "string":
-							if fmt.Sprint(reflect.TypeOf(text)) != "string" {
-								fmt.Println("Entry must be a string")
-								i--
-								continue
-							}
-							paramArr[key] = "\"" + text + "\""
+							//needs to have filtering
+							params[key] = text
 						case "[]string":
-							paramArr[key] = "[" + strings.Replace(text, " ", ",", -1) + "]"
+							preprocessed := strings.Replace(text, " ", ",", -1)
+							params[key] = strings.Split(preprocessed,",")
 						case "int":
-							_, err := strconv.ParseInt(text, 0, 64)
+							val, err := strconv.ParseInt(text, 0, 64)
 							if err != nil {
-								fmt.Println("Entry must be an integer")
+								InvalidInteger(key,text,false)
 								i--
 								continue
 							}
-							paramArr[key] = text
-						}
+							params[key] = val
 					}
 				}
+				
+				
 			case "y":
 				fallthrough
 			case "yes":
@@ -370,40 +370,36 @@ var buildCmd = &cobra.Command{
 			}
 		}
 		if validators >= 0 {
-			paramArr["validators"] = fmt.Sprintf("%d", validators)
+			params["validators"] =  validators
 		}
-
-		params = "{"
-		first := true
-		for key, value := range paramArr {
-			if first {
-				first = false
-			} else {
-				params += ","
-			}
-			params += fmt.Sprintf("\"%s\""+":"+"%v", key, value)
-		}
-		params += "}"
 
 		if blockchain == "eos" {
-			ns, _ := strconv.Atoi(nodes)
 			if validators < 0 {
-				ns += 21
+				nodes += 21
 			} else {
-				ns += validators
+				nodes += validators
 			}
-			nodes = fmt.Sprintf("%d", ns)
-		}
-		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes +
-			",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory +
-			"\"},\"params\":" + params + "}"
-		stat := wsEmitListen(serverAddr, bldcommand, param)
-
-		if stat == "" {
-			writePrevCmdFile(param)
-			writeConfigFile(param)
 		}
 
+		serverNum,_ := strconv.Atoi(server)
+
+		buildConfig := Config{
+			Servers: []int{serverNum},
+			Blockchain: blockchain,
+			Nodes: nodes,
+			Image: image,
+			Resources: Resources{
+				Cpus:cpus,
+				Memory:memory,
+			},
+			Params:params,
+		}
+
+		build(buildConfig)
+
+		param,err := json.Marshal(buildConfig)
+		writePrevCmdFile(string(param))
+		writeConfigFile(string(param))
 	},
 }
 
@@ -416,19 +412,23 @@ Build previous will recreate and deploy the previously built blockchain and spec
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		bldcommand := "build"
-		prevBuild, _ := readPrevCmdFile()
-
-		if len(prevBuild) == 0 {
+		rawPrevBuild, _ := readPrevCmdFile()
+		if len(rawPrevBuild) == 0 {
 			fmt.Println("No previous build. Use build command to deploy a blockchain.")
-			return
+			os.Exit(1)
+		}
+		var prevBuild Config
+		err :=  json.Unmarshal([]byte(rawPrevBuild),&prevBuild)
+		if err != nil{
+			log.Println(err)
+			os.Exit(1)
+			//PrintErrorFatal(err)
 		}
 
 		fmt.Println(prevBuild)
 		if previousYesAll {
 			fmt.Println("building from previous configuration")
-			wsEmitListen(serverAddr, bldcommand, prevBuild)
+			build(prevBuild)
 			return
 		}
 
@@ -440,19 +440,19 @@ Build previous will recreate and deploy the previously built blockchain and spec
 			ask = strings.Trim(ask, "\n\t\r\v ")
 
 			switch ask {
-			case "y":
-				fallthrough
-			case "yes":
-				fmt.Println("building from previous configuration")
-				wsEmitListen(serverAddr, bldcommand, prevBuild)
-				return
-			case "n":
-				fallthrough
-			case "no":
-				fmt.Println("Build cancelled.")
-				return
-			default:
-				fmt.Println("Unknown Option " + ask)
+				case "y":
+					fallthrough
+				case "yes":
+					fmt.Println("building from previous configuration")
+					build(prevBuild)
+					return
+				case "n":
+					fallthrough
+				case "no":
+					fmt.Println("Build cancelled.")
+					return
+				default:
+					fmt.Println("Unknown Option " + ask)
 			}
 		}
 

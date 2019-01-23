@@ -31,3 +31,8 @@ func prettyp(s string) string {
 	}
 
 }
+
+func prettypi(i interface{}) string {
+	out, _ := prettyjson.Marshal(i)
+	return string(out)
+}
