@@ -53,7 +53,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 			if status.Progress == 0.0 {
 				fmt.Printf("Sending build context to Whiteblock\r")
 			} else {
-                fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r",status.Stage, status.Progress)
+				fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", status.Stage, status.Progress)
 			}
 
 			if status.Error != nil {
@@ -61,7 +61,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 				fmt.Println("\n" + what)
 				mutex.Unlock()
 			} else if status.Progress == 100.0 {
-                fmt.Println("\a")
+				fmt.Println("\a")
 				mutex.Unlock()
 			}
 		})
@@ -80,7 +80,7 @@ func wsEmitListen(wsaddr, cmd, param string) string {
 	// gethcmd
 	if strings.HasPrefix(cmd, "eth::") {
 		if cmd == "eth::start_mining" {
-			fmt.Println("Started mining. Please wait for the DAG to be generated. Number of miners started: ")
+			fmt.Println("Started mining. Please wait for the DAG to be generated. ")
 		} else if cmd == "eth::stop_mining" {
 			fmt.Println("Stopped mining. Number of miners stopped: ")
 		} else if cmd == "eth::start_transactions" {
