@@ -1,10 +1,23 @@
 package cmd
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/spf13/cobra"
 )
 
-var ()
+var (
+	limitFlag int
+	lossFlag  float64
+	delayFlag int
+	rateFlag  int
+)
+
+type NetConfig struct {
+	Servers []int
+	NetInfo map[string]interface{}
+}
 
 var netconfigCmd = &cobra.Command{
 	Use:     "netconfig <command>",
@@ -20,18 +33,72 @@ Netconfig will introduce persisting network conditions for testing.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// command := "netem"
-		// jsonRpcCallAndPrint("netem",args)
 	},
 }
 
 var netconfigSetCmd = &cobra.Command{
-	Use:     "set [flags]",
+	Use:     "set <node number> [flags]",
 	Aliases: []string{"config", "configure"},
 	Short:   "Set network conditions",
 	Long: `
-Netconfig will introduce persisting network conditions for testing.
+Netconfig set will introduce persisting network conditions for testing to a specific node. Please indicate the proper flags with the amount to set.
+	
+	--bandwidth <amount>	Specifies the bandwidth of the network in mbps;
+	--delay <amount> 				Specifies the latency to add [ms];
+	--loss <percent>				Specifies the amount of packet loss to add [%];
+	
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			fmt.Println("\nError: Invalid number of arguments given")
+			cmd.Help()
+			return
+		}
+
+		serverID, err := strconv.Atoi(server)
+		if err != nil {
+			fmt.Println("conversion error, invalid type for server")
+			return
+		}
+
+		netInfo := make(map[string]interface{})
+		node, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("conversion error, invalid type for node number")
+			return
+		}
+
+		netInfo["node"] = node
+		if limitFlag != 1000 {
+			netInfo["limit"] = limitFlag
+		}
+		if lossFlag > 0.0 {
+			netInfo["loss"] = lossFlag
+		}
+		if delayFlag > 0 {
+			netInfo["delay"] = delayFlag
+		}
+		if rateFlag > 0 {
+			rate := strconv.Itoa(rateFlag)
+			rate = rate + "mbps"
+			netInfo["rate"] = rate
+		}
+
+		networkConfig := NetConfig{
+			Servers: []int{serverID},
+			NetInfo: netInfo,
+		}
+
+		jsonRpcCallAndPrint("netem", networkConfig)
+	},
+}
+
+var netconfigAllCmd = &cobra.Command{
+	Use:     "all [flags]",
+	Aliases: []string{"config", "configure"},
+	Short:   "Set network conditions",
+	Long: `
+Netconfig all will introduce persisting network conditions for testing to all nodes. Please indicate the proper flags with the amount to set.
 	
 	--bandwidth <amount>	Specifies the bandwidth of the network in mbps;
 	--delay <amount> 				Specifies the latency to add [ms];
@@ -40,9 +107,34 @@ Netconfig will introduce persisting network conditions for testing.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		netInfo := make(map[string]interface{})
+		serverID, err := strconv.Atoi(server)
+		if err != nil {
+			fmt.Println("conversion error, invalid type for server")
+			return
+		}
 
-		// command := "netem"
-		// jsonRpcCallAndPrint("netem",args)
+		if limitFlag != 1000 {
+			netInfo["limit"] = limitFlag
+		}
+		if lossFlag > 0.0 {
+			netInfo["loss"] = lossFlag
+		}
+		if delayFlag > 0 {
+			netInfo["delay"] = delayFlag
+		}
+		if rateFlag > 0 {
+			rate := strconv.Itoa(rateFlag)
+			rate = rate + "mbps"
+			netInfo["rate"] = rate
+		}
+
+		networkConfig := NetConfig{
+			Servers: []int{serverID},
+			NetInfo: netInfo,
+		}
+
+		jsonRpcCallAndPrint("netem_all", networkConfig)
 	},
 }
 
@@ -51,20 +143,27 @@ var netconfigClearCmd = &cobra.Command{
 	Aliases: []string{"off"},
 	Short:   "Turn off network conditions",
 	Long: `
-
-	
+Netconfig clear will reset all emulation and turn off all persisiting network conditions. 
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// jsonRpcCallAndPrint("netem", args)
+		emptyParam := []string{}
+		jsonRpcCallAndPrint("netem_delete", emptyParam)
 	},
 }
 
 func init() {
-	// latencyCmd.Flags().BoolVarP(&randomPing, "random", "r", false, "apply random latency")
+	netconfigSetCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
+	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "sets packet loss")
+	netconfigSetCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "sets latency")
+	netconfigSetCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "sets the bandwidth")
 
-	netconfigCmd.AddCommand(netconfigSetCmd, netconfigClearCmd)
+	netconfigAllCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
+	netconfigAllCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "sets packet loss")
+	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "sets latency")
+	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "sets the bandwidth")
+
+	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd)
 
 	RootCmd.AddCommand(netconfigCmd)
 }
