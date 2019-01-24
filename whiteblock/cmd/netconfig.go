@@ -26,14 +26,13 @@ var netconfigCmd = &cobra.Command{
 	Long: `
 Netconfig will introduce persisting network conditions for testing.
 	
-	bandwidth <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
+	bandwidth <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|kbps|mbps|gbps];
 	delay <amount> 				Specifies the latency to add [ms];
-	loss <percent>				Specifies the amount of packet loss to add [%];
+	loss <percent>				Specifies the amount of packet loss to add [%%];
 	
 	`,
 
-	Run: func(cmd *cobra.Command, args []string) {
-	},
+	Run: PartialCommand,
 }
 
 var netconfigSetCmd = &cobra.Command{
@@ -45,7 +44,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 	
 	--bandwidth <amount>	Specifies the bandwidth of the network in mbps;
 	--delay <amount> 				Specifies the latency to add [ms];
-	--loss <percent>				Specifies the amount of packet loss to add [%];
+	--loss <percent>				Specifies the amount of packet loss to add [%%];
 	
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -96,7 +95,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 	
 	--bandwidth <amount>	Specifies the bandwidth of the network in mbps;
 	--delay <amount> 				Specifies the latency to add [ms];
-	--loss <percent>				Specifies the amount of packet loss to add [%];
+	--loss <percent>				Specifies the amount of packet loss to add [%%];
 	
 	`,
 
@@ -134,15 +133,14 @@ Netconfig all will introduce persisting network conditions for testing to all no
 
 var netconfigClearCmd = &cobra.Command{
 	Use:     "clear",
-	Aliases: []string{"off"},
+	Aliases: []string{"off","flush"},
 	Short:   "Turn off network conditions",
 	Long: `
 Netconfig clear will reset all emulation and turn off all persisiting network conditions. 
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		emptyParam := []string{}
-		jsonRpcCallAndPrint("netem_delete", emptyParam)
+		jsonRpcCallAndPrint("netem_delete", []interface{}{server})
 	},
 }
 
