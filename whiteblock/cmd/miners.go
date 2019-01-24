@@ -45,7 +45,7 @@ Response: The number of nodes which successfully received the signal to start mi
 					if err != nil {
 						PrintErrorFatal(err)
 					}
-					blocknum := res.(int)
+					blocknum := int(res.(float64))
 					if blocknum > 4 {
 						DagReady = true
 					}
