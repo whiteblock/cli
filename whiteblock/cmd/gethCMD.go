@@ -225,10 +225,7 @@ var gethSocCmd = &cobra.Command{
 	Long: `
 Solc will allow the user to reploy smart contracts to the ethereum blockchain.
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-		return
-	},
+	Run: PartialCommand,
 }
 
 var gethSolcInitCmd = &cobra.Command{
@@ -294,15 +291,14 @@ Console will log into the geth console.
 Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
 		CheckArguments(args,1,1)
-		res,err := jsonRpcCall("nodes",[]string{})
+		nodes,err := GetNodes()
 		if err != nil{
 			PrintErrorFatal(err)
 		}
-
-		nodes := res.([]Node)
+		
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			PrintErrorFatal(err)
 		}
 
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
