@@ -14,10 +14,10 @@ var (
 	rateFlag  int
 )
 
-type NetConfig struct {
+/*type NetConfig struct {
 	Servers []int
 	NetInfo map[string]interface{}
-}
+}*/
 
 var netconfigCmd = &cobra.Command{
 	Use:     "netconfig <command>",
@@ -49,12 +49,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 	
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
-
+		CheckArguments(args,1,1)
 		serverID, err := strconv.Atoi(server)
 		if err != nil {
 			fmt.Println("conversion error, invalid type for server")
@@ -83,13 +78,12 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 			rate = rate + "mbps"
 			netInfo["rate"] = rate
 		}
-
-		networkConfig := NetConfig{
-			Servers: []int{serverID},
-			NetInfo: netInfo,
+		networkConf := []interface{}{
+			serverID,
+			netInfo,
 		}
 
-		jsonRpcCallAndPrint("netem", networkConfig)
+		jsonRpcCallAndPrint("netem", networkConf)
 	},
 }
 
@@ -129,12 +123,12 @@ Netconfig all will introduce persisting network conditions for testing to all no
 			netInfo["rate"] = rate
 		}
 
-		networkConfig := NetConfig{
-			Servers: []int{serverID},
-			NetInfo: netInfo,
+		networkConf := []interface{}{
+			serverID,
+			netInfo,
 		}
 
-		jsonRpcCallAndPrint("netem_all", networkConfig)
+		jsonRpcCallAndPrint("netem_all", networkConf)
 	},
 }
 
