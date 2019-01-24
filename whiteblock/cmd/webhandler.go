@@ -23,6 +23,11 @@ type BuildStatus struct {
 
 func jsonRpcCallAndPrint(method string,params interface{}) {
 	reply,err := jsonRpcCall(method,params)
+	switch reply.(type) {
+		case string:
+			fmt.Printf("\033[97m%s\033[0m\n",reply.(string))
+			return
+	}
 	if err != nil {
 		PrintErrorFatal(err)
 	}
