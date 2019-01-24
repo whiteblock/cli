@@ -310,12 +310,12 @@ var buildCmd = &cobra.Command{
 			case "n":
 				fallthrough
 			case "no":
-				rawOptions,err := jsonRpcCall("get_params",nil)
+				rawOptions,err := jsonRpcCall("get_params",[]string{blockchain})
 				if err != nil{
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				options,ok := rawOptions.([][]string)
+				options,ok := rawOptions.([]interface{})
 				if !ok {
 					fmt.Println("Unexpected format for params")
 					os.Exit(1)
@@ -324,14 +324,14 @@ var buildCmd = &cobra.Command{
 				scanner := bufio.NewScanner(os.Stdin)
 
 				for i := 0;i < len(options);i++ {
-					opt := options[0]
+					opt := options[i].([]interface{})
 					if len(opt) != 2 {
 						fmt.Println("Unexpected format for params")
 						os.Exit(1)
 					}
 
-					key := opt[0]
-					key_type := opt[1]
+					key := opt[0].(string)
+					key_type := opt[1].(string)
 
 					fmt.Printf("%s (%s): ", key, key_type)
 					scanner.Scan()
