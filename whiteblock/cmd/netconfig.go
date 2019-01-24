@@ -48,7 +48,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 	
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
+		CheckArguments(args, 1, 1)
 		serverID, err := strconv.Atoi(server)
 		if err != nil {
 			fmt.Println("conversion error, invalid type for server")
@@ -133,7 +133,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 
 var netconfigClearCmd = &cobra.Command{
 	Use:     "clear",
-	Aliases: []string{"off","flush"},
+	Aliases: []string{"off", "flush", "reset"},
 	Short:   "Turn off network conditions",
 	Long: `
 Netconfig clear will reset all emulation and turn off all persisiting network conditions. 
