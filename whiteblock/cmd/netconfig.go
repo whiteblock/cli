@@ -80,43 +80,42 @@ Latency will introduce delay to the network. You will specify the amount of late
 	Run: func(cmd *cobra.Command, args []string) {
 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := "netconfig"
+		delayStr := ""
 
 		// for demo purposes only. Take out for production.
 		// ==================================================================
-		delayStr := ""
-		if !randomPing && len(args) != 0 {
-			delayInt, err := strconv.Atoi(args[0])
-			if err != nil {
-				panic(err)
-			}
-			delayInt = delayInt / 2
-			delayStr = strconv.Itoa(delayInt)
-		} else if randomPing && len(args) == 0 {
-			delayStr = "25"
-		} else if randomPing && len(args) != 0 {
-			fmt.Println("Cannot use random ping flag with given arguments")
-			return
-		} else {
-			fmt.Println("No arguments was given")
-			return
-		}
+		// if !randomPing && len(args) != 0 {
+		// 	delayInt, err := strconv.Atoi(args[0])
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
+		// 	delayInt = delayInt / 2
+		// 	delayStr = strconv.Itoa(delayInt)
+		// } else if randomPing && len(args) == 0 {
+		// 	delayStr = "25"
+		// } else if randomPing && len(args) != 0 {
+		// 	fmt.Println("Cannot use random ping flag with given arguments")
+		// 	return
+		// } else {
+		// 	fmt.Println("No arguments was given")
+		// 	return
+		// }
 		// ==================================================================
 
 		// for production. uncomment this and comment out the above demo code.
-		/*
-			if len(args) != 1 {
-				println("\nError: Invalid number of arguments given\n")
-				cmd.Help()
-				return
-			}
 
-			delayInt, err := strconv.Atoi(args[0])
-			if err != nil {
-				panic(err)
-			}
-			delayInt = delayInt / 2
-			delayStr = strconv.Itoa(delayInt)
-		*/
+		if len(args) != 1 {
+			println("\nError: Invalid number of arguments given\n")
+			cmd.Help()
+			return
+		}
+
+		delayInt, err := strconv.Atoi(args[0])
+		if err != nil {
+			panic(err)
+		}
+		delayInt = delayInt / 2
+		delayStr = strconv.Itoa(delayInt)
 
 		msg1 := "engine 1 path 1 set delay constant " + delayStr + " port 1 to port 2"
 		msg2 := "engine 1 path 1 set delay constant " + delayStr + " port 2 to port 1"

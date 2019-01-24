@@ -275,7 +275,6 @@ Output: Deployed contract address
 			deployContractOut := deployContract(args[1], nodeIP)
 			re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
 			addrList := re.FindAllString(deployContractOut, -1)
-			// fmt.Println(addrList[:])
 
 			ContractList := make([]interface{}, 0)
 			ContractList = append(ContractList, Contracts{
