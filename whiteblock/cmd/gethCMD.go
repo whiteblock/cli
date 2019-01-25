@@ -253,12 +253,11 @@ Output: Deployed contract address
 	Run: func(cmd *cobra.Command, args []string) {
 		CheckArguments(args,2,2)
 		if checkContractFiles(args[1]) {
-			res,err := jsonRpcCall("nodes",[]string{})
+			nodes,err := GetNodes()
 			if err != nil{
 				PrintErrorFatal(err)
 			}
 
-			nodes := res.([]Node)
 			nodeNumber, err := strconv.Atoi(args[0])
 			if err != nil {
 				panic(err)
