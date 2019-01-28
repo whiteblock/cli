@@ -59,7 +59,7 @@ func jsonRpcCall(method string,params interface{}) (interface{},error) {
 	var out interface{}
 	err = json2.DecodeClientResponse(resp.Body,&out)
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
 		return nil,err
 	}
 	return out, nil

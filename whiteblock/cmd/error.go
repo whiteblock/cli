@@ -38,7 +38,7 @@ func ClientNotSupported(client string){
 
 func PrintErrorFatal(err error){
     PrintError(err)
-    panic(err)
+    //panic(err)
 }
 
 func PrintError(err error){
