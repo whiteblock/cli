@@ -537,22 +537,6 @@ Response: The number of nodes which successfully received the signal to stop min
 	},
 }
 
-var gethBlockListenerCmd = &cobra.Command{
-	Use:   "block_listener [block number]",
-	Short: "Get block listener",
-	Long: `
-Get all blocks and continue to subscribe to new blocks
-
-Format: [block number]
-Params: The block number to start at or None for all blocks
-
-Response: Will emit on eth::block_listener for every block after the given block or 0 that exists/has been created`,
-	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
-		jsonRpcCallAndPrint("eth::block_listener",args)
-	},
-}
-
 var gethGetRecentSentTxCmd = &cobra.Command{
 	Use:   "get_recent_sent_tx <number>",
 	Short: "Get recently sent transaction",
@@ -577,7 +561,7 @@ func init() {
 	//geth subcommands
 	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethSendTxCmd,
 		gethGetTxCountCmd, gethGetTxCmd, gethGetTxReceiptCmd, gethGetHashRateCmd, gethStartTxCmd, gethStopTxCmd,
-		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole, gethSocCmd)
+		gethStartMiningCmd, gethStopMiningCmd, gethGetRecentSentTxCmd, gethConsole, gethSocCmd)
 
 	gethSocCmd.AddCommand(gethSolcInitCmd, gethSolcDeployCmd)
 	RootCmd.AddCommand(gethCmd)
