@@ -396,6 +396,18 @@ var buildCmd = &cobra.Command{
 	},
 }
 
+var buildAttachCmd = &cobra.Command{
+	Use:     "attach",
+	Aliases: []string{"resume"},
+	Short:   "Build a blockchain using previous configurations",
+	Long: "\nAttach to a current in progress build process\n",
+
+	Run:func(cmd *cobra.Command, args []string) {
+		buildListener()
+	},
+	
+}
+
 var previousCmd = &cobra.Command{
 	Use:     "previous",
 	Aliases: []string{"prev"},
@@ -480,6 +492,6 @@ func init() {
 	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
-	buildCmd.AddCommand(previousCmd, buildStopCmd)
+	buildCmd.AddCommand(previousCmd, buildStopCmd,buildAttachCmd)
 	RootCmd.AddCommand(buildCmd)
 }

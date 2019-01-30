@@ -77,6 +77,13 @@ func buildListener(){
 		PrintErrorFatal(err)
 	}
 	defer c.Close()
+
+	c.On("error",func(h *gosocketio.Channel, args string){
+		PrintStringError(args)
+		os.Exit(1)
+	})
+
+	
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
 		json.Unmarshal([]byte(args), &status)
