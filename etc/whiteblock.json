@@ -1,0 +1,34 @@
+{
+    "blockchains": {
+        "eos": {
+            "images": {
+                "stable": "gcr.io/whiteblock/eos:33b8e099703571f032d152a72c1e7da888d277c0",
+                "latest": "gcr.io/whiteblock/eos:master"
+            }
+        },
+        "syscoin": {
+            "images": {
+                "stable": "gcr.io/whiteblock/syscoin:9c34b2a640dae986fbf8d09342edb2a167757cdb",
+                "latest": "gcr.io/whiteblock/syscoin:master"
+            }
+        },
+        "rchain": {
+            "images": {
+                "stable": "gcr.io/whiteblock/rchain:dbc0dbb9dafb72a24bf983192add15eff25653b2",
+                "latest": "gcr.io/whiteblock/rchain:master"
+            }
+        },
+        "beam": {
+            "images": {
+                "stable": "gcr.io/whiteblock/beam:17d9e755b23a33bff36fbacbf141072292c7e389",
+                "latest": "gcr.io/whiteblock/beam:master"
+            }
+        },
+        "ethereum": {
+            "images": {
+                "stable": "gcr.io/whiteblock/ethereum:34b61c761d71df81666ea00c3cf14cb7c6a120b8",
+                "latest": "gcr.io/whiteblock/ethereum:master"
+            }
+        }
+    }
+}

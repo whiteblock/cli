@@ -59,7 +59,7 @@ func jsonRpcCall(method string,params interface{}) (interface{},error) {
 	var out interface{}
 	err = json2.DecodeClientResponse(resp.Body,&out)
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
 		return nil,err
 	}
 	return out, nil
@@ -77,6 +77,13 @@ func buildListener(){
 		PrintErrorFatal(err)
 	}
 	defer c.Close()
+
+	c.On("error",func(h *gosocketio.Channel, args string){
+		PrintStringError(args)
+		os.Exit(1)
+	})
+
+	
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
 		json.Unmarshal([]byte(args), &status)
