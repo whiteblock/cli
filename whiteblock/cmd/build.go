@@ -466,15 +466,14 @@ Build previous will recreate and deploy the previously built blockchain and spec
 
 var buildStopCmd = &cobra.Command{
 	Use:     "stop",
-	Aliases: []string{"halt", ""},
+	Aliases: []string{"halt", "cancel"},
 	Short:   "Stops the current build",
 	Long: `
 Build stops the current building process.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		emptyParam := []string{}
-		jsonRpcCallAndPrint("stop_build", emptyParam)
+		jsonRpcCallAndPrint("stop_build", []string{})
 	},
 }
 
