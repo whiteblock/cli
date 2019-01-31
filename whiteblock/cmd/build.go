@@ -137,9 +137,12 @@ func tern(exp bool, res1 string, res2 string) string {
 
 func getImage(blockchain, image string) string {
 	cwd := os.Getenv("HOME")
-	b, err := ioutil.ReadFile(cwd + "/cli/etc/whiteblock.json")
+	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
-		//fmt.Print(err)
+		b, err = ioutil.ReadFile(cwd + "/cli/etc/whiteblock.json")
+		if err != nil {
+			panic(err)
+		}
 	}
 	var cont map[string]map[string]map[string]map[string]string
 	err = json.Unmarshal(b, &cont)
