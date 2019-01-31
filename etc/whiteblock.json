@@ -20,7 +20,7 @@
         },
         "beam": {
             "images": {
-                "stable": "gcr.io/whiteblock/beam:17d9e755b23a33bff36fbacbf141072292c7e389",
+                "stable": "gcr.io/whiteblock/beam:37a230fe2de5d1cdfec8a96309a67fd898db987e",
                 "latest": "gcr.io/whiteblock/beam:master"
             }
         },
