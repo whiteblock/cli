@@ -23,6 +23,7 @@ var (
 	memoryFlag     string
 	paramsFile     string
 	validators     int
+	imageFlag      string
 )
 
 type Config struct {
@@ -132,6 +133,21 @@ func tern(exp bool, res1 string, res2 string) string {
 		return res1
 	}
 	return res2
+}
+
+func getImage(blockchain, image string) string {
+	cwd := os.Getenv("HOME")
+	b, err := ioutil.ReadFile(cwd + "/cli/etc/whiteblock.json")
+	if err != nil {
+		//fmt.Print(err)
+	}
+	var cont map[string]map[string]map[string]map[string]string
+	err = json.Unmarshal(b, &cont)
+	if err != nil {
+		panic(err)
+	}
+	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
+	return cont["blockchains"][blockchain]["images"][image]
 }
 
 var buildCmd = &cobra.Command{
@@ -272,7 +288,8 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		image := "gcr.io/whiteblock/" + blockchain + ":master"
+		// image := "gcr.io/whiteblock/" + blockchain + ":master"
+		image := getImage(blockchain, imageFlag)
 		// image := blockchain
 		if !cpusEnabled {
 			cpus = buildArr[offset]
@@ -400,12 +417,11 @@ var buildAttachCmd = &cobra.Command{
 	Use:     "attach",
 	Aliases: []string{"resume"},
 	Short:   "Build a blockchain using previous configurations",
-	Long: "\nAttach to a current in progress build process\n",
+	Long:    "\nAttach to a current in progress build process\n",
 
-	Run:func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, args []string) {
 		buildListener()
 	},
-	
 }
 
 var previousCmd = &cobra.Command{
@@ -487,10 +503,11 @@ func init() {
 	buildCmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
+	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
 
 	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
-	buildCmd.AddCommand(previousCmd, buildStopCmd,buildAttachCmd)
+	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd)
 	RootCmd.AddCommand(buildCmd)
 }
