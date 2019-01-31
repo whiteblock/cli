@@ -13,6 +13,7 @@ RUN go get && go build
 FROM ubuntu:latest as final
 
 COPY --from=built /cli/whiteblock/whiteblock /cli/whiteblock/whiteblock
+COPY --from=built /cli/etc/ /cli/etc
 RUN  ln -s /cli/whiteblock/whiteblock /usr/local/bin/whiteblock
 # tells kernel to not expect any input from the frontend
 # this bypasses the need for tzdata nonsense
