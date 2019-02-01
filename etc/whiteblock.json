@@ -14,7 +14,7 @@
         },
         "rchain": {
             "images": {
-                "stable": "gcr.io/whiteblock/rchain:gold-20190130",
+                "stable": "gcr.io/whiteblock/rchain:dbc0dbb9dafb72a24bf983192add15eff25653b2",
                 "latest": "gcr.io/whiteblock/rchain:master"
             }
         },
