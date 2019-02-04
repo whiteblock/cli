@@ -35,6 +35,7 @@ Response: The number of nodes which successfully received the signal to start mi
 			case "ethereum":
 				res,err := jsonRpcCall("eth::start_mining",args)
 				if err != nil {
+					PrintStringError(err.Error())
 					PrintStringError("There was an error building the DAG.")
 					os.Exit(1)
 				}
