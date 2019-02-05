@@ -14,13 +14,13 @@
         },
         "rchain": {
             "images": {
-                "stable": "gcr.io/whiteblock/rchain:gold-20190130",
+                "stable": "gcr.io/whiteblock/rchain:dbc0dbb9dafb72a24bf983192add15eff25653b2",
                 "latest": "gcr.io/whiteblock/rchain:master"
             }
         },
         "beam": {
             "images": {
-                "stable": "gcr.io/whiteblock/beam:17d9e755b23a33bff36fbacbf141072292c7e389",
+                "stable": "gcr.io/whiteblock/beam:d4ec4a50c767f2622a08d1f79b492018f36fae37",
                 "latest": "gcr.io/whiteblock/beam:master"
             }
         },
