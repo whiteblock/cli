@@ -173,7 +173,7 @@ func installNpmDeps() {
 	}
 	// fmt.Printf("%s", output)
 
-	npmInstWeb3Cmd := exec.Command("npm", "install", "web3")
+	npmInstWeb3Cmd := exec.Command("npm", "install", "web3@1.0.0-beta.31")
 	npmInstWeb3Cmd.Dir = cwd + "/smart-contracts/"
 	_, err = npmInstWeb3Cmd.Output()
 	if err != nil {
