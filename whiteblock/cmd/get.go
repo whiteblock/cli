@@ -83,7 +83,7 @@ Response: true or false, on whether or not a test is running; The name of the te
 }
 
 var getLogCmd = &cobra.Command{
-	Use:   "log <node number>",
+	Use:   "log <node>",
 	Short: "Log will dump data pertaining to the node.",
 	Long: `
 Get stdout and stderr from a node.

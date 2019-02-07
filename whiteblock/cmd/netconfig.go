@@ -36,7 +36,7 @@ Netconfig will introduce persisting network conditions for testing.
 }
 
 var netconfigSetCmd = &cobra.Command{
-	Use:     "set <node number> [flags]",
+	Use:     "set <node> [flags]",
 	Aliases: []string{"config", "configure"},
 	Short:   "Set network conditions",
 	Long: `

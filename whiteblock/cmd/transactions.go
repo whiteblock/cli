@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"strconv"
+
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +53,7 @@ Send a transaction between two accounts.
 
 Required Parameters: 
 	ethereum:  --from <address>  --destination <address> --gas <gas> --gasprice <gas price> --value <amount>
-	eos:  --node <node number> --from <address> --destination <address> --value <amount> 
+	eos:  --node <node> --from <address> --destination <address> --value <amount> 
 	
 Optional Parameters:
 	eos:  --symbol [symbol=SYS] --code [code=eosio.token] --memo [memo=]
@@ -66,25 +67,25 @@ Optional Parameters:
 			return
 		}
 		switch blockchain {
-			case "ethereum":
-				if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
-					fmt.Println("Required flags were not provided. Please input the required flags.")
-					cmd.Help()
-					return
-				}
-				command = "eth::send_transaction"
-				params = []string{fromFlag,toFlag,gasFlag,gasPriceFlag,strconv.Itoa(valueFlag)}
-			case "eos":
-				if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
-					fmt.Println("Required flags were not provided. Please input the required flags.")
-					return
-				}
-				command = "eos::send_transaction"
-				params = []string{nodeFlag,fromFlag,toFlag,strconv.Itoa(valueFlag)}
-			default:
-				ClientNotSupported(blockchain)
+		case "ethereum":
+			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
+				fmt.Println("Required flags were not provided. Please input the required flags.")
+				cmd.Help()
+				return
+			}
+			command = "eth::send_transaction"
+			params = []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
+		case "eos":
+			if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
+				fmt.Println("Required flags were not provided. Please input the required flags.")
+				return
+			}
+			command = "eos::send_transaction"
+			params = []string{nodeFlag, fromFlag, toFlag, strconv.Itoa(valueFlag)}
+		default:
+			ClientNotSupported(blockchain)
 		}
-		jsonRpcCallAndPrint(command,params)
+		jsonRpcCallAndPrint(command, params)
 	},
 }
 
@@ -118,7 +119,7 @@ Optional Parameters:
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if tpsFlag == 0 {//TPS will always be required
+		if tpsFlag == 0 { //TPS will always be required
 			fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
 			cmd.Help()
 			return
@@ -131,44 +132,44 @@ Optional Parameters:
 			return
 		}
 		switch blockchain {
-			case "ethereum":
-				//error handling for invalid flags
-				if !(txSizeFlag == 0) {
-					fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
-					cmd.Help()
-					return
-				}
-				if valueFlag == 0 {
-					fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
-					cmd.Help()
-					return
-				}
+		case "ethereum":
+			//error handling for invalid flags
+			if !(txSizeFlag == 0) {
+				fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
+				cmd.Help()
+				return
+			}
+			if valueFlag == 0 {
+				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
+				cmd.Help()
+				return
+			}
 
-				command = "eth::start_transactions"
-				toEth := strconv.Itoa(valueFlag) + "000000000000000000"
-				params = append(params,toEth)
-				if len(toFlag) > 0 {
-					params = append(params,toFlag)
-				}
-			case "eos":
-				command = "eos::run_constant_tps"
-				//error handling for invalid flags
-				if valueFlag != 0 {
-					fmt.Println("Invalid \"valueFlag\" flag has been provided.")
-					cmd.Help()
-					return
-				}
-				
-				if txSizeFlag >= 174 {
-					params = append(params,strconv.Itoa(txSizeFlag))
-				} else if txSizeFlag > 0 && txSizeFlag < 174 {
-					fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
-					os.Exit(1)
-				}
-			default:
-				ClientNotSupported(blockchain)
+			command = "eth::start_transactions"
+			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
+			params = append(params, toEth)
+			if len(toFlag) > 0 {
+				params = append(params, toFlag)
+			}
+		case "eos":
+			command = "eos::run_constant_tps"
+			//error handling for invalid flags
+			if valueFlag != 0 {
+				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
+				cmd.Help()
+				return
+			}
+
+			if txSizeFlag >= 174 {
+				params = append(params, strconv.Itoa(txSizeFlag))
+			} else if txSizeFlag > 0 && txSizeFlag < 174 {
+				fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
+				os.Exit(1)
+			}
+		default:
+			ClientNotSupported(blockchain)
 		}
-		jsonRpcCallAndPrint(command,params)
+		jsonRpcCallAndPrint(command, params)
 	},
 }
 
@@ -193,29 +194,29 @@ Optional Parameters:
 			return
 		}
 		switch blockchain {
-			case "eos":
-				//error handling for invalid flags
-				if valueFlag != 0 {
-					fmt.Println("Invalid \"valueFlag\" flag has been provided.")
-					cmd.Help()
-					return
-				}
-				if tpsFlag == 0 {
-					fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
-					cmd.Help()
-					return
-				}
-				command = "eos::run_burst_tx"
-				if txSizeFlag >= 174 {
-					params = append(params,strconv.Itoa(txSizeFlag))
-				} else if txSizeFlag > 0 && txSizeFlag < 174 {
-					fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
-					return
-				}
-			default:
-				ClientNotSupported(blockchain)
+		case "eos":
+			//error handling for invalid flags
+			if valueFlag != 0 {
+				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
+				cmd.Help()
+				return
+			}
+			if tpsFlag == 0 {
+				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+				cmd.Help()
+				return
+			}
+			command = "eos::run_burst_tx"
+			if txSizeFlag >= 174 {
+				params = append(params, strconv.Itoa(txSizeFlag))
+			} else if txSizeFlag > 0 && txSizeFlag < 174 {
+				fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
+				return
+			}
+		default:
+			ClientNotSupported(blockchain)
 		}
-		jsonRpcCallAndPrint(command,params)
+		jsonRpcCallAndPrint(command, params)
 	},
 }
 
@@ -234,15 +235,15 @@ Stops the sending of transactions if transactions are currently being sent
 			return
 		}
 		switch blockchain {
-			case "ethereum":
-				command = "eth::stop_transactions"
-			case "eos":
-				command = "eth::stop_transactions"
-			default:
-				ClientNotSupported(blockchain)
+		case "ethereum":
+			command = "eth::stop_transactions"
+		case "eos":
+			command = "eth::stop_transactions"
+		default:
+			ClientNotSupported(blockchain)
 		}
 		fmt.Println("Stopped transactions.")
-		jsonRpcCallAndPrint(command,[]string{})
+		jsonRpcCallAndPrint(command, []string{})
 	},
 }
 

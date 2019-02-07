@@ -243,7 +243,7 @@ Init initialize the smart-contracts directory and will download all the necessar
 }
 
 var gethSolcDeployCmd = &cobra.Command{
-	Use:   "deploy <node number> <file name>",
+	Use:   "deploy <node> <file name>",
 	Short: "deploy",
 	Long: `
 Deploy will compile the smart contract and deploy it to the ethereum blockchain. For the smart contract to be successfully deployed, mining needs to be started. This can be done by using the 'miner start' command. 
@@ -251,10 +251,10 @@ Deploy will compile the smart contract and deploy it to the ethereum blockchain.
 Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,2,2)
+		CheckArguments(args, 2, 2)
 		if checkContractFiles(args[1]) {
-			nodes,err := GetNodes()
-			if err != nil{
+			nodes, err := GetNodes()
+			if err != nil {
 				PrintErrorFatal(err)
 			}
 
@@ -262,7 +262,7 @@ Output: Deployed contract address
 			if err != nil {
 				panic(err)
 			}
-			
+
 			nodeIP := nodes[nodeNumber].IP
 			deployContractOut := deployContract(args[1], nodeIP)
 			re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
@@ -282,19 +282,19 @@ Output: Deployed contract address
 }
 
 var gethConsole = &cobra.Command{
-	Use:   "console <node number>",
+	Use:   "console <node>",
 	Short: "Logs into the geth console",
 	Long: `
 Console will log into the geth console.
 
 Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
-		nodes,err := GetNodes()
-		if err != nil{
+		CheckArguments(args, 1, 1)
+		nodes, err := GetNodes()
+		if err != nil {
 			PrintErrorFatal(err)
 		}
-		
+
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
 			PrintErrorFatal(err)
@@ -314,8 +314,8 @@ Get the current highest block number of the chain
 
 Response: The block number`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,0,1)
-		jsonRpcCallAndPrint("eth::get_block_number",[]string{})
+		CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eth::get_block_number", []string{})
 	},
 }
 
@@ -330,8 +330,8 @@ Params: Block number
 
 Response: JSON Representation of the block.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
-		jsonRpcCallAndPrint("eth::get_block",args)
+		CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_block", args)
 	},
 }
 
@@ -343,7 +343,7 @@ Get a list of all unlocked accounts, current balance of accounts, tx counts, and
 
 Response: A JSON array of the accounts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::accounts_status",[]string{})
+		jsonRpcCallAndPrint("eth::accounts_status", []string{})
 	},
 }
 
@@ -398,9 +398,9 @@ Params: Sending account, receiving account, gas, gas price, amount to send in ET
 
 Response: The transaction hash`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,5,5)
+		CheckArguments(args, 5, 5)
 		args[4] = args[4] + "000000000000000000"
-		jsonRpcCallAndPrint("eth::send_transaction",args)
+		jsonRpcCallAndPrint("eth::send_transaction", args)
 	},
 }
 
@@ -415,8 +415,8 @@ Params: The sender account, a block number
 
 Response: The transaction count`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,2)
-		jsonRpcCallAndPrint("eth::get_transaction_count",args)
+		CheckArguments(args, 1, 2)
+		jsonRpcCallAndPrint("eth::get_transaction_count", args)
 	},
 }
 
@@ -431,8 +431,8 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
-		jsonRpcCallAndPrint("eth::get_transaction",args)
+		CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_transaction", args)
 	},
 }
 
@@ -447,8 +447,8 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction receipt.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
-		jsonRpcCallAndPrint("eth::get_transaction_receipt",args)
+		CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
 	},
 }
 
@@ -460,8 +460,8 @@ Get the current hash rate per node
 
 Response: The hash rate of a single node in the network`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,0,1)
-		jsonRpcCallAndPrint("eth::get_hash_rate",[]string{})
+		CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
 	},
 }
 
@@ -476,9 +476,9 @@ Params: The amount of transactions to send in a second, the value of each transa
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command)
-		CheckArguments(args,2,3)
+		CheckArguments(args, 2, 3)
 		args[1] = args[1] + "000000000000000000"
-		jsonRpcCallAndPrint("eth::start_transactions",args)
+		jsonRpcCallAndPrint("eth::start_transactions", args)
 	},
 }
 
@@ -488,8 +488,8 @@ var gethStopTxCmd = &cobra.Command{
 	Long: `
 Stops the sending of transactions if transactions are currently being sent`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,0,1)
-		jsonRpcCallAndPrint("eth::stop_transactions",[]string{})
+		CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eth::stop_transactions", []string{})
 	},
 }
 
@@ -504,11 +504,11 @@ Params: A list of the nodes to start mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to start mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::start_mining",args)
+		jsonRpcCallAndPrint("eth::start_mining", args)
 		DagReady := false
 		for !DagReady {
 			fmt.Printf("\rDAG is being generated...")
-			res,err := jsonRpcCall("eth::get_block_number",[]string{})
+			res, err := jsonRpcCall("eth::get_block_number", []string{})
 			if err != nil {
 				PrintErrorFatal(err)
 			}
@@ -533,7 +533,7 @@ Params: A list of the nodes to stop mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to stop mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::stop_mining",args)
+		jsonRpcCallAndPrint("eth::stop_mining", args)
 	},
 }
 
@@ -549,8 +549,8 @@ Params: The number of transactions to retrieve
 Response: JSON object of transaction data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
-		jsonRpcCallAndPrint("eth::get_recent_sent_tx",args)
+		CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_recent_sent_tx", args)
 	},
 }
 
