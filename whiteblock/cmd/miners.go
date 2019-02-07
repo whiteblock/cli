@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"fmt"
+	"time"
 	"github.com/spf13/cobra"
 )
 
@@ -47,9 +48,10 @@ Response: The number of nodes which successfully received the signal to start mi
 						PrintErrorFatal(err)
 					}
 					blocknum := int(res.(float64))
-					if blocknum > 4 {
+					if blocknum > 2 {
 						DagReady = true
 					}
+					time.Sleep(time.Millisecond * 50)
 				}
 				fmt.Println("\rDAG has been successfully generated.")
 			default:
