@@ -114,7 +114,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 			netInfo["loss"] = lossFlag
 		}
 		if delayFlag > 0 {
-			netInfo["delay"] = delayFlag / 2
+			netInfo["delay"] = (delayFlag*1000) / 2
 		}
 		if rateFlag > 0 {
 			rate := strconv.Itoa(rateFlag)
