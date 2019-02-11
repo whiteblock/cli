@@ -275,9 +275,9 @@ var buildCmd = &cobra.Command{
 		var offset = 0
 
 		if blockchainEnabled {
-			blockchain = blockchainFlag
+			blockchain = strings.ToLower(blockchainFlag)
 		} else {
-			blockchain = buildArr[offset]
+			blockchain = strings.ToLower(buildArr[offset])
 			offset++
 		}
 
