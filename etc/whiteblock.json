@@ -29,6 +29,12 @@
                 "stable": "gcr.io/whiteblock/ethereum:34b61c761d71df81666ea00c3cf14cb7c6a120b8",
                 "latest": "gcr.io/whiteblock/ethereum:master"
             }
+        },
+        "tendermint":{
+            "images":{
+                "stable":"gcr.io/whiteblock/tendermint:d9a381944ef1fbd4cd1a10260b8a0415bb7fc72d",
+                "latest":"gcr.io/whiteblock/tendermint:dev"
+            }
         }
     }
 }
