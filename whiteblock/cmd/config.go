@@ -2,24 +2,30 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-var resetConfCmd = &cobra.Command{
+var confCmd = &cobra.Command{
 	Hidden: true,
 	Use:    "config",
-	Short:  "Edit the configuration file for default parameters.",
-	Long: `
+	Short:  "Configuration file for default parameters for future builds.",
+	Run:    PartialCommand,
+}
 
+var resetConfCmd = &cobra.Command{
+	Hidden: true,
+	Use:    "reset",
+	Short:  "Reset the config file.",
+	Long: `
 This command will rest the configuration file when called.
 	`,
-
 	Run: func(cmd *cobra.Command, args []string) {
 
 		cwd := os.Getenv("HOME")
-		err := os.RemoveAll(cwd + "/cli/whiteblock/config")
+		err := os.RemoveAll(cwd + "/.config/whiteblock/config.json")
 		if err != nil {
 			panic(err)
 		}
@@ -27,6 +33,25 @@ This command will rest the configuration file when called.
 	},
 }
 
+var showConfCmd = &cobra.Command{
+	Hidden: true,
+	Use:    "show",
+	Short:  "Show config file",
+	Long: `
+	Show the default values set by the configuration file.
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		cwd := os.Getenv("HOME")
+		b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/config.json")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(prettyp(string(b)))
+	},
+}
+
 func init() {
-	RootCmd.AddCommand(resetConfCmd)
+	confCmd.AddCommand(resetConfCmd, showConfCmd)
+	RootCmd.AddCommand(confCmd)
 }
