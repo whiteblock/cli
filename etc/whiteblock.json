@@ -41,6 +41,12 @@
                 "stable":"gcr.io/whiteblock/cosmos:af7e9e8bd1f40396c87230c19df6a224b2c75633",
                 "latest":"gcr.io/whiteblock/cosmos:dev"
             }
+        },
+        "parity":{
+            "images":{
+                "stable":"grc.io/whiteblock/parity:dev",
+                "latest":"gcr.io/whiteblock/parity:dev"
+            }
         }
     }
 }
