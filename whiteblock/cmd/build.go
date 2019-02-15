@@ -31,7 +31,7 @@ type Config struct {
 	Blockchain string                 `json:"blockchain"`
 	Nodes      int                    `json:"nodes"`
 	Image      string                 `json:"image"`
-	Resources  Resources              `json:"resources"`
+	Resources  []Resources            `json:"resources"`
 	Params     map[string]interface{} `json:"params"`
 }
 
@@ -213,8 +213,13 @@ var buildCmd = &cobra.Command{
 		defaultBlockchain := string(config.Blockchain)
 		defaultNodes := strconv.Itoa(config.Nodes)
 		//defaultImage := string(config.Image)
-		defaultCpus := string(config.Resources.Cpus)
-		defaultMemory := string(config.Resources.Memory)
+		defaultCpus := ""
+		defaultMemory :=""
+
+		if config.Resources != nil && len(config.Resources) > 0 {
+			defaultCpus = string(config.Resources[0].Cpus) 
+			defaultMemory = string(config.Resources[0].Memory)
+		}
 
 		buildOpt := []string{}
 		defOpt := []string{}
@@ -401,9 +406,11 @@ var buildCmd = &cobra.Command{
 			Blockchain: blockchain,
 			Nodes:      nodes,
 			Image:      image,
-			Resources: Resources{
-				Cpus:   cpus,
-				Memory: memory,
+			Resources: []Resources{
+				Resources{
+					Cpus:   cpus,
+					Memory: memory,
+				},
 			},
 			Params: params,
 		}

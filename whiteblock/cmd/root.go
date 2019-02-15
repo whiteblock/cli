@@ -95,8 +95,11 @@ func initConfig() {
 	blockchain = config.Blockchain
 	nodes = config.Nodes
 	image = config.Image
-	cpus = config.Resources.Cpus
-	memory = config.Resources.Memory
+	if config.Resources != nil && len(config.Resources) > 0 {
+		cpus = config.Resources[0].Cpus
+		memory = config.Resources[0].Memory
+	}
+	
 
 	viper.WatchConfig()
 	viper.AutomaticEnv()
