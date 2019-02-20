@@ -44,7 +44,7 @@
         },
         "parity":{
             "images":{
-                "stable":"grc.io/whiteblock/parity:dev",
+                "stable":"gcr.io/whiteblock/parity:dev",
                 "latest":"gcr.io/whiteblock/parity:dev"
             }
         }
