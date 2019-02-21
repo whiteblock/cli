@@ -150,7 +150,12 @@ func getImage(blockchain, image string) string {
 		panic(err)
 	}
 	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
-	return cont["blockchains"][blockchain]["images"][image]
+	if len(cont["blockchains"][blockchain]["images"][image]) != 0 {
+		return cont["blockchains"][blockchain]["images"][image]
+
+	} else {
+		return image
+	}
 }
 
 var buildCmd = &cobra.Command{
@@ -296,9 +301,8 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		// image := "gcr.io/whiteblock/" + blockchain + ":master"
 		image := getImage(blockchain, imageFlag)
-		// image := blockchain
+		
 		if !cpusEnabled {
 			cpus = buildArr[offset]
 			offset++
@@ -416,7 +420,6 @@ var buildCmd = &cobra.Command{
 		}
 
 		build(buildConfig)
-
 		param, err := json.Marshal(buildConfig)
 		writePrevCmdFile(string(param))
 		writeConfigFile(string(param))
