@@ -45,7 +45,8 @@ var showConfCmd = &cobra.Command{
 		cwd := os.Getenv("HOME")
 		b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/config.json")
 		if err != nil {
-			panic(err)
+			fmt.Println("No configuration file could be found. One will be automatically generated once a successful build has been built. Please refer to the command: 'whiteblock build -h' for help")
+			return
 		}
 		fmt.Println(prettyp(string(b)))
 	},
