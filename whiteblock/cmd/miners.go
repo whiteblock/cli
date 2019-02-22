@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"time"
+
 	"github.com/spf13/cobra"
 )
 
@@ -33,29 +34,29 @@ Response: The number of nodes which successfully received the signal to start mi
 			return
 		}
 		switch blockchain {
-			case "ethereum":
-				res,err := jsonRpcCall("eth::start_mining",args)
+		case "ethereum":
+			res, err := jsonRpcCall("eth::start_mining", args)
+			if err != nil {
+				PrintStringError(err.Error())
+				PrintStringError("There was an error building the DAG.")
+				os.Exit(1)
+			}
+			DagReady := false
+			for !DagReady {
+				fmt.Printf("\rDAG is being generated...")
+				res, err = jsonRpcCall("eth::get_block_number", []string{})
 				if err != nil {
-					PrintStringError(err.Error())
-					PrintStringError("There was an error building the DAG.")
-					os.Exit(1)
+					PrintErrorFatal(err)
 				}
-				DagReady := false
-				for !DagReady {
-					fmt.Printf("\rDAG is being generated...")
-					res,err = jsonRpcCall("eth::get_block_number",[]string{})
-					if err != nil {
-						PrintErrorFatal(err)
-					}
-					blocknum := int(res.(float64))
-					if blocknum > 2 {
-						DagReady = true
-					}
-					time.Sleep(time.Millisecond * 50)
+				blocknum := int(res.(float64))
+				if blocknum > 2 {
+					DagReady = true
 				}
-				fmt.Println("\rDAG has been successfully generated.")
-			default:
-				ClientNotSupported(blockchain)
+				time.Sleep(time.Millisecond * 50)
+			}
+			fmt.Println("\rDAG has been successfully generated.")
+		default:
+			ClientNotSupported(blockchain)
 		}
 	},
 }
@@ -78,12 +79,12 @@ Response: The number of nodes which successfully received the signal to stop min
 		}
 		command := ""
 		switch blockchain {
-			case "ethereum":
-				command = "eth::stop_mining"
-			default:
-				ClientNotSupported(blockchain)
+		case "ethereum":
+			command = "eth::stop_mining"
+		default:
+			ClientNotSupported(blockchain)
 		}
-		jsonRpcCallAndPrint(command,args)
+		jsonRpcCallAndPrint(command, args)
 	},
 }
 
