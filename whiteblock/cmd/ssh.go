@@ -5,13 +5,14 @@ import (
 	"log"
 	"os"
 	"strconv"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
 
 type Node struct {
 	ID        int    `json:"id"`
-	TestNetID int    `json:"testNetId"`
+	TestNetID string `json:"testNetId"`
 	Server    int    `json:"server"`
 	LocalID   int    `json:"localId"`
 	IP        string `json:"ip"`
@@ -32,8 +33,8 @@ SSH will allow the user to go into the contianer where the specified node exists
 			return
 		}
 
-		nodes,err := GetNodes()
-		if err != nil{
+		nodes, err := GetNodes()
+		if err != nil {
 			PrintErrorFatal(err)
 		}
 		nodeNumber, err := strconv.Atoi(args[0])
