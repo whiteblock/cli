@@ -408,7 +408,7 @@ Response: JSON representation of the accounts information.
 		case "ethereum":
 			command = "eth::accounts_status"
 		case "eos":
-			command = "eos::accounts_status"
+			ClientNotSupported(blockchain)
 		default:
 			ClientNotSupported(blockchain)
 		}
