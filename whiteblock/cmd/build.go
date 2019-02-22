@@ -160,7 +160,7 @@ func getImage(blockchain, image string) string {
 
 func removeSmartContracts() {
 	cwd := os.Getenv("HOME")
-	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/")
+	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/contracts.json")
 	if err != nil {
 		panic(err)
 	}
@@ -472,6 +472,7 @@ Build previous will recreate and deploy the previously built blockchain and spec
 		if previousYesAll {
 			fmt.Println("building from previous configuration")
 			build(prevBuild)
+			removeSmartContracts()
 			return
 		}
 
