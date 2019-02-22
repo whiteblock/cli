@@ -158,6 +158,14 @@ func getImage(blockchain, image string) string {
 	}
 }
 
+func removeSmartContracts() {
+	cwd := os.Getenv("HOME")
+	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/")
+	if err != nil {
+		panic(err)
+	}
+}
+
 var buildCmd = &cobra.Command{
 	Use:     "build",
 	Aliases: []string{"init", "create"},
@@ -219,10 +227,10 @@ var buildCmd = &cobra.Command{
 		defaultNodes := strconv.Itoa(config.Nodes)
 		//defaultImage := string(config.Image)
 		defaultCpus := ""
-		defaultMemory :=""
+		defaultMemory := ""
 
 		if config.Resources != nil && len(config.Resources) > 0 {
-			defaultCpus = string(config.Resources[0].Cpus) 
+			defaultCpus = string(config.Resources[0].Cpus)
 			defaultMemory = string(config.Resources[0].Memory)
 		}
 
@@ -302,7 +310,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		image := getImage(blockchain, imageFlag)
-		
+
 		if !cpusEnabled {
 			cpus = buildArr[offset]
 			offset++
@@ -423,6 +431,7 @@ var buildCmd = &cobra.Command{
 		param, err := json.Marshal(buildConfig)
 		writePrevCmdFile(string(param))
 		writeConfigFile(string(param))
+		removeSmartContracts()
 	},
 }
 
@@ -479,6 +488,7 @@ Build previous will recreate and deploy the previously built blockchain and spec
 			case "yes":
 				fmt.Println("building from previous configuration")
 				build(prevBuild)
+				removeSmartContracts()
 				return
 			case "n":
 				fallthrough
