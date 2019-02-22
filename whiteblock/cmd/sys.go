@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
 	"github.com/spf13/cobra"
 )
 
@@ -21,15 +22,15 @@ type List struct {
 var sysCMD = &cobra.Command{
 	Use:   "sys <command>",
 	Short: "Run SYS commands.",
-	Long: "\nSys will allow the user to get information and run SYS commands.\n",
-	Run: PartialCommand,
+	Long:  "\nSys will allow the user to get information and run SYS commands.\n",
+	Run:   PartialCommand,
 }
 
 var sysTestCMD = &cobra.Command{
 	Use:   "test <command>",
 	Short: "SYS test commands.",
-	Long: "\nSys test will allow the user to get infromation and run SYS tests.\n",
-	Run:PartialCommand,
+	Long:  "\nSys test will allow the user to get infromation and run SYS tests.\n",
+	Run:   PartialCommand,
 }
 
 var testStartCMD = &cobra.Command{
@@ -43,8 +44,8 @@ Params: Time in seconds, percentage, number of assets to send, asset sends per b
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,4,4)
-		jsonRpcCallAndPrint("sys::start_test",args)
+		CheckArguments(args, 4, 4)
+		jsonRpcCallAndPrint("sys::start_test", args)
 		return
 	},
 }
@@ -61,12 +62,12 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
-		results,err := jsonRpcCall("sys::get_recent_test_results",args)
-		if err != nil{
+		CheckArguments(args, 1, 1)
+		results, err := jsonRpcCall("sys::get_recent_test_results", args)
+		if err != nil {
 			PrintErrorFatal(err)
 		}
-		result,ok := results.(map[string]interface{})
+		result, ok := results.(map[string]interface{})
 		if !ok {
 			panic(1)
 		}
@@ -84,12 +85,12 @@ Params: Test number
 		c := sc["columns"].([]interface{})
 		v := sc["values"].([]interface{})
 
-		for i := 0; i < len(v); i ++ {
-			fmt.Printf("[%d]\n",i)
+		for i := 0; i < len(v); i++ {
+			fmt.Printf("[%d]\n", i)
 			vv := v[i].([]interface{})
 			for j := 0; j < len(vv); j++ {
-				fmt.Printf("\t%v: %v\n",c[j],vv[j])
-			} 
+				fmt.Printf("\t%v: %v\n", c[j], vv[j])
+			}
 		}
 
 		/*var l List
@@ -108,8 +109,9 @@ Params: Test number
 }
 
 var testPinnacleCMD = &cobra.Command{
-	Use:   "pinnacle <wait time> <min complete percent>",
-	Short: "Run the pinnacle test series.",
+	Hidden: true,
+	Use:    "pinnacle <wait time> <min complete percent>",
+	Short:  "Run the pinnacle test series.",
 	Long: `
 Sys test pinnacle will run the propagation test.
 
