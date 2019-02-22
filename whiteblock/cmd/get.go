@@ -437,7 +437,11 @@ Response: JSON representation of the contract information.
 				fmt.Println(err)
 				return
 			}
-			fmt.Println(prettyp(string(contracts)))
+			if len(contracts) == 0 {
+				fmt.Println("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
+			} else {
+				fmt.Println(prettyp(string(contracts)))
+			}
 		default:
 			ClientNotSupported(blockchain)
 		}
