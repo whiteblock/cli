@@ -284,6 +284,16 @@ Response: JSON representation of the block
 		if blockNum < 1 {
 			fmt.Println("Unable to get block information from block 0. Please provide a block number greater than 0.")
 			return
+		} else {
+			res, err := jsonRpcCall("eth::get_block_number", []string{})
+			if err != nil {
+				PrintErrorFatal(err)
+			}
+			blocknum := int(res.(float64))
+			if blocknum < 1 {
+				fmt.Println("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
+				return
+			}
 		}
 		switch blockchain {
 		case "ethereum":
