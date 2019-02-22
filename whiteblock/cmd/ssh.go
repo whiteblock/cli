@@ -11,7 +11,7 @@ import (
 )
 
 type Node struct {
-	ID        int    `json:"id"`
+	ID        string `json:"id"`
 	TestNetID string `json:"testNetId"`
 	Server    int    `json:"server"`
 	LocalID   int    `json:"localId"`

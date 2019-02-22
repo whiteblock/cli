@@ -46,7 +46,7 @@ func GetNodes() ([]Node, error) {
 			LocalID:   int(node["localId"].(float64)),
 			Server:    int(node["server"].(float64)),
 			TestNetID: node["testNetId"].(string),
-			ID:        int(node["id"].(float64)),
+			ID:        node["id"].(string),
 			IP:        node["ip"].(string),
 			Label:     node["label"].(string),
 		})
