@@ -27,6 +27,8 @@ func cwFile(path, data string) {
 }
 */
 
+
+var logTail int = -1
 func readContractsFile() ([]byte, error) {
 	cwd := os.Getenv("HOME")
 	b, err := ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
@@ -105,6 +107,7 @@ Response: stdout and stderr of the blockchain process
 		jsonRpcCallAndPrint("log", map[string]int{
 			"server": s,
 			"node":   n,
+			"lines" : logTail,
 		})
 
 	},
@@ -457,6 +460,8 @@ func init() {
 	statsByTimeCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+
+	getLogCmd.Flags().IntVarP(&logTail, "tail", "t", -1, "see tail(1)")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
