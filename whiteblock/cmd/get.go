@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 /*
@@ -27,6 +28,30 @@ func cwFile(path, data string) {
 }
 */
 
+func GetNodes() ([]Node, error) {
+	res, err := jsonRpcCall("nodes", []string{})
+	if err != nil {
+		return nil, err
+	}
+	tmp := res.([]interface{})
+	nodes := []map[string]interface{}{}
+	for _, t := range tmp {
+		nodes = append(nodes, t.(map[string]interface{}))
+	}
+
+	out := []Node{}
+	for _, node := range nodes {
+		out = append(out, Node{
+			LocalID:   int(node["localId"].(float64)),
+			Server:    int(node["server"].(float64)),
+			TestNetID: node["testNetId"].(string),
+			ID:        node["id"].(string),
+			IP:        node["ip"].(string),
+			Label:     node["label"].(string),
+		})
+	}
+	return out, nil
+}
 
 var logTail int = -1
 func readContractsFile() ([]byte, error) {
@@ -42,7 +67,7 @@ var getCmd = &cobra.Command{
 	Use:   "get <command>",
 	Short: "Get server and network information.",
 	Long:  "\nGet will ouput server and network information and statstics.\n",
-	Run:   PartialCommand,
+	Run:   util.PartialCommand,
 }
 
 var getServerCmd = &cobra.Command{
@@ -78,7 +103,7 @@ Response: true or false, on whether or not a test is running; The name of the te
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 0, 0)
+		util.CheckArguments(args, 0, 0)
 		jsonRpcCallAndPrint("state::is_running", []string{})
 		jsonRpcCallAndPrint("state::what_is_running", []string{})
 	},
@@ -96,12 +121,12 @@ Response: stdout and stderr of the blockchain process
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		s, _ := strconv.Atoi(server)
 		n, err := strconv.Atoi(args[0])
 
 		if err != nil {
-			InvalidInteger("node", args[0], true)
+			util.InvalidInteger("node", args[0], true)
 		}
 
 		jsonRpcCallAndPrint("log", map[string]int{
@@ -125,7 +150,7 @@ Format: The blockchain to get the build params of
 Response: The params as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		jsonRpcCallAndPrint("get_defaults", args)
 	},
 }
@@ -138,7 +163,7 @@ Stats will allow the user to get statistics regarding the network.
 
 Response: JSON representation of network statistics
 	`,
-	Run: PartialCommand,
+	Run: util.PartialCommand,
 }
 
 var statsByTimeCmd = &cobra.Command{
@@ -153,10 +178,10 @@ Format: <start unix time stamp> <end unix time stamp>
 Response: JSON representation of network statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 2, 2)
+		util.CheckArguments(args, 2, 2)
 		jsonRpcCallAndPrint("stats", map[string]int64{
-			"startTime":  CheckAndConvertInt64(args[0], "start unix timestamp"),
-			"endTime":    CheckAndConvertInt64(args[1], "end unix timestamp"),
+			"startTime":  util.CheckAndConvertInt64(args[0], "start unix timestamp"),
+			"endTime":    util.CheckAndConvertInt64(args[1], "end unix timestamp"),
 			"startBlock": 0,
 			"endBlock":   0,
 		})
@@ -175,12 +200,12 @@ Format: <start block number> <end block number>
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 2, 2)
+		util.CheckArguments(args, 2, 2)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
-			"startBlock": CheckAndConvertInt64(args[0], "start block number"),
-			"endBlock":   CheckAndConvertInt64(args[1], "end block number"),
+			"startBlock": util.CheckAndConvertInt64(args[0], "start block number"),
+			"endBlock":   util.CheckAndConvertInt64(args[1], "end block number"),
 		})
 	},
 }
@@ -197,11 +222,11 @@ Format: <blocks>
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
-			"startBlock": CheckAndConvertInt64(args[0], "blocks") * -1, //Negative number signals past
+			"startBlock": util.CheckAndConvertInt64(args[0], "blocks") * -1, //Negative number signals past
 			"endBlock":   0,
 		})
 	},
@@ -229,7 +254,7 @@ var getBlockCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
-	Run:   PartialCommand,
+	Run:   util.PartialCommand,
 }
 
 var getBlockNumCmd = &cobra.Command{
@@ -273,7 +298,7 @@ Params: Block number
 Response: JSON representation of the block
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		command := ""
 		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
@@ -290,7 +315,7 @@ Response: JSON representation of the block
 		} else {
 			res, err := jsonRpcCall("eth::get_block_number", []string{})
 			if err != nil {
-				PrintErrorFatal(err)
+				util.PrintErrorFatal(err)
 			}
 			blocknum := int(res.(float64))
 			if blocknum < 1 {
@@ -304,7 +329,7 @@ Response: JSON representation of the block
 		case "eos":
 			command = "eos::get_block"
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		jsonRpcCallAndPrint(command, args)
 	},
@@ -314,7 +339,7 @@ var getTxCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "tx <command",
 	Short: "Get information regarding transactions",
-	Run:   PartialCommand,
+	Run:   util.PartialCommand,
 }
 
 var getTxInfoCmd = &cobra.Command{
@@ -330,7 +355,7 @@ Params: The transaction hash
 Response: JSON representation of the transaction.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		if len(blockchain) == 0 {
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
@@ -340,7 +365,7 @@ Response: JSON representation of the transaction.
 		case "ethereum":
 			command = "eth::get_transaction"
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		jsonRpcCallAndPrint(command, args)
 	},
@@ -388,7 +413,7 @@ var getAccountCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "account <command>",
 	Short: "Get account information",
-	Run:   PartialCommand,
+	Run:   util.PartialCommand,
 }
 
 var getAccountInfoCmd = &cobra.Command{
@@ -411,9 +436,9 @@ Response: JSON representation of the accounts information.
 		case "ethereum":
 			command = "eth::accounts_status"
 		case "eos":
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		jsonRpcCallAndPrint(command, []string{})
 	},
@@ -446,7 +471,7 @@ Response: JSON representation of the contract information.
 				fmt.Println(prettyp(string(contracts)))
 			}
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 	},
 }

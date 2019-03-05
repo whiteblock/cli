@@ -14,6 +14,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
+	util "../util"
 )
 
 var (
@@ -225,7 +226,7 @@ var gethSocCmd = &cobra.Command{
 	Long: `
 Solc will allow the user to reploy smart contracts to the ethereum blockchain.
 	`,
-	Run: PartialCommand,
+	Run: util.PartialCommand,
 }
 
 var gethSolcInitCmd = &cobra.Command{
@@ -251,11 +252,11 @@ Deploy will compile the smart contract and deploy it to the ethereum blockchain.
 Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 2, 2)
+		util.CheckArguments(args, 2, 2)
 		if checkContractFiles(args[1]) {
 			nodes, err := GetNodes()
 			if err != nil {
-				PrintErrorFatal(err)
+				util.PrintErrorFatal(err)
 			}
 
 			nodeNumber, err := strconv.Atoi(args[0])
@@ -289,15 +290,15 @@ Console will log into the geth console.
 
 Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		nodes, err := GetNodes()
 		if err != nil {
-			PrintErrorFatal(err)
+			util.PrintErrorFatal(err)
 		}
 
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			PrintErrorFatal(err)
+			util.PrintErrorFatal(err)
 		}
 
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
@@ -314,7 +315,7 @@ Get the current highest block number of the chain
 
 Response: The block number`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 0, 1)
+		util.CheckArguments(args, 0, 1)
 		jsonRpcCallAndPrint("eth::get_block_number", []string{})
 	},
 }
@@ -330,7 +331,7 @@ Params: Block number
 
 Response: JSON Representation of the block.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		jsonRpcCallAndPrint("eth::get_block", args)
 	},
 }
@@ -347,46 +348,6 @@ Response: A JSON array of the accounts`,
 	},
 }
 
-// var gethGetBalanceCmd = &cobra.Command{
-// 	Use:   "get_balance <address>",
-// 	Short: "Get account balance information",
-// 	Long: `
-// Get the current balance of an account
-
-// Format: <address>
-// Params: Account address
-
-// Response: The integer balance of the account in wei`,
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		// fmt.Println(command)
-// 		// if len(args) < 1 || len(args) > 1 {
-// 		// 	println("\nError: Invalid number of arguments given\n")
-// 		// 	cmd.Help()
-// 		// 	return
-// 		// }
-
-// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-// 		accountcmd := "eth::get_accounts"
-// 		accounts := fmt.Sprintf("%q", wsEmitListen(serverAddr, accountcmd, ""))
-
-// 		re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
-// 		accList := re.FindAllString(accounts, -1)
-
-// 		AccBalances := make([]interface{}, 0)
-// 		for i := range accList {
-// 			balance := wsEmitListen(serverAddr, "eth::get_balance", accList[i])
-// 			AccBalances = append(AccBalances, Balances{
-// 				Address: accList[i],
-// 				Balance: balance,
-// 			})
-// 		}
-
-// 		balances, _ := json.Marshal(AccBalances)
-// 		fmt.Println(prettyp(string(balances)))
-// 	},
-// }
-
 var gethSendTxCmd = &cobra.Command{
 	Use:   "send_transaction <from address> <to address> <gas> <gas price> <value to send>",
 	Short: "Sends a transaction",
@@ -398,7 +359,7 @@ Params: Sending account, receiving account, gas, gas price, amount to send in ET
 
 Response: The transaction hash`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 5, 5)
+		util.CheckArguments(args, 5, 5)
 		args[4] = args[4] + "000000000000000000"
 		jsonRpcCallAndPrint("eth::send_transaction", args)
 	},
@@ -415,7 +376,7 @@ Params: The sender account, a block number
 
 Response: The transaction count`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 2)
+		util.CheckArguments(args, 1, 2)
 		jsonRpcCallAndPrint("eth::get_transaction_count", args)
 	},
 }
@@ -431,7 +392,7 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		jsonRpcCallAndPrint("eth::get_transaction", args)
 	},
 }
@@ -447,7 +408,7 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction receipt.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
 	},
 }
@@ -460,7 +421,7 @@ Get the current hash rate per node
 
 Response: The hash rate of a single node in the network`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 0, 1)
+		util.CheckArguments(args, 0, 1)
 		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
 	},
 }
@@ -476,7 +437,7 @@ Params: The amount of transactions to send in a second, the value of each transa
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(command)
-		CheckArguments(args, 2, 3)
+		util.CheckArguments(args, 2, 3)
 		args[1] = args[1] + "000000000000000000"
 		jsonRpcCallAndPrint("eth::start_transactions", args)
 	},
@@ -488,7 +449,7 @@ var gethStopTxCmd = &cobra.Command{
 	Long: `
 Stops the sending of transactions if transactions are currently being sent`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 0, 1)
+		util.CheckArguments(args, 0, 1)
 		jsonRpcCallAndPrint("eth::stop_transactions", []string{})
 	},
 }
@@ -510,7 +471,7 @@ Response: The number of nodes which successfully received the signal to start mi
 			fmt.Printf("\rDAG is being generated...")
 			res, err := jsonRpcCall("eth::get_block_number", []string{})
 			if err != nil {
-				PrintErrorFatal(err)
+				util.PrintErrorFatal(err)
 			}
 			blocknum := res.(int)
 			if blocknum > 4 {
@@ -549,7 +510,7 @@ Params: The number of transactions to retrieve
 Response: JSON object of transaction data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		jsonRpcCallAndPrint("eth::get_recent_sent_tx", args)
 	},
 }

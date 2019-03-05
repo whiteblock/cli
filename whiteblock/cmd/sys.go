@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 type List struct {
@@ -23,14 +24,14 @@ var sysCMD = &cobra.Command{
 	Use:   "sys <command>",
 	Short: "Run SYS commands.",
 	Long:  "\nSys will allow the user to get information and run SYS commands.\n",
-	Run:   PartialCommand,
+	Run:   util.PartialCommand,
 }
 
 var sysTestCMD = &cobra.Command{
 	Use:   "test <command>",
 	Short: "SYS test commands.",
 	Long:  "\nSys test will allow the user to get infromation and run SYS tests.\n",
-	Run:   PartialCommand,
+	Run:   util.PartialCommand,
 }
 
 var testStartCMD = &cobra.Command{
@@ -44,7 +45,7 @@ Params: Time in seconds, percentage, number of assets to send, asset sends per b
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 4, 4)
+		util.CheckArguments(args, 4, 4)
 		jsonRpcCallAndPrint("sys::start_test", args)
 		return
 	},
@@ -62,10 +63,10 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		results, err := jsonRpcCall("sys::get_recent_test_results", args)
 		if err != nil {
-			PrintErrorFatal(err)
+			util.PrintErrorFatal(err)
 		}
 		result, ok := results.(map[string]interface{})
 		if !ok {

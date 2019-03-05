@@ -9,8 +9,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var (
@@ -102,7 +102,7 @@ func readConfigFile() ([]byte, error) {
 func build(buildConfig Config) {
 	buildReply, err := jsonRpcCall("build", buildConfig)
 	if err != nil {
-		PrintErrorFatal(err)
+		util.PrintErrorFatal(err)
 	}
 	fmt.Printf("%v\n", buildReply)
 	buildListener()
@@ -304,7 +304,7 @@ var buildCmd = &cobra.Command{
 		} else {
 			nodes, err = strconv.Atoi(buildArr[offset])
 			if err != nil {
-				InvalidInteger("nodes", buildArr[offset], true)
+				util.InvalidInteger("nodes", buildArr[offset], true)
 			}
 			offset++
 		}
@@ -384,7 +384,7 @@ var buildCmd = &cobra.Command{
 					case "int":
 						val, err := strconv.ParseInt(text, 0, 64)
 						if err != nil {
-							InvalidInteger(key, text, false)
+							util.InvalidInteger(key, text, false)
 							i--
 							continue
 						}

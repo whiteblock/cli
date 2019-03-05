@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var (
@@ -32,7 +33,7 @@ Netconfig will introduce persisting network conditions for testing.
 	
 	`,
 
-	Run: PartialCommand,
+	Run: util.PartialCommand,
 }
 
 var netconfigSetCmd = &cobra.Command{
@@ -48,7 +49,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 	
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 		serverID, err := strconv.Atoi(server)
 		if err != nil {
 			fmt.Println("conversion error, invalid type for server")

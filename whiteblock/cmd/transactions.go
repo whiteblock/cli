@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var (
@@ -30,7 +31,7 @@ Tx will run commands relavent to sending transactions.
 
 Please use the help commands to make sure you provide the correct flags. If the blockchain is not listed in the help command, the transaction command is not supported for that blockchain. 
 	`,
-	Run: PartialCommand,
+	Run: util.PartialCommand,
 }
 
 /*
@@ -83,7 +84,7 @@ Optional Parameters:
 			command = "eos::send_transaction"
 			params = []string{nodeFlag, fromFlag, toFlag, strconv.Itoa(valueFlag)}
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		jsonRpcCallAndPrint(command, params)
 	},
@@ -97,7 +98,7 @@ var startTxCmd = &cobra.Command{
 This command will be used to automate transactions and will require require flags to execute. There are two modes of sending transactions: stream and burst. 
 The user must specify the flags that will be used for sending transactions.
 	`,
-	Run: PartialCommand,
+	Run: util.PartialCommand,
 }
 
 var startStreamTxCmd = &cobra.Command{
@@ -167,7 +168,7 @@ Optional Parameters:
 				os.Exit(1)
 			}
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		jsonRpcCallAndPrint(command, params)
 	},
@@ -214,7 +215,7 @@ Optional Parameters:
 				return
 			}
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		jsonRpcCallAndPrint(command, params)
 	},
@@ -240,7 +241,7 @@ Stops the sending of transactions if transactions are currently being sent
 		case "eos":
 			command = "eth::stop_transactions"
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		fmt.Println("Stopped transactions.")
 		jsonRpcCallAndPrint(command, []string{})
