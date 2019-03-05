@@ -27,8 +27,8 @@ func cwFile(path, data string) {
 }
 */
 
-
 var logTail int = -1
+
 func readContractsFile() ([]byte, error) {
 	cwd := os.Getenv("HOME")
 	b, err := ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
@@ -107,7 +107,7 @@ Response: stdout and stderr of the blockchain process
 		jsonRpcCallAndPrint("log", map[string]int{
 			"server": s,
 			"node":   n,
-			"lines" : logTail,
+			"lines":  logTail,
 		})
 
 	},
@@ -250,6 +250,8 @@ Response: block number
 		switch blockchain {
 		case "ethereum":
 			command = "eth::get_block_number"
+		case "parity":
+			command = "eth::get_block_number"
 		case "eos":
 			command = "eos::get_block_number"
 		default:
@@ -301,6 +303,8 @@ Response: JSON representation of the block
 		switch blockchain {
 		case "ethereum":
 			command = "eth::get_block"
+		case "parity":
+			command = "eth::get_block"
 		case "eos":
 			command = "eos::get_block"
 		default:
@@ -338,6 +342,8 @@ Response: JSON representation of the transaction.
 		command := ""
 		switch blockchain {
 		case "ethereum":
+			command = "eth::get_transaction"
+		case "parity":
 			command = "eth::get_transaction"
 		default:
 			ClientNotSupported(blockchain)
@@ -409,6 +415,8 @@ Response: JSON representation of the accounts information.
 
 		switch blockchain {
 		case "ethereum":
+			command = "eth::accounts_status"
+		case "parity":
 			command = "eth::accounts_status"
 		case "eos":
 			ClientNotSupported(blockchain)
