@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var (
@@ -30,22 +31,22 @@ Params: sending node, receiving node
 	Run: func(cmd *cobra.Command, args []string) {
 		var wg sync.WaitGroup
 
-		CheckArguments(args,2,2)
+		util.CheckArguments(args,2,2)
 
 		nodes,err := GetNodes()
 		if err != nil{
-			PrintErrorFatal(err)
+			util.PrintErrorFatal(err)
 		}
 
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			InvalidArgument(args[0])
+			util.InvalidArgument(args[0])
 			cmd.Help()
 			return
 		}
 		receivingNodeNumber, err := strconv.Atoi(args[1])
 		if err != nil {
-			InvalidArgument(args[1])
+			util.InvalidArgument(args[1])
 			cmd.Help()
 			return
 		}
@@ -62,7 +63,7 @@ Params: sending node, receiving node
 
 			iPerfcmd = iPerfcmd + fmt.Sprintf(nodes[sendingNodeNumber].IP) + " -1"
 
-			client, err := NewSshClient(fmt.Sprintf(nodes[sendingNodeNumber].IP))
+			client, err := util.NewSshClient(fmt.Sprintf(nodes[sendingNodeNumber].IP))
 			if err != nil {
 				panic(err)
 			}
@@ -104,7 +105,7 @@ Params: sending node, receiving node
 
 			iPerfcmd = iPerfcmd + fmt.Sprintf(nodes[sendingNodeNumber].IP)
 
-			client, err := NewSshClient(fmt.Sprintf(nodes[receivingNodeNumber].IP))
+			client, err := util.NewSshClient(fmt.Sprintf(nodes[receivingNodeNumber].IP))
 			if err != nil {
 				panic(err)
 			}

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var testCmd = &cobra.Command{
@@ -17,7 +18,7 @@ var testCmd = &cobra.Command{
 This command will read from a file to run a test.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 1, 1)
+		util.CheckArguments(args, 1, 1)
 
 		cwd := os.Getenv("PWD")
 		b, err := ioutil.ReadFile(cwd + "/" + args[0])

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var minerCmd = &cobra.Command{
@@ -15,7 +16,7 @@ var minerCmd = &cobra.Command{
 	Long: `
 Send commands pertaining to mining. This will be blockchain specific and will only be supported depending on which blockchain had been built.
 	`,
-	Run: PartialCommand,
+	Run: util.PartialCommand,
 }
 
 var minerStartCmd = &cobra.Command{
@@ -37,8 +38,8 @@ Response: The number of nodes which successfully received the signal to start mi
 		case "ethereum":
 			res, err := jsonRpcCall("eth::start_mining", args)
 			if err != nil {
-				PrintStringError(err.Error())
-				PrintStringError("There was an error building the DAG.")
+				util.PrintStringError(err.Error())
+				util.PrintStringError("There was an error building the DAG.")
 				os.Exit(1)
 			}
 			DagReady := false
@@ -46,7 +47,7 @@ Response: The number of nodes which successfully received the signal to start mi
 				fmt.Printf("\rDAG is being generated...")
 				res, err = jsonRpcCall("eth::get_block_number", []string{})
 				if err != nil {
-					PrintErrorFatal(err)
+					util.PrintErrorFatal(err)
 				}
 				blocknum := int(res.(float64))
 				if blocknum > 2 {
@@ -56,7 +57,7 @@ Response: The number of nodes which successfully received the signal to start mi
 			}
 			fmt.Println("\rDAG has been successfully generated.")
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 	},
 }
@@ -82,7 +83,7 @@ Response: The number of nodes which successfully received the signal to stop min
 		case "ethereum":
 			command = "eth::stop_mining"
 		default:
-			ClientNotSupported(blockchain)
+			util.ClientNotSupported(blockchain)
 		}
 		jsonRpcCallAndPrint(command, args)
 	},

@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
+	util "../util"
 )
 
 type Node struct {
@@ -35,7 +36,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 
 		nodes, err := GetNodes()
 		if err != nil {
-			PrintErrorFatal(err)
+			util.PrintErrorFatal(err)
 		}
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {

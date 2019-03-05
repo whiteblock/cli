@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var eosCmd = &cobra.Command{
 	Use:   "eos <command>",
 	Short: "Run eos commands",
 	Long: "\nEos will allow the user to get information and run EOS commands.\n",
-	Run: PartialCommand,
+	Run: util.PartialCommand,
 }
 
 var eosGetBlockCmd = &cobra.Command{
@@ -24,7 +25,7 @@ Format: <block number>
 
 Response: Block data for that block`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,1)
+		util.CheckArguments(args,1,1)
 		jsonRpcCallAndPrint("eos::get_block",args)
 	},
 }
@@ -40,7 +41,7 @@ Format: [node]
 
 Response: eos blockchain state info`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,0,1)
+		util.CheckArguments(args,0,1)
 		jsonRpcCallAndPrint("eos::get_info",args)
 	},
 }
@@ -56,7 +57,7 @@ Format: <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]
 
 Response: The txid`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,4,7)
+		util.CheckArguments(args,4,7)
 		jsonRpcCallAndPrint("eos::send_transaction",args)
 	},
 }
@@ -72,7 +73,7 @@ Format: <txs>, [tx size]
 
 Response: success or ERROR`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,2)
+		util.CheckArguments(args,1,2)
 		jsonRpcCallAndPrint("eos::run_burst_tx",args)
 	},
 }
@@ -88,10 +89,10 @@ Format: <tps>, [tx size]
 
 Response: success or ERROR`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,1,2)
+		util.CheckArguments(args,1,2)
 		tps, err := strconv.Atoi(args[0])
 		if err != nil {
-			InvalidInteger("tps",args[0],true)
+			util.InvalidInteger("tps",args[0],true)
 		}
 		if tps > 5000 {
 			fmt.Println("The limit for tps is set to 5000. Please input a lower value.")
@@ -112,7 +113,7 @@ Format: [node]
 
 Response: Data on the last x test results`,
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args,0,1)
+		util.CheckArguments(args,0,1)
 		jsonRpcCallAndPrint("eos::get_block_number",args)
 	},
 }

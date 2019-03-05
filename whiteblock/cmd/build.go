@@ -9,8 +9,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	util "../util"
 )
 
 var (
@@ -102,7 +103,7 @@ func readConfigFile() ([]byte, error) {
 func build(buildConfig Config) {
 	buildReply, err := jsonRpcCall("build", buildConfig)
 	if err != nil {
-		PrintErrorFatal(err)
+		util.PrintErrorFatal(err)
 	}
 	fmt.Printf("%v\n", buildReply)
 	buildListener()
@@ -175,12 +176,16 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
+
+		cmd.Flags().Visit(func(f *pflag.Flag){
+			fmt.Printf("%s\n",f.Name)
+		})
 		serversEnabled := false
 		blockchainEnabled := false
 		nodesEnabled := false
 		cpusEnabled := false
 		memoryEnabled := false
-
+		fmt.Printf("%v\n",args)
 		if len(serversFlag) > 0 {
 			serversEnabled = true
 		}
@@ -304,7 +309,7 @@ var buildCmd = &cobra.Command{
 		} else {
 			nodes, err = strconv.Atoi(buildArr[offset])
 			if err != nil {
-				InvalidInteger("nodes", buildArr[offset], true)
+				util.InvalidInteger("nodes", buildArr[offset], true)
 			}
 			offset++
 		}
@@ -334,70 +339,53 @@ var buildCmd = &cobra.Command{
 				fmt.Println(err)
 				os.Exit(1)
 			}
-		} else if !previousYesAll {
-		Params:
-			fmt.Print("Use default parameters? (y/n) ")
-			scanner.Scan()
-			ask := scanner.Text()
-			ask = strings.Trim(ask, "\n\t\r\v ")
+		} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
+			rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			options, ok := rawOptions.([]interface{})
+			if !ok {
+				fmt.Println("Unexpected format for params")
+				os.Exit(1)
+			}
 
-			switch ask {
-			case "n":
-				fallthrough
-			case "no":
-				rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				options, ok := rawOptions.([]interface{})
-				if !ok {
+			scanner := bufio.NewScanner(os.Stdin)
+
+			for i := 0; i < len(options); i++ {
+				opt := options[i].([]interface{})
+				if len(opt) != 2 {
 					fmt.Println("Unexpected format for params")
 					os.Exit(1)
 				}
 
-				scanner := bufio.NewScanner(os.Stdin)
+				key := opt[0].(string)
+				key_type := opt[1].(string)
 
-				for i := 0; i < len(options); i++ {
-					opt := options[i].([]interface{})
-					if len(opt) != 2 {
-						fmt.Println("Unexpected format for params")
-						os.Exit(1)
-					}
-
-					key := opt[0].(string)
-					key_type := opt[1].(string)
-
-					fmt.Printf("%s (%s): ", key, key_type)
-					scanner.Scan()
-					text := scanner.Text()
-					if len(text) == 0 {
+				fmt.Printf("%s (%s): ", key, key_type)
+				scanner.Scan()
+				text := scanner.Text()
+				if len(text) == 0 {
+					continue
+				}
+				switch key_type {
+				case "string":
+					//needs to have filtering
+					params[key] = text
+				case "[]string":
+					preprocessed := strings.Replace(text, " ", ",", -1)
+					params[key] = strings.Split(preprocessed, ",")
+				case "int":
+					val, err := strconv.ParseInt(text, 0, 64)
+					if err != nil {
+						util.InvalidInteger(key, text, false)
+						i--
 						continue
 					}
-					switch key_type {
-					case "string":
-						//needs to have filtering
-						params[key] = text
-					case "[]string":
-						preprocessed := strings.Replace(text, " ", ",", -1)
-						params[key] = strings.Split(preprocessed, ",")
-					case "int":
-						val, err := strconv.ParseInt(text, 0, 64)
-						if err != nil {
-							InvalidInteger(key, text, false)
-							i--
-							continue
-						}
-						params[key] = val
-					}
+					params[key] = val
 				}
-			case "y":
-				fallthrough
-			case "yes":
-			default:
-				fmt.Println("Unknown Option")
-				goto Params
-			}
+			}	
 		}
 		if validators >= 0 {
 			params["validators"] = validators
