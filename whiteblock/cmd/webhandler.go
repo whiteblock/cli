@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
+	util "../util"
 )
 
 type BuildStatus struct {
@@ -29,7 +30,7 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 			return
 	}
 	if err != nil {
-		PrintErrorFatal(err)
+		util.PrintErrorFatal(err)
 	}
 	fmt.Println(prettypi(reply))
 }
@@ -74,12 +75,12 @@ func buildListener(){
 		transport.GetDefaultWebsocketTransport(),
 	)
 	if err != nil {
-		PrintErrorFatal(err)
+		util.PrintErrorFatal(err)
 	}
 	defer c.Close()
 
 	c.On("error",func(h *gosocketio.Channel, args string){
-		PrintStringError(args)
+		util.PrintStringError(args)
 		os.Exit(1)
 	})
 
@@ -89,17 +90,15 @@ func buildListener(){
 		json.Unmarshal([]byte(args), &status)
 		if status.Progress == 0.0 {
 			fmt.Printf("Sending build context to Whiteblock\r")
-		} else {
-            fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r",status.Stage, status.Progress)
-		}
-
-		if status.Error != nil {
+		}else if status.Error != nil {
 			what := status.Error["what"]
-			PrintStringError(what)
+			util.PrintStringError(what)
 			mutex.Unlock()
 		} else if status.Progress == 100.0 {
             fmt.Println("\a")
 			mutex.Unlock()
+		} else {
+            fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r",status.Stage, status.Progress)
 		}
 	})
 

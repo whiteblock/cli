@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
+	util "../util"
 )
 
 var scpCmd = &cobra.Command{
@@ -21,11 +22,11 @@ Params: node number, file/dir source, file/dir destination
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckArguments(args, 3, 3)
+		util.CheckArguments(args, 3, 3)
 
 		nodes, err := GetNodes()
 		if err != nil {
-			PrintErrorFatal(err)
+			util.PrintErrorFatal(err)
 		}
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {

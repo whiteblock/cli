@@ -6,13 +6,14 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var confCmd = &cobra.Command{
 	Hidden: true,
 	Use:    "config",
 	Short:  "Configuration file for default parameters for future builds.",
-	Run:    PartialCommand,
+	Run:    util.PartialCommand,
 }
 
 var resetConfCmd = &cobra.Command{
