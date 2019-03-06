@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	util "../util"
 )
 
@@ -104,8 +103,9 @@ func build(buildConfig Config) {
 	buildReply, err := jsonRpcCall("build", buildConfig)
 	if err != nil {
 		util.PrintErrorFatal(err)
+		return
 	}
-	fmt.Printf("%v\n", buildReply)
+	fmt.Printf("Build Started successfully: %v\n", buildReply)
 	buildListener()
 }
 
@@ -177,15 +177,11 @@ var buildCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		cmd.Flags().Visit(func(f *pflag.Flag){
-			fmt.Printf("%s\n",f.Name)
-		})
 		serversEnabled := false
 		blockchainEnabled := false
 		nodesEnabled := false
 		cpusEnabled := false
 		memoryEnabled := false
-		fmt.Printf("%v\n",args)
 		if len(serversFlag) > 0 {
 			serversEnabled = true
 		}
