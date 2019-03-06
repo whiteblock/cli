@@ -75,6 +75,14 @@ Optional Parameters:
 			}
 			command = "eth::send_transaction"
 			params = []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
+		case "parity":
+			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
+				fmt.Println("Required flags were not provided. Please input the required flags.")
+				cmd.Help()
+				return
+			}
+			command = "eth::send_transaction"
+			params = []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
 		case "eos":
 			if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
 				fmt.Println("Required flags were not provided. Please input the required flags.")
@@ -133,6 +141,25 @@ Optional Parameters:
 		}
 		switch blockchain {
 		case "ethereum":
+			//error handling for invalid flags
+			if !(txSizeFlag == 0) {
+				fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
+				cmd.Help()
+				return
+			}
+			if valueFlag == 0 {
+				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
+				cmd.Help()
+				return
+			}
+
+			command = "eth::start_transactions"
+			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
+			params = append(params, toEth)
+			if len(toFlag) > 0 {
+				params = append(params, toFlag)
+			}
+		case "parity":
 			//error handling for invalid flags
 			if !(txSizeFlag == 0) {
 				fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
@@ -236,6 +263,8 @@ Stops the sending of transactions if transactions are currently being sent
 		}
 		switch blockchain {
 		case "ethereum":
+			command = "eth::stop_transactions"
+		case "parity":
 			command = "eth::stop_transactions"
 		case "eos":
 			command = "eth::stop_transactions"
