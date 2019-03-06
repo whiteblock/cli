@@ -410,8 +410,7 @@ Response: JSON representation of the transaction receipt.
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
 		}
-		data := wsEmitListen(serverAddr, command, args[0])
-		fmt.Println(data)
+		jsonRpcCallAndPrint(command, args)
 	},
 }
 */

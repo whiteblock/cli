@@ -36,38 +36,8 @@ type Config struct {
 }
 
 type Resources struct {
-	Cpus   string `json:"cpus"`
-	Memory string `json:"memory"`
-}
-
-func writePrevCmdFile(prevBuild string) {
-	cwd := os.Getenv("HOME")
-	err := os.MkdirAll(cwd+"/.config/whiteblock/", 0755)
-	if err != nil {
-		log.Fatalf("could not create directory: %s", err)
-	}
-
-	file, err := os.Create(cwd + "/.config/whiteblock/previous_build.txt")
-
-	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
-	}
-	defer file.Close() // Make sure to close the file when you're done
-
-	_, err = file.WriteString(prevBuild)
-	if err != nil {
-		log.Fatalf("failed writing to file: %s", err)
-	}
-}
-
-func readPrevCmdFile() (string, error) {
-	cwd := os.Getenv("HOME")
-	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/previous_build.txt")
-	if err != nil {
-		//fmt.Print(err)
-		return "", err
-	}
-	return string(b), nil
+	Cpus   string 	`json:"cpus"`
+	Memory string 	`json:"memory"`
 }
 
 func writeConfigFile(configFile string) {
@@ -99,14 +69,17 @@ func readConfigFile() ([]byte, error) {
 	return b, nil
 }
 
-func build(buildConfig Config) {
+func build(buildConfig interface{}) {
 	buildReply, err := jsonRpcCall("build", buildConfig)
 	if err != nil {
 		util.PrintErrorFatal(err)
-		return
 	}
 	fmt.Printf("Build Started successfully: %v\n", buildReply)
-	buildListener()
+	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	buildListener(buildReply.(string))
 }
 
 func getServer() string {
@@ -413,7 +386,6 @@ var buildCmd = &cobra.Command{
 
 		build(buildConfig)
 		param, err := json.Marshal(buildConfig)
-		writePrevCmdFile(string(param))
 		writeConfigFile(string(param))
 		removeSmartContracts()
 	},
@@ -426,65 +398,40 @@ var buildAttachCmd = &cobra.Command{
 	Long:    "\nAttach to a current in progress build process\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildListener()
+		buildId,err := util.ReadStore(".previous_build_id")
+		if err != nil || len(buildId) == 0 {
+			fmt.Println("No previous build Use build command to deploy a blockchain.")
+			os.Exit(1)
+		}
+		buildListener(string(buildId))
 	},
 }
 
 var previousCmd = &cobra.Command{
 	Use:     "previous",
 	Aliases: []string{"prev"},
-	Short:   "Build a blockchain using previous configurations",
-	Long: `
-Build previous will recreate and deploy the previously built blockchain and specified number of nodes.
-	`,
-
+	Short:  "Build a blockchain using previous configurations",
+	Long: 	"\nBuild previous will recreate and deploy the previously built blockchain and specified number of nodes.\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		rawPrevBuild, _ := readPrevCmdFile()
-		if len(rawPrevBuild) == 0 {
+		buildId,err := util.ReadStore(".previous_build_id")
+		if err != nil || len(buildId) == 0 {
 			fmt.Println("No previous build. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
-		var prevBuild Config
-		err := json.Unmarshal([]byte(rawPrevBuild), &prevBuild)
+		prevBuild, err := jsonRpcCall("get_build", []string{string(buildId)})
+		
 		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-			//PrintErrorFatal(err)
+			util.PrintErrorFatal(err)
 		}
 
+		
 		fmt.Println(prevBuild)
-		if previousYesAll {
+		if previousYesAll || util.YesNoPrompt("Build from previous?"){
 			fmt.Println("building from previous configuration")
 			build(prevBuild)
 			removeSmartContracts()
 			return
 		}
-
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			fmt.Print("Build from previous? (y/n) ")
-			scanner.Scan()
-			ask := scanner.Text()
-			ask = strings.Trim(ask, "\n\t\r\v ")
-
-			switch ask {
-			case "y":
-				fallthrough
-			case "yes":
-				fmt.Println("building from previous configuration")
-				build(prevBuild)
-				removeSmartContracts()
-				return
-			case "n":
-				fallthrough
-			case "no":
-				fmt.Println("Build cancelled.")
-				return
-			default:
-				fmt.Println("Unknown Option " + ask)
-			}
-		}
-
 	},
 }
 
@@ -492,9 +439,7 @@ var buildStopCmd = &cobra.Command{
 	Use:     "stop",
 	Aliases: []string{"halt", "cancel"},
 	Short:   "Stops the current build",
-	Long: `
-Build stops the current building process.
-	`,
+	Long: "\nBuild stops the current building process.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		jsonRpcCallAndPrint("stop_build", []string{})

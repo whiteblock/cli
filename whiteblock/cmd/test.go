@@ -40,8 +40,11 @@ This command will read from a file to run a test.
 		fmt.Println(cont["tests"])
 
 		jsonRpcCallAndPrint("add_commands", cont["rpc"])
-		jsonRpcCallAndPrint("build", cont["build"])
-		buildListener()
+		res,err := jsonRpcCall("build", cont["build"])
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		buildListener(res.(string))
 		jsonRpcCallAndPrint("netem", cont["netconfig"])
 		jsonRpcCallAndPrint("run_tests", cont["tests"])
 	},
