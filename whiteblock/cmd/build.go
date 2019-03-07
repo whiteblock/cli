@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -27,17 +28,19 @@ var (
 	imageFlag      	string
 	optionsFlag		map[string]string
 	envFlag			map[string]string
+	filesFlag		map[string]string
 
 )
 
 type Config struct {
-	Servers    		[]int                  `json:"servers"`
-	Blockchain 		string                 `json:"blockchain"`
-	Nodes      		int                    `json:"nodes"`
-	Image      		string                 `json:"image"`
-	Resources  		[]Resources            `json:"resources"`
-	Params     		map[string]interface{} `json:"params"`
-	Environments    []map[string]string    `json:"environments"`
+	Servers    		[]int                  	`json:"servers"`
+	Blockchain 		string                 	`json:"blockchain"`
+	Nodes      		int                    	`json:"nodes"`
+	Image      		string                 	`json:"image"`
+	Resources  		[]Resources            	`json:"resources"`
+	Params     		map[string]interface{} 	`json:"params"`
+	Environments    []map[string]string    	`json:"environments"`
+	Files			map[string]string		`json:"files"`
 	
 }
 
@@ -438,11 +441,22 @@ var buildCmd = &cobra.Command{
 		}
 		buildConf.Blockchain = strings.ToLower(buildConf.Blockchain)
 
+		if filesFlag != nil{
+			buildConf.Files = map[string]string{}
+			for name,file := range filesFlag {
+				data,err := ioutil.ReadFile(file)
+				if err != nil{
+					util.PrintErrorFatal(err)
+				}
+				buildConf.Files[name] = base64.StdEncoding.EncodeToString(data)
+
+			}
+		}
 		
 		if envFlag != nil {
 			buildConf.Environments,err = processEnv(envFlag,buildConf.Nodes)
 		}
-
+		fmt.Printf("%+v\n",buildConf)
 		build(buildConf)
 		removeSmartContracts()
 	},
@@ -515,7 +529,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
 	buildCmd.Flags().StringToStringVarP(&optionsFlag,"option","o",nil,"blockchain specific options")
 	buildCmd.Flags().StringToStringVarP(&envFlag,"env","e",nil,"set environment variables for the nodes")
-
+	buildCmd.Flags().StringToStringVarP(&filesFlag,"template","t",nil,"file templates")
 
 	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")

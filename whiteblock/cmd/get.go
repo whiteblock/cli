@@ -160,6 +160,24 @@ Response: The params as a list of key value params, of name and type respectivel
 	},
 }
 
+
+var getConfigsCmd = &cobra.Command{
+	Use:   "configs <blockchain>",
+	Short: "Get the resources for a blockchain",
+	Long: `
+Get the resources for a blockchain
+
+Params: <blockchain>
+Format: The blockchain to get the resources of
+
+Response: The resoures as a list of key value params, of name and type respectively
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("get_resources", args)
+	},
+}
+
 var getStatsCmd = &cobra.Command{
 	Use:   "stats <command>",
 	Short: "Get stastics of a blockchain",
@@ -438,7 +456,7 @@ func init() {
 
 	getLogCmd.Flags().IntVarP(&logTail, "tail", "t", -1, "see tail(1)")
 
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd,getConfigsCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented
