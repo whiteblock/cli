@@ -15,16 +15,17 @@ import (
 )
 
 var (
-	serverAddr     string
-	previousYesAll bool
-	serversFlag    string
-	blockchainFlag string
-	nodesFlag      int
-	cpusFlag       string
-	memoryFlag     string
-	paramsFile     string
-	validators     int
-	imageFlag      string
+	serverAddr     	string
+	previousYesAll 	bool
+	serversFlag    	string
+	blockchainFlag 	string
+	nodesFlag      	int
+	cpusFlag       	string
+	memoryFlag     	string
+	paramsFile     	string
+	validators     	int
+	imageFlag      	string
+	optionsFlag		map[string]string
 )
 
 type Config struct {
@@ -128,7 +129,6 @@ func getImage(blockchain, image string) string {
 	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
 	if len(cont["blockchains"][blockchain]["images"][image]) != 0 {
 		return cont["blockchains"][blockchain]["images"][image]
-
 	} else {
 		return image
 	}
@@ -142,6 +142,36 @@ func removeSmartContracts() {
 	}
 }
 
+func processOptions(givenOptions map[string]string,format []interface{}) (map[string]interface{},error) {
+	out := map[string]interface{}{}
+	
+	for _,kv := range format {
+		_kv := kv.([]interface{})
+		name := _kv[0].(string)
+		key_type := _kv[1].(string)
+
+		val,ok := givenOptions[name]
+		if !ok {
+			continue
+		}
+		switch key_type {
+			case "string":
+				//needs to have filtering
+				out[name] = val
+			case "[]string":
+				preprocessed := strings.Replace(val, " ", ",", -1)
+				out[name] = strings.Split(preprocessed, ",")
+			case "int":
+				val, err := strconv.ParseInt(val, 0, 64)
+				if err != nil {
+					return nil,err
+				}
+				out[name] = val
+		}	
+	}
+	return out,nil
+}
+
 var buildCmd = &cobra.Command{
 	Use:     "build",
 	Aliases: []string{"init", "create"},
@@ -151,6 +181,8 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
+
+		
 		util.CheckArguments(args,0,0)
 		buildConf,err := getPreviousBuild()
 		if err != nil {
@@ -277,7 +309,18 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		if len(paramsFile) != 0 {
+		if optionsFlag != nil {
+			rawOptions, err := jsonRpcCall("get_params", []string{buildConf.Blockchain})
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			options, ok := rawOptions.([]interface{})
+			if !ok {
+				util.PrintStringError("Unexpected format for params")
+				os.Exit(1)
+			}
+			buildConf.Params,err = processOptions(optionsFlag,options)
+		}else if len(paramsFile) != 0 {
 			f, err := os.Open(paramsFile)
 			if err != nil {
 				util.PrintErrorFatal(err)
@@ -418,6 +461,8 @@ func init() {
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
+	buildCmd.Flags().StringToStringVarP(&optionsFlag,"option","o",nil,"blockchain specific options")
+
 
 	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
