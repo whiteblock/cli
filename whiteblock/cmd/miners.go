@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -30,35 +29,32 @@ Params: A list of the nodes to start mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to start mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
+		spinner := &Spinner{txt:"Starting the miner",die:false}
+		spinner.Run(100)
+		
+		res, err := jsonRpcCall("start_mining", args)
+		if err != nil {
+			util.PrintErrorFatal(err)
+			/*util.PrintStringError("There was an error building the DAG.")
+			os.Exit(1)*/
 		}
-		switch blockchain {
-		case "ethereum":
-			res, err := jsonRpcCall("eth::start_mining", args)
+		DagReady := false
+		for !DagReady {
+			//fmt.Printf("\rDAG is being generated...")
+			res, err = jsonRpcCall("get_block_number", []string{})
 			if err != nil {
-				util.PrintStringError(err.Error())
-				util.PrintStringError("There was an error building the DAG.")
-				os.Exit(1)
+				util.PrintErrorFatal(err)
 			}
-			DagReady := false
-			for !DagReady {
-				fmt.Printf("\rDAG is being generated...")
-				res, err = jsonRpcCall("eth::get_block_number", []string{})
-				if err != nil {
-					util.PrintErrorFatal(err)
-				}
-				blocknum := int(res.(float64))
-				if blocknum > 2 {
-					DagReady = true
-				}
-				time.Sleep(time.Millisecond * 50)
+			blocknum := int(res.(float64))
+			if blocknum > 2 {
+				DagReady = true
 			}
-			fmt.Println("\rDAG has been successfully generated.")
-		default:
-			util.ClientNotSupported(blockchain)
+			time.Sleep(time.Millisecond * 50)
 		}
+		//fmt.Println("\rDAG has been successfully generated.")
+		spinner.Kill()
+		time.Sleep(time.Millisecond * 100)
+		fmt.Println("\rDAG has been successfully generated.")
 	},
 }
 
@@ -74,18 +70,7 @@ Params: A list of the nodes to stop mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to stop mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::stop_mining"
-		default:
-			util.ClientNotSupported(blockchain)
-		}
-		jsonRpcCallAndPrint(command, args)
+		jsonRpcCallAndPrint("stop_mining", args)
 	},
 }
 

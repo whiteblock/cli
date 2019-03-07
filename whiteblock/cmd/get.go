@@ -123,7 +123,11 @@ Response: stdout and stderr of the blockchain process
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 1, 1)
-		s, _ := strconv.Atoi(server)
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
+		}
+		s := previousBuild.Servers[0]
 		n, err := strconv.Atoi(args[0])
 
 		if err != nil {
@@ -268,23 +272,7 @@ Gets the most recent block number that had been added to the blockchain.
 Response: block number
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_block_number"
-		case "parity":
-			command = "eth::get_block_number"
-		case "eos":
-			command = "eos::get_block_number"
-		default:
-			fmt.Printf("This function is not supported for the %s client.", blockchain)
-			return
-		}
-		jsonRpcCallAndPrint(command, []string{})
+		jsonRpcCallAndPrint("get_block_number", []string{})
 	},
 }
 
@@ -302,41 +290,30 @@ Response: JSON representation of the block
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 1, 1)
-		command := ""
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
+		blockNum := 0
+		var err error
+		if len(args) > 0 {
+			blockNum, err = strconv.Atoi(args[0])
+			if err != nil {
+				util.PrintStringError("Invalid block number formatting.")
+				return
+			}
 		}
-		blockNum, err := strconv.Atoi(args[0])
-		if err != nil {
-			fmt.Println("Invalid block number formatting.")
-			return
-		}
-		if blockNum < 1 {
-			fmt.Println("Unable to get block information from block 0. Please provide a block number greater than 0.")
+		if blockNum < 1 && len(args) > 0 {
+			util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
 			return
 		} else {
-			res, err := jsonRpcCall("eth::get_block_number", []string{})
+			res, err := jsonRpcCall("get_block_number", []string{})
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 			blocknum := int(res.(float64))
 			if blocknum < 1 {
-				fmt.Println("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
+				util.PrintStringError("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
 				return
 			}
 		}
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_block"
-		case "parity":
-			command = "eth::get_block"
-		case "eos":
-			command = "eos::get_block"
-		default:
-			util.ClientNotSupported(blockchain)
-		}
-		jsonRpcCallAndPrint(command, args)
+		jsonRpcCallAndPrint("get_block", args)
 	},
 }
 
@@ -361,20 +338,7 @@ Response: JSON representation of the transaction.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 1, 1)
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_transaction"
-		case "parity":
-			command = "eth::get_transaction"
-		default:
-			util.ClientNotSupported(blockchain)
-		}
-		jsonRpcCallAndPrint(command, args)
+		jsonRpcCallAndPrint("get_transaction", args)
 	},
 }
 
@@ -432,23 +396,7 @@ Gets the account information relevant to the currently connected blockchain.
 Response: JSON representation of the accounts information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		command := ""
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-
-		switch blockchain {
-		case "ethereum":
-			command = "eth::accounts_status"
-		case "parity":
-			command = "eth::accounts_status"
-		case "eos":
-			util.ClientNotSupported(blockchain)
-		default:
-			util.ClientNotSupported(blockchain)
-		}
-		jsonRpcCallAndPrint(command, []string{})
+		jsonRpcCallAndPrint("accounts_status", []string{})
 	},
 }
 
@@ -462,25 +410,19 @@ Gets the list of contracts that were deployed to the network. The information in
 Response: JSON representation of the contract information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
+
+		contracts, err := readContractsFile()
+		if err != nil {
+			fmt.Println(err)
 			return
 		}
-		switch blockchain {
-		case "ethereum":
-			contracts, err := readContractsFile()
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			if len(contracts) == 0 {
-				fmt.Println("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
-			} else {
-				fmt.Println(prettyp(string(contracts)))
-			}
-		default:
-			util.ClientNotSupported(blockchain)
+		if len(contracts) == 0 {
+			util.PrintStringError("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
+		} else {
+			fmt.Println(prettyp(string(contracts)))
 		}
+		
+		
 	},
 }
 

@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"errors"
 	"github.com/spf13/cobra"
 	util "../util"
 )
@@ -33,6 +34,7 @@ type Config struct {
 	Image      string                 `json:"image"`
 	Resources  []Resources            `json:"resources"`
 	Params     map[string]interface{} `json:"params"`
+	
 }
 
 type Resources struct {
@@ -40,34 +42,35 @@ type Resources struct {
 	Memory string 	`json:"memory"`
 }
 
-func writeConfigFile(configFile string) {
-	cwd := os.Getenv("HOME")
-	err := os.MkdirAll(cwd+"/.config/whiteblock/", 0755)
-	if err != nil {
-		log.Fatalf("could not create directory: %s", err)
+func getPreviousBuildId() (string,error) {
+	buildId,err := util.ReadStore(".previous_build_id")
+	if err != nil || len(buildId) == 0 {
+		return "",errors.New("No previous build. Use build command to deploy a blockchain.")
 	}
-
-	file, err := os.Create(cwd + "/.config/whiteblock/config.json")
-
-	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
-	}
-	defer file.Close() // Make sure to close the file when you're done
-
-	_, err = file.WriteString(configFile)
-	if err != nil {
-		log.Fatalf("failed writing to file: %s", err)
-	}
+	return string(buildId),nil
 }
 
-func readConfigFile() ([]byte, error) {
-	cwd := os.Getenv("HOME")
-	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/config.json")
+func getPreviousBuild() (Config,error) {
+	buildId,err := getPreviousBuildId()
 	if err != nil {
-		//fmt.Print(err)
+		return Config{},err
 	}
-	return b, nil
+
+	prevBuild, err := jsonRpcCall("get_build", []string{buildId})
+	if err != nil {
+		return Config{},err
+	}
+
+	tmp,err := json.Marshal(prevBuild)
+	if err != nil {
+		return Config{},err
+	}
+
+	var out Config
+	err = json.Unmarshal(tmp,&out)
+	return out,err
 }
+
 
 func build(buildConfig interface{}) {
 	buildReply, err := jsonRpcCall("build", buildConfig)
@@ -82,8 +85,8 @@ func build(buildConfig interface{}) {
 	buildListener(buildReply.(string))
 }
 
-func getServer() string {
-	idList := make([]string, 0)
+func getServer() []int {
+	idList := make([]int, 0)
 	res, err := jsonRpcCall("get_servers", []string{})
 
 	if err != nil {
@@ -94,12 +97,11 @@ func getServer() string {
 	for _, v := range servers {
 		serverID = int(v.(map[string]interface{})["id"].(float64))
 		//move this and take out break statement if instance has multiple servers
-		idList = append(idList, fmt.Sprintf("%d", serverID))
+		idList = append(idList,serverID)
 		break
 	}
 
-	server = strings.Join(idList, ",")
-	return server
+	return idList
 }
 
 func tern(exp bool, res1 string, res2 string) string {
@@ -149,64 +151,46 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-
-		serversEnabled := false
-		blockchainEnabled := false
-		nodesEnabled := false
-		cpusEnabled := false
-		memoryEnabled := false
-		if len(serversFlag) > 0 {
-			serversEnabled = true
-		}
-		if len(blockchainFlag) > 0 {
-			blockchainEnabled = true
-		}
-		if nodesFlag > 0 {
-			nodesEnabled = true
-		}
-		if len(cpusFlag) != 0 {
-			if cpusFlag == "0" {
-				cpusFlag = ""
-			} else {
-				cpus = cpusFlag
-			}
-			cpusEnabled = true
-		}
-		if len(memoryFlag) > 0 {
-			if memoryFlag == "0" {
-				memoryFlag = ""
-			} else {
-				memory = memoryFlag
-			}
-			memoryEnabled = true
+		util.CheckArguments(args,0,0)
+		buildConf,err := getPreviousBuild()
+		if err != nil {
+			util.PrintError(err)
 		}
 
-		if len(args) != 0 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
+		serversEnabled := len(serversFlag) > 0
+		blockchainEnabled := len(blockchainFlag) > 0
+		nodesEnabled := nodesFlag > 0
+		cpusEnabled := len(cpusFlag) != 0
+		memoryEnabled := len(memoryFlag) > 0
+
+		
+		
 
 		buildArr := make([]string, 0)
-		params := make(map[string]interface{})
-
-		configFile, err := readConfigFile()
-		if err != nil {
-			panic(err)
-		}
-
-		var config Config
-		json.Unmarshal(configFile, &config)
-		defaultBlockchain := string(config.Blockchain)
-		defaultNodes := strconv.Itoa(config.Nodes)
-		//defaultImage := string(config.Image)
+		
 		defaultCpus := ""
 		defaultMemory := ""
 
-		if config.Resources != nil && len(config.Resources) > 0 {
-			defaultCpus = string(config.Resources[0].Cpus)
-			defaultMemory = string(config.Resources[0].Memory)
+		if buildConf.Resources != nil && len(buildConf.Resources) > 0 {
+			defaultCpus = string(buildConf.Resources[0].Cpus)
+			defaultMemory = string(buildConf.Resources[0].Memory)
+		}else if buildConf.Resources == nil {
+			buildConf.Resources = []Resources{Resources{}}
 		}
+
+		if cpusFlag == "0" {
+			cpusFlag = ""
+		} else if cpusEnabled {
+			buildConf.Resources[0].Cpus = cpusFlag
+		}
+	
+		if memoryFlag == "0" {
+			memoryFlag = ""
+		} else if memoryEnabled {
+			buildConf.Resources[0].Memory = memoryFlag
+		}
+
+		
 
 		buildOpt := []string{}
 		defOpt := []string{}
@@ -223,13 +207,13 @@ var buildCmd = &cobra.Command{
 		*/
 		if !blockchainEnabled {
 			allowEmpty = append(allowEmpty, false)
-			buildOpt = append(buildOpt, "blockchain"+tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"))
-			defOpt = append(defOpt, fmt.Sprintf(defaultBlockchain))
+			buildOpt = append(buildOpt, "blockchain"+tern((len(buildConf.Blockchain) == 0), "", " ("+buildConf.Blockchain+")"))
+			defOpt = append(defOpt, fmt.Sprintf(buildConf.Blockchain))
 		}
 		if !nodesEnabled {
 			allowEmpty = append(allowEmpty, false)
-			buildOpt = append(buildOpt, "nodes"+tern((defaultNodes == "0"), "", " ("+defaultNodes+")"))
-			defOpt = append(defOpt, fmt.Sprintf(defaultNodes))
+			buildOpt = append(buildOpt, fmt.Sprintf("nodes(%d)",buildConf.Nodes))
+			defOpt = append(defOpt, fmt.Sprintf("%d",buildConf.Nodes))
 		}
 		if !cpusEnabled {
 			allowEmpty = append(allowEmpty, true)
@@ -258,65 +242,71 @@ var buildCmd = &cobra.Command{
 				continue
 			}
 		}
+
 		if serversEnabled {
-			server = serversFlag
-		} else {
-			server = string(getServer())
+			serversInter := strings.Split(serversFlag,",")
+			buildConf.Servers = []int{}
+			for _,serverStr := range serversInter {
+				serverNum, err := strconv.Atoi(serverStr)
+				if err != nil {
+					util.InvalidInteger("servers",serverStr,true)
+				}
+				buildConf.Servers = append(buildConf.Servers,serverNum)
+			}
+		} else if len(buildConf.Servers) == 0 {
+			buildConf.Servers = getServer()
 		}
 
-		var offset = 0
+		offset := 0
 
 		if blockchainEnabled {
-			blockchain = strings.ToLower(blockchainFlag)
+			buildConf.Blockchain = strings.ToLower(blockchainFlag)
 		} else {
-			blockchain = strings.ToLower(buildArr[offset])
+			buildConf.Blockchain = strings.ToLower(buildArr[offset])
 			offset++
 		}
 
 		if nodesEnabled {
-			nodes = nodesFlag
+			buildConf.Nodes = nodesFlag
 		} else {
-			nodes, err = strconv.Atoi(buildArr[offset])
+			buildConf.Nodes, err = strconv.Atoi(buildArr[offset])
 			if err != nil {
 				util.InvalidInteger("nodes", buildArr[offset], true)
 			}
 			offset++
 		}
 
-		image := getImage(blockchain, imageFlag)
+		buildConf.Image = getImage(buildConf.Blockchain, imageFlag)
 
 		if !cpusEnabled {
-			cpus = buildArr[offset]
+			buildConf.Resources[0].Cpus = buildArr[offset]
 			offset++
 		}
 		if !memoryEnabled {
-			memory = buildArr[offset]
+			buildConf.Resources[0].Memory = buildArr[offset]
 			offset++
 		}
 
 		if len(paramsFile) != 0 {
 			f, err := os.Open(paramsFile)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				util.PrintErrorFatal(err)
 			}
 
 			decoder := json.NewDecoder(f)
 			decoder.UseNumber()
-			err = decoder.Decode(&params)
+			err = decoder.Decode(&buildConf.Params)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				util.PrintErrorFatal(err)
 			}
 		} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
-			rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
+			rawOptions, err := jsonRpcCall("get_params", []string{buildConf.Blockchain})
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				util.PrintErrorFatal(err)
 			}
 			options, ok := rawOptions.([]interface{})
 			if !ok {
-				fmt.Println("Unexpected format for params")
+				util.PrintStringError("Unexpected format for params")
 				os.Exit(1)
 			}
 
@@ -341,10 +331,10 @@ var buildCmd = &cobra.Command{
 				switch key_type {
 				case "string":
 					//needs to have filtering
-					params[key] = text
+					buildConf.Params[key] = text
 				case "[]string":
 					preprocessed := strings.Replace(text, " ", ",", -1)
-					params[key] = strings.Split(preprocessed, ",")
+					buildConf.Params[key] = strings.Split(preprocessed, ",")
 				case "int":
 					val, err := strconv.ParseInt(text, 0, 64)
 					if err != nil {
@@ -352,41 +342,23 @@ var buildCmd = &cobra.Command{
 						i--
 						continue
 					}
-					params[key] = val
+					buildConf.Params[key] = val
 				}
 			}	
 		}
 		if validators >= 0 {
-			params["validators"] = validators
+			buildConf.Params["validators"] = validators
 		}
 
-		if blockchain == "eos" {
+		if buildConf.Blockchain == "eos" {
 			if validators < 0 {
-				nodes += 21
+				buildConf.Nodes += 21
 			} else {
-				nodes += validators
+				buildConf.Nodes += validators
 			}
 		}
-
-		serverNum, _ := strconv.Atoi(server)
-
-		buildConfig := Config{
-			Servers:    []int{serverNum},
-			Blockchain: blockchain,
-			Nodes:      nodes,
-			Image:      image,
-			Resources: []Resources{
-				Resources{
-					Cpus:   cpus,
-					Memory: memory,
-				},
-			},
-			Params: params,
-		}
-
-		build(buildConfig)
-		param, err := json.Marshal(buildConfig)
-		writeConfigFile(string(param))
+		buildConf.Blockchain = strings.ToLower(buildConf.Blockchain)
+		build(buildConf)
 		removeSmartContracts()
 	},
 }
@@ -412,19 +384,14 @@ var previousCmd = &cobra.Command{
 	Aliases: []string{"prev"},
 	Short:  "Build a blockchain using previous configurations",
 	Long: 	"\nBuild previous will recreate and deploy the previously built blockchain and specified number of nodes.\n",
+
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId,err := util.ReadStore(".previous_build_id")
-		if err != nil || len(buildId) == 0 {
-			fmt.Println("No previous build. Use build command to deploy a blockchain.")
-			os.Exit(1)
-		}
-		prevBuild, err := jsonRpcCall("get_build", []string{string(buildId)})
-		
+
+		prevBuild, err := getPreviousBuild()		
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		
 		fmt.Println(prevBuild)
 		if previousYesAll || util.YesNoPrompt("Build from previous?"){
 			fmt.Println("building from previous configuration")
@@ -442,7 +409,11 @@ var buildStopCmd = &cobra.Command{
 	Long: "\nBuild stops the current building process.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("stop_build", []string{})
+		buildId,err := getPreviousBuildId()
+		if err != nil {
+			log.Println(err)
+		}
+		jsonRpcCallAndPrint("stop_build", []string{buildId})
 	},
 }
 

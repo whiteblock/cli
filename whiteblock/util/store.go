@@ -10,7 +10,7 @@ var storeDirectory string
 
 func init(){
     home := os.Getenv("HOME")
-    storeDirectory = home+"/.config/whiteblock/"
+    storeDirectory = home+"/.config/whiteblock/cli/"
     err := os.MkdirAll(storeDirectory, 0755)
     if err != nil {
         log.Fatalf("Could not create directory: %s", err)

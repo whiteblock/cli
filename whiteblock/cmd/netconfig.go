@@ -50,17 +50,17 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 1, 1)
-		serverID, err := strconv.Atoi(server)
-		if err != nil {
-			fmt.Println("conversion error, invalid type for server")
-			return
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
 		}
+		serverID := previousBuild.Servers[0]
+
 
 		netInfo := make(map[string]interface{})
 		node, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("conversion error, invalid type for node number")
-			return
+			util.PrintErrorFatal(err)
 		}
 
 		netInfo["node"] = node
@@ -102,7 +102,11 @@ Netconfig all will introduce persisting network conditions for testing to all no
 
 	Run: func(cmd *cobra.Command, args []string) {
 		netInfo := make(map[string]interface{})
-		serverID, err := strconv.Atoi(server)
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
+		}
+		serverID := previousBuild.Servers[0]
 		if err != nil {
 			fmt.Println("conversion error, invalid type for server")
 			return
@@ -141,7 +145,12 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("netem_delete", []interface{}{server})
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
+		}
+		serverID := previousBuild.Servers[0]
+		jsonRpcCallAndPrint("netem_delete", []interface{}{serverID})
 	},
 }
 

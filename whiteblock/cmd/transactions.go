@@ -63,11 +63,13 @@ Optional Parameters:
 	Run: func(cmd *cobra.Command, args []string) {
 		command := ""
 		params := []string{}
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
+
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
 		}
-		switch blockchain {
+
+		switch previousBuild.Blockchain {
 		case "ethereum":
 			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
 				fmt.Println("Required flags were not provided. Please input the required flags.")
@@ -92,7 +94,7 @@ Optional Parameters:
 			command = "eos::send_transaction"
 			params = []string{nodeFlag, fromFlag, toFlag, strconv.Itoa(valueFlag)}
 		default:
-			util.ClientNotSupported(blockchain)
+			util.ClientNotSupported(previousBuild.Blockchain)
 		}
 		jsonRpcCallAndPrint(command, params)
 	},
@@ -136,11 +138,13 @@ Optional Parameters:
 		command := ""
 
 		params := []string{strconv.Itoa(tpsFlag)}
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
+
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
 		}
-		switch blockchain {
+
+		switch previousBuild.Blockchain {
 		case "ethereum":
 			//error handling for invalid flags
 			if !(txSizeFlag == 0) {
@@ -195,7 +199,7 @@ Optional Parameters:
 				os.Exit(1)
 			}
 		default:
-			util.ClientNotSupported(blockchain)
+			util.ClientNotSupported(previousBuild.Blockchain)
 		}
 		jsonRpcCallAndPrint(command, params)
 	},
@@ -210,18 +214,19 @@ The user must specify the blockchain flag as well as any other flags that will b
 This command will send a burst of transactions. Additional flags are optional. Burst will send one burst of transactions to the blockchain to fill the transaction pool.
 
 Required Parameters: 
-	eos:  --txs <number of tx>  
+	--txs <number of tx>
+	--value <value>
 Optional Parameters:
 	--size [tx size]
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		command := ""
 		params := []string{strconv.Itoa(txsFlag)}
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
 		}
-		switch blockchain {
+
+		switch previousBuild.Blockchain {
 		case "eos":
 			//error handling for invalid flags
 			if valueFlag != 0 {
@@ -230,11 +235,10 @@ Optional Parameters:
 				return
 			}
 			if tpsFlag == 0 {
-				fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+				fmt.Println("No \"txsFlag\" flag has been provided. Please input the tps flag with a value.")
 				cmd.Help()
 				return
 			}
-			command = "eos::run_burst_tx"
 			if txSizeFlag >= 174 {
 				params = append(params, strconv.Itoa(txSizeFlag))
 			} else if txSizeFlag > 0 && txSizeFlag < 174 {
@@ -242,9 +246,9 @@ Optional Parameters:
 				return
 			}
 		default:
-			util.ClientNotSupported(blockchain)
+			util.ClientNotSupported(previousBuild.Blockchain)
 		}
-		jsonRpcCallAndPrint(command, params)
+		jsonRpcCallAndPrint("run_burst_tx", params)
 	},
 }
 
@@ -257,23 +261,7 @@ The user must specify the blockchain flag as well as any other flags that will b
 Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		command := ""
-		if len(blockchain) == 0 {
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		switch blockchain {
-		case "ethereum":
-			command = "eth::stop_transactions"
-		case "parity":
-			command = "eth::stop_transactions"
-		case "eos":
-			command = "eth::stop_transactions"
-		default:
-			util.ClientNotSupported(blockchain)
-		}
-		fmt.Println("Stopped transactions.")
-		jsonRpcCallAndPrint(command, []string{})
+		jsonRpcCallAndPrint("stop_transactions", []string{})
 	},
 }
 
