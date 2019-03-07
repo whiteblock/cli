@@ -235,11 +235,6 @@ var buildCmd = &cobra.Command{
 		if err != nil {
 			util.PrintError(err)
 		}
-		if envFlag != nil {
-			buildConf.Environments,err = processEnv(envFlag,3)
-			res,_ := json.Marshal(buildConf.Environments)
-			fmt.Printf("%s\n",string(res))
-		}
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
