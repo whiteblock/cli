@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	// "strings"
 )
 
 func curlGET(url string) {

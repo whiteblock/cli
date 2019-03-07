@@ -157,16 +157,13 @@ var buildCmd = &cobra.Command{
 			util.PrintError(err)
 		}
 
-		serversEnabled := len(serversFlag) > 0
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
 		memoryEnabled := len(memoryFlag) > 0
 
-		
-		
 
-		buildArr := make([]string, 0)
+		
 		
 		defaultCpus := ""
 		defaultMemory := ""
@@ -196,15 +193,6 @@ var buildCmd = &cobra.Command{
 		defOpt := []string{}
 		allowEmpty := []bool{}
 
-		/*
-			if !serversEnabled {
-				allowEmpty = []bool{false}
-				buildOpt = []string{
-					"servers" + tern((len(server) == 0), "", " ("+server+")"),
-				}
-				defOpt = append(defOpt, fmt.Sprintf(server))
-			}
-		*/
 		if !blockchainEnabled {
 			allowEmpty = append(allowEmpty, false)
 			buildOpt = append(buildOpt, "blockchain"+tern((len(buildConf.Blockchain) == 0), "", " ("+buildConf.Blockchain+")"))
@@ -226,7 +214,9 @@ var buildCmd = &cobra.Command{
 			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 		}
 
+		buildArr := []string{}
 		scanner := bufio.NewScanner(os.Stdin)
+
 		for i := 0; i < len(buildOpt); i++ {
 			fmt.Print(buildOpt[i] + ": ")
 			scanner.Scan()
@@ -243,7 +233,7 @@ var buildCmd = &cobra.Command{
 			}
 		}
 
-		if serversEnabled {
+		if len(serversFlag) > 0 {
 			serversInter := strings.Split(serversFlag,",")
 			buildConf.Servers = []int{}
 			for _,serverStr := range serversInter {
@@ -260,9 +250,9 @@ var buildCmd = &cobra.Command{
 		offset := 0
 
 		if blockchainEnabled {
-			buildConf.Blockchain = strings.ToLower(blockchainFlag)
+			buildConf.Blockchain = blockchainFlag
 		} else {
-			buildConf.Blockchain = strings.ToLower(buildArr[offset])
+			buildConf.Blockchain = buildArr[offset]
 			offset++
 		}
 

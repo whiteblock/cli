@@ -44,25 +44,3 @@ func Execute() {
 		os.Exit(1)
 	}
 }
-/*
-func init() {
-	cobra.OnInitialize(initConfig)
-}
-
-func initConfig() {
-	home := os.Getenv("HOME")
-	
-	viper.AddConfigPath("./.config/whiteblock")
-	viper.AddConfigPath(home + "/.config/whiteblock")
-	viper.SetConfigName("config")
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		//fmt.Println("Default parameters are not set. Please continue and enter build fields.")
-		return
-	}
-
-	viper.WatchConfig()
-	viper.AutomaticEnv()
-}
-*/
