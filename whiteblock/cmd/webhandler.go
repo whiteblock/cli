@@ -58,7 +58,6 @@ func jsonRpcCall(method string,params interface{}) (interface{},error) {
 	var out interface{}
 	err = json2.DecodeClientResponse(resp.Body,&out)
 	if err != nil {
-		//log.Println(err)
 		return nil,err
 	}
 	return out, nil
@@ -93,6 +92,7 @@ func buildListener(testnetId string){
 			util.PrintStringError(what)
 			mutex.Unlock()
 		} else if status.Progress == 100.0 {
+			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r","Build", status.Progress)
             fmt.Println("\a")
 			mutex.Unlock()
 		} else {
@@ -102,36 +102,4 @@ func buildListener(testnetId string){
 
 	c.Emit("build_status", testnetId)
 	mutex.Lock()
-}
-
-func wsEmitListen(wsaddr, cmd, param string) string {
-	var mutex = &sync.Mutex{}
-	mutex.Lock()
-	c, err := gosocketio.Dial(
-		"ws://" + wsaddr + "/socket.io/?EIO=3&transport=websocket",
-		transport.GetDefaultWebsocketTransport(),
-	)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	defer c.Close()
-
-	out := ""
-
-	// sys commands
-	if strings.HasPrefix(cmd, "sys::") {
-		err = c.On(cmd, func(h *gosocketio.Channel, args string) {
-			if len(args) > 0 {
-				out = args
-				mutex.Unlock()
-			}
-		})
-	}
-
-	c.Emit(cmd, param)
-	mutex.Lock()
-	return out
 }

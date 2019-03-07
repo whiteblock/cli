@@ -26,15 +26,18 @@ var (
 	validators     	int
 	imageFlag      	string
 	optionsFlag		map[string]string
+	envFlag			map[string]string
+
 )
 
 type Config struct {
-	Servers    []int                  `json:"servers"`
-	Blockchain string                 `json:"blockchain"`
-	Nodes      int                    `json:"nodes"`
-	Image      string                 `json:"image"`
-	Resources  []Resources            `json:"resources"`
-	Params     map[string]interface{} `json:"params"`
+	Servers    		[]int                  `json:"servers"`
+	Blockchain 		string                 `json:"blockchain"`
+	Nodes      		int                    `json:"nodes"`
+	Image      		string                 `json:"image"`
+	Resources  		[]Resources            `json:"resources"`
+	Params     		map[string]interface{} `json:"params"`
+	Environments    []map[string]string    `json:"environments"`
 	
 }
 
@@ -171,6 +174,50 @@ func processOptions(givenOptions map[string]string,format []interface{}) (map[st
 	}
 	return out,nil
 }
+//-1 means for all
+func processEnvKey(in string) (int,string) {
+	node := -1
+	index := 0
+	for i,char := range in {
+		if char < '0' || char > '9' {
+			index = i
+			break
+		}
+	}
+	if index == 0 {
+		return node,in
+	}
+
+	if index == len(in) {
+		util.PrintStringError("Cannot have a numerical environment variable")
+		os.Exit(1)
+	}
+
+	var err error
+	node,err = strconv.Atoi(in[0:index])
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	return node,in[index:len(in)]
+}
+
+func processEnv(envVars map[string]string,nodes int) ([]map[string]string,error) {
+	out := make([]map[string]string,nodes)
+	for i,_ := range out {
+		out[i] = make(map[string]string)
+	}
+	for k,v := range envVars {
+		node,key := processEnvKey(k)
+		if node == -1 {
+			for i,_ := range out {
+				out[i][key] = v
+			}
+			continue
+		}
+		out[node][key] = v
+	}
+	return out,nil
+}
 
 var buildCmd = &cobra.Command{
 	Use:     "build",
@@ -188,7 +235,11 @@ var buildCmd = &cobra.Command{
 		if err != nil {
 			util.PrintError(err)
 		}
-
+		if envFlag != nil {
+			buildConf.Environments,err = processEnv(envFlag,3)
+			res,_ := json.Marshal(buildConf.Environments)
+			fmt.Printf("%s\n",string(res))
+		}
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
@@ -391,6 +442,12 @@ var buildCmd = &cobra.Command{
 			}
 		}
 		buildConf.Blockchain = strings.ToLower(buildConf.Blockchain)
+
+		
+		if envFlag != nil {
+			buildConf.Environments,err = processEnv(envFlag,buildConf.Nodes)
+		}
+
 		build(buildConf)
 		removeSmartContracts()
 	},
@@ -462,6 +519,7 @@ func init() {
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
 	buildCmd.Flags().StringToStringVarP(&optionsFlag,"option","o",nil,"blockchain specific options")
+	buildCmd.Flags().StringToStringVarP(&envFlag,"env","e",nil,"set environment variables for the nodes")
 
 
 	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
