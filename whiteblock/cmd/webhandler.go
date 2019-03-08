@@ -90,6 +90,7 @@ func buildListener(testnetId string){
 		}else if status.Error != nil {
 			what := status.Error["what"]
 			util.PrintStringError(what)
+			os.Exit(1)
 			mutex.Unlock()
 		} else if status.Progress == 100.0 {
 			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r","Build", status.Progress)
