@@ -162,19 +162,20 @@ Response: The params as a list of key value params, of name and type respectivel
 
 
 var getConfigsCmd = &cobra.Command{
-	Use:   "configs <blockchain>",
+	Use:   "configs <blockchain> [file]",
 	Short: "Get the resources for a blockchain",
 	Long: `
-Get the resources for a blockchain
+Get the resources for a blockchain. With one argument, lists what is availible. With two
+	arguments, get the contents of the file
 
-Params: <blockchain>
+Params: <blockchain> [file]
 Format: The blockchain to get the resources of
 
 Response: The resoures as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
-		jsonRpcCallAndPrint("get_resources", args)
+		util.CheckArguments(args, 1, 2)
+		jsonRpcCallAndPrint("get_resources", args)		
 	},
 }
 
