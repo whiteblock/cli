@@ -240,7 +240,7 @@ var buildCmd = &cobra.Command{
 		util.CheckArguments(args,0,0)
 		buildConf,err := getPreviousBuild()
 		if err != nil {
-			util.PrintError(err)
+			//util.PrintError(err)
 		}
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
