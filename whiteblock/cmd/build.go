@@ -90,6 +90,10 @@ func build(buildConfig interface{}) {
 		util.PrintErrorFatal(err)
 	}
 	buildListener(buildReply.(string))
+	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
 }
 
 func getServer() []int {
@@ -363,12 +367,15 @@ var buildCmd = &cobra.Command{
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			options, ok := rawOptions.([]interface{})
+			processedOptions, ok := rawOptions.([]interface{})
 			if !ok {
 				util.PrintStringError("Unexpected format for params")
 				os.Exit(1)
 			}
-			buildConf.Params,err = processOptions(optionsFlag,options)
+			buildConf.Params,err = processOptions(optionsFlag,processedOptions)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
 		}else if len(paramsFile) != 0 {
 			f, err := os.Open(paramsFile)
 			if err != nil {
@@ -456,7 +463,7 @@ var buildCmd = &cobra.Command{
 		if envFlag != nil {
 			buildConf.Environments,err = processEnv(envFlag,buildConf.Nodes)
 		}
-		fmt.Printf("%+v\n",buildConf)
+		//fmt.Printf("%+v\n",buildConf)
 		build(buildConf)
 		removeSmartContracts()
 	},
