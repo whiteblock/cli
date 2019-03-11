@@ -122,7 +122,7 @@ func tern(exp bool, res1 string, res2 string) string {
 	return res2
 }
 
-func getImage(blockchain, image string) string {
+func getImage(blockchain string,imageType string,defaultImage string) string {
 	cwd := os.Getenv("HOME")
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
@@ -137,10 +137,12 @@ func getImage(blockchain, image string) string {
 		panic(err)
 	}
 	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
-	if len(cont["blockchains"][blockchain]["images"][image]) != 0 {
-		return cont["blockchains"][blockchain]["images"][image]
-	} else {
-		return image
+	if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
+		return cont["blockchains"][blockchain]["images"][imageType]
+	} else if(len(defaultImage) > 0){
+		return defaultImage
+	}else{
+		return "gcr.io/whiteblock/"+blockchain
 	}
 }
 
@@ -351,7 +353,7 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		buildConf.Image = getImage(buildConf.Blockchain, imageFlag)
+		buildConf.Image = getImage(buildConf.Blockchain, "stable",buildConf.Blockchain)
 
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
