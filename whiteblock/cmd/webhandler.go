@@ -29,7 +29,18 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 	}
 
 	if err != nil {
-		util.PrintErrorFatal(err)
+		jsonError, ok := err.(*json2.Error) 
+		if ok && jsonError.Data != nil {
+			res,err := json.Marshal(jsonError.Data)
+			if err != nil {
+				panic(err)
+			}
+			util.PrintStringError(string(res))
+			os.Exit(1)
+		}else{
+			util.PrintErrorFatal(err)
+		}
+		
 	}
 	fmt.Println(prettypi(reply))
 }
