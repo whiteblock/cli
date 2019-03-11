@@ -274,11 +274,39 @@ Work underway on generalized use commands to consolidate all the different
 commands separated by blockchains.
 */
 
+func getBlockCobra(cmd *cobra.Command, args []string) {
+	util.CheckArguments(args, 1, 1)
+	blockNum := 0
+	var err error
+	if len(args) > 0 {
+		blockNum, err = strconv.Atoi(args[0])
+		if err != nil {
+			util.PrintStringError("Invalid block number formatting.")
+			return
+		}
+	}
+	if blockNum < 1 && len(args) > 0 {
+		util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
+		return
+	} else {
+		res, err := jsonRpcCall("get_block_number", []string{})
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		blocknum := int(res.(float64))
+		if blocknum < 1 {
+			util.PrintStringError("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
+			return
+		}
+	}
+	jsonRpcCallAndPrint("get_block", args)
+}
+
 var getBlockCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
-	Run:   util.PartialCommand,
+	Run:   getBlockCobra,
 }
 
 var getBlockNumCmd = &cobra.Command{
@@ -307,33 +335,7 @@ Params: Block number
 
 Response: JSON representation of the block
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
-		blockNum := 0
-		var err error
-		if len(args) > 0 {
-			blockNum, err = strconv.Atoi(args[0])
-			if err != nil {
-				util.PrintStringError("Invalid block number formatting.")
-				return
-			}
-		}
-		if blockNum < 1 && len(args) > 0 {
-			util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
-			return
-		} else {
-			res, err := jsonRpcCall("get_block_number", []string{})
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-			blocknum := int(res.(float64))
-			if blocknum < 1 {
-				util.PrintStringError("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
-				return
-			}
-		}
-		jsonRpcCallAndPrint("get_block", args)
-	},
+	Run: getBlockCobra,
 }
 
 var getTxCmd = &cobra.Command{
