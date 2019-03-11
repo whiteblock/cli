@@ -14,6 +14,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
+	util "../util"
 )
 
 var (
@@ -77,7 +78,7 @@ func writeContractListFile(addrs string) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	contents := fmt.Sprintf("%s", cont)
+	contents := string(cont)
 	if len(cont) > 0 {
 		contents = strings.TrimRight(contents, "]")
 		addrs = strings.TrimLeft(addrs, "[")
@@ -173,7 +174,7 @@ func installNpmDeps() {
 	}
 	// fmt.Printf("%s", output)
 
-	npmInstWeb3Cmd := exec.Command("npm", "install", "web3")
+	npmInstWeb3Cmd := exec.Command("npm", "install", "web3@1.0.0-beta.31")
 	npmInstWeb3Cmd.Dir = cwd + "/smart-contracts/"
 	_, err = npmInstWeb3Cmd.Output()
 	if err != nil {
@@ -225,10 +226,7 @@ var gethSocCmd = &cobra.Command{
 	Long: `
 Solc will allow the user to reploy smart contracts to the ethereum blockchain.
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-		return
-	},
+	Run: util.PartialCommand,
 }
 
 var gethSolcInitCmd = &cobra.Command{
@@ -246,7 +244,7 @@ Init initialize the smart-contracts directory and will download all the necessar
 }
 
 var gethSolcDeployCmd = &cobra.Command{
-	Use:   "deploy <node number> <file name>",
+	Use:   "deploy <node> <file name>",
 	Short: "deploy",
 	Long: `
 Deploy will compile the smart contract and deploy it to the ethereum blockchain. For the smart contract to be successfully deployed, mining needs to be started. This can be done by using the 'miner start' command. 
@@ -254,24 +252,19 @@ Deploy will compile the smart contract and deploy it to the ethereum blockchain.
 Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
+		util.CheckArguments(args, 2, 2)
 		if checkContractFiles(args[1]) {
-			serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-			out := []byte(wsEmitListen(serverAddr, "nodes", ""))
-			var node Node
-			json.Unmarshal(out, &node)
+			nodes, err := GetNodes()
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+
 			nodeNumber, err := strconv.Atoi(args[0])
 			if err != nil {
-				fmt.Println("Invalid Argument " + args[0])
-				cmd.Help()
-				return
+				panic(err)
 			}
-			nodeIP := fmt.Sprintf(node[nodeNumber].IP)
+
+			nodeIP := nodes[nodeNumber].IP
 			deployContractOut := deployContract(args[1], nodeIP)
 			re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
 			addrList := re.FindAllString(deployContractOut, -1)
@@ -289,36 +282,27 @@ Output: Deployed contract address
 }
 
 var gethConsole = &cobra.Command{
-	Use:   "console <node number>",
+	Use:   "console <node>",
 	Short: "Logs into the geth console",
 	Long: `
 Console will log into the geth console.
 
 Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
+		util.CheckArguments(args, 1, 1)
+		nodes, err := GetNodes()
+		if err != nil {
+			util.PrintErrorFatal(err)
 		}
 
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command1 := "nodes"
-		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
-		var node Node
-		json.Unmarshal(out1, &node)
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 
-		command2 := "exec"
-		param := "{\"server\":" + server + ",\"node\":" + args[0] + ",\"command\":\"service ssh start\"}"
-		wsEmitListen(serverAddr, command2, param)
-
-		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.customer", "-o", "StrictHostKeyChecking no",
+		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
-			"root@" + fmt.Sprintf(node[nodeNumber].IP), "-t", "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
+			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "-t", "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
 	},
 }
 
@@ -330,16 +314,8 @@ Get the current highest block number of the chain
 
 Response: The block number`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command, param)
-		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_block_number"
-		param := ""
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eth::get_block_number", []string{})
 	},
 }
 
@@ -354,16 +330,8 @@ Params: Block number
 
 Response: JSON Representation of the block.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_block"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_block", args)
 	},
 }
 
@@ -375,52 +343,9 @@ Get a list of all unlocked accounts, current balance of accounts, tx counts, and
 
 Response: A JSON array of the accounts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::accounts_status"
-		param := ""
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		jsonRpcCallAndPrint("eth::accounts_status", []string{})
 	},
 }
-
-// var gethGetBalanceCmd = &cobra.Command{
-// 	Use:   "get_balance <address>",
-// 	Short: "Get account balance information",
-// 	Long: `
-// Get the current balance of an account
-
-// Format: <address>
-// Params: Account address
-
-// Response: The integer balance of the account in wei`,
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		// fmt.Println(command)
-// 		// if len(args) < 1 || len(args) > 1 {
-// 		// 	println("\nError: Invalid number of arguments given\n")
-// 		// 	cmd.Help()
-// 		// 	return
-// 		// }
-
-// 		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-
-// 		accountcmd := "eth::get_accounts"
-// 		accounts := fmt.Sprintf("%q", wsEmitListen(serverAddr, accountcmd, ""))
-
-// 		re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
-// 		accList := re.FindAllString(accounts, -1)
-
-// 		AccBalances := make([]interface{}, 0)
-// 		for i := range accList {
-// 			balance := wsEmitListen(serverAddr, "eth::get_balance", accList[i])
-// 			AccBalances = append(AccBalances, Balances{
-// 				Address: accList[i],
-// 				Balance: balance,
-// 			})
-// 		}
-
-// 		balances, _ := json.Marshal(AccBalances)
-// 		fmt.Println(prettyp(string(balances)))
-// 	},
-// }
 
 var gethSendTxCmd = &cobra.Command{
 	Use:   "send_transaction <from address> <to address> <gas> <gas price> <value to send>",
@@ -433,18 +358,9 @@ Params: Sending account, receiving account, gas, gas price, amount to send in ET
 
 Response: The transaction hash`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) <= 4 || len(args) > 5 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::send_transaction"
-		weiToEth := args[4] + "000000000000000000"
-		args[4] = weiToEth
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 5, 5)
+		args[4] = args[4] + "000000000000000000"
+		jsonRpcCallAndPrint("eth::send_transaction", args)
 	},
 }
 
@@ -459,16 +375,8 @@ Params: The sender account, a block number
 
 Response: The transaction count`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) < 1 || len(args) > 2 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_transaction_count"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 1, 2)
+		jsonRpcCallAndPrint("eth::get_transaction_count", args)
 	},
 }
 
@@ -483,16 +391,8 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) < 1 || len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_transaction"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_transaction", args)
 	},
 }
 
@@ -507,16 +407,8 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction receipt.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) < 1 || len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_transaction_receipt"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
 	},
 }
 
@@ -528,16 +420,8 @@ Get the current hash rate per node
 
 Response: The hash rate of a single node in the network`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_hash_rate"
-		param := ""
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
 	},
 }
 
@@ -551,19 +435,10 @@ Format: <tx/s> <value> [destination]
 Params: The amount of transactions to send in a second, the value of each transaction in wei, the destination for the transaction
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::start_transactions"
 		// fmt.Println(command)
-		if len(args) <= 1 || len(args) > 3 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
+		util.CheckArguments(args, 2, 3)
 		args[1] = args[1] + "000000000000000000"
-
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		jsonRpcCallAndPrint("eth::start_transactions", args)
 	},
 }
 
@@ -573,16 +448,8 @@ var gethStopTxCmd = &cobra.Command{
 	Long: `
 Stops the sending of transactions if transactions are currently being sent`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) >= 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::stop_transactions"
-		param := ""
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eth::stop_transactions", []string{})
 	},
 }
 
@@ -597,16 +464,15 @@ Params: A list of the nodes to start mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to start mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::start_mining"
-		param := strings.Join(args[:], " ")
-		// fmt.Println(command)
-		fmt.Println(wsEmitListen(serverAddr, command, param))
-
+		jsonRpcCallAndPrint("eth::start_mining", args)
 		DagReady := false
 		for !DagReady {
 			fmt.Printf("\rDAG is being generated...")
-			blocknum, _ := strconv.Atoi(wsEmitListen(serverAddr, "eth::get_block_number", ""))
+			res, err := jsonRpcCall("eth::get_block_number", []string{})
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			blocknum := res.(int)
 			if blocknum > 4 {
 				DagReady = true
 			}
@@ -627,35 +493,7 @@ Params: A list of the nodes to stop mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to stop mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::stop_mining"
-		param := strings.Join(args[:], " ")
-		// fmt.Println(command)
-		fmt.Println(wsEmitListen(serverAddr, command, param))
-	},
-}
-
-var gethBlockListenerCmd = &cobra.Command{
-	Use:   "block_listener [block number]",
-	Short: "Get block listener",
-	Long: `
-Get all blocks and continue to subscribe to new blocks
-
-Format: [block number]
-Params: The block number to start at or None for all blocks
-
-Response: Will emit on eth::block_listener for every block after the given block or 0 that exists/has been created`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) > 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::block_listener"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		jsonRpcCallAndPrint("eth::stop_mining", args)
 	},
 }
 
@@ -671,16 +509,8 @@ Params: The number of transactions to retrieve
 Response: JSON object of transaction data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::get_recent_sent_tx"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_recent_sent_tx", args)
 	},
 }
 
@@ -691,7 +521,7 @@ func init() {
 	//geth subcommands
 	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethSendTxCmd,
 		gethGetTxCountCmd, gethGetTxCmd, gethGetTxReceiptCmd, gethGetHashRateCmd, gethStartTxCmd, gethStopTxCmd,
-		gethStartMiningCmd, gethStopMiningCmd, gethBlockListenerCmd, gethGetRecentSentTxCmd, gethConsole, gethSocCmd)
+		gethStartMiningCmd, gethStopMiningCmd, gethGetRecentSentTxCmd, gethConsole, gethSocCmd)
 
 	gethSocCmd.AddCommand(gethSolcInitCmd, gethSolcDeployCmd)
 	RootCmd.AddCommand(gethCmd)

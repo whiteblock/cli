@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
+const (
 	// VERSION is set during build
 	VERSION = "1.0.4"
 )

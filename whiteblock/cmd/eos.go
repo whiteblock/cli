@@ -3,22 +3,15 @@ package cmd
 import (
 	"fmt"
 	"strconv"
-	"strings"
-
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var eosCmd = &cobra.Command{
 	Use:   "eos <command>",
 	Short: "Run eos commands",
-	Long: `
-Eos will allow the user to get information and run EOS commands.
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-		return
-	},
+	Long: "\nEos will allow the user to get information and run EOS commands.\n",
+	Run: util.PartialCommand,
 }
 
 var eosGetBlockCmd = &cobra.Command{
@@ -32,16 +25,8 @@ Format: <block number>
 
 Response: Block data for that block`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command, param)
-		if len(args) != 1 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::get_block"
-		param := args[0]
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args,1,1)
+		jsonRpcCallAndPrint("eos::get_block",args)
 	},
 }
 
@@ -56,19 +41,8 @@ Format: [node]
 
 Response: eos blockchain state info`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command, param)
-		if len(args) > 1 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::get_info"
-		param := ""
-		if len(args) == 1 {
-			param = args[0]
-		}
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args,0,1)
+		jsonRpcCallAndPrint("eos::get_info",args)
 	},
 }
 
@@ -83,16 +57,8 @@ Format: <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]
 
 Response: The txid`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command, param)
-		if len(args) < 4 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::send_transaction"
-		param := args[0]
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args,4,7)
+		jsonRpcCallAndPrint("eos::send_transaction",args)
 	},
 }
 
@@ -103,22 +69,12 @@ var eosSendBurstTxCmd = &cobra.Command{
 This command will send a burst of transactions. Additional arguments are optional.
 
 Params: number of transactions to send per second, transaction size
-Format: <tps>, [tx size]
+Format: <txs>, [tx size]
 
 Response: success or ERROR`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command, param)
-		if len(args) < 1 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::run_burst_tx"
-
-		param := strings.Join(args[:], " ")
-
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args,1,2)
+		jsonRpcCallAndPrint("eos::run_burst_tx",args)
 	},
 }
 
@@ -133,25 +89,16 @@ Format: <tps>, [tx size]
 
 Response: success or ERROR`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command, param)
-		if len(args) < 1 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
+		util.CheckArguments(args,1,2)
 		tps, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("Invalid argument given.")
-			return
+			util.InvalidInteger("tps",args[0],true)
 		}
 		if tps > 5000 {
 			fmt.Println("The limit for tps is set to 5000. Please input a lower value.")
 			return
 		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::run_constant_tps"
-		param := strings.Join(args[:], " ")
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		jsonRpcCallAndPrint("eos::run_constant_tps",args)
 	},
 }
 
@@ -166,19 +113,8 @@ Format: [node]
 
 Response: Data on the last x test results`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command, param)
-		if len(args) > 1 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eos::get_block_number"
-		param := ""
-		if len(args) > 0 {
-			param = args[0]
-		}
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		util.CheckArguments(args,0,1)
+		jsonRpcCallAndPrint("eos::get_block_number",args)
 	},
 }
 
@@ -188,11 +124,7 @@ var eosStopTxCmd = &cobra.Command{
 	Long: `
 Stops the sending of transactions if transactions are currently being sent`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "eth::stop_transactions"
-		param := ""
-		// fmt.Println(command)
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		jsonRpcCallAndPrint("eth::stop_transactions",[]string{})
 	},
 }
 

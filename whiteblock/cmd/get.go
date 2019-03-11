@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 /*
@@ -27,6 +28,33 @@ func cwFile(path, data string) {
 }
 */
 
+func GetNodes() ([]Node, error) {
+	res, err := jsonRpcCall("nodes", []string{})
+	if err != nil {
+		return nil, err
+	}
+	tmp := res.([]interface{})
+	nodes := []map[string]interface{}{}
+	for _, t := range tmp {
+		nodes = append(nodes, t.(map[string]interface{}))
+	}
+
+	out := []Node{}
+	for _, node := range nodes {
+		out = append(out, Node{
+			LocalID:   int(node["localId"].(float64)),
+			Server:    int(node["server"].(float64)),
+			TestNetID: node["testNetId"].(string),
+			ID:        node["id"].(string),
+			IP:        node["ip"].(string),
+			Label:     node["label"].(string),
+		})
+	}
+	return out, nil
+}
+
+var logTail int = -1
+
 func readContractsFile() ([]byte, error) {
 	cwd := os.Getenv("HOME")
 	b, err := ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
@@ -39,29 +67,17 @@ func readContractsFile() ([]byte, error) {
 var getCmd = &cobra.Command{
 	Use:   "get <command>",
 	Short: "Get server and network information.",
-	Long: `
-Get will ouput server and network information and statstics.
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list below.")
-		cmd.Help()
-		return
-	},
+	Long:  "\nGet will ouput server and network information and statstics.\n",
+	Run:   util.PartialCommand,
 }
 
 var getServerCmd = &cobra.Command{
 	Use:     "server",
 	Aliases: []string{"servers"},
 	Short:   "Get server information.",
-	Long: `
-Server will ouput server information.
-	`,
-
+	Long:    "\nServer will ouput server information.\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "get_servers"
-		fmt.Println(prettyp(wsEmitListen(serverAddr, command, "")))
+		jsonRpcCallAndPrint("get_servers", []string{})
 	},
 }
 
@@ -74,9 +90,7 @@ Nodes will output all of the nodes in the current network.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "get_nodes"
-		fmt.Println(wsEmitListen(serverAddr, command, ""))
+		jsonRpcCallAndPrint("get_nodes", []string{})
 	},
 }
 
@@ -90,22 +104,14 @@ Response: true or false, on whether or not a test is running; The name of the te
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command1 := "state::is_running"
-		command2 := "state::what_is_running"
-		fmt.Println(wsEmitListen(serverAddr, command1, ""))
-		fmt.Println(wsEmitListen(serverAddr, command2, ""))
-
+		util.CheckArguments(args, 0, 0)
+		jsonRpcCallAndPrint("state::is_running", []string{})
+		jsonRpcCallAndPrint("state::what_is_running", []string{})
 	},
 }
 
 var getLogCmd = &cobra.Command{
-	Use:   "log <node number>",
+	Use:   "log <node>",
 	Short: "Log will dump data pertaining to the node.",
 	Long: `
 Get stdout and stderr from a node.
@@ -116,15 +122,24 @@ Response: stdout and stderr of the blockchain process
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
+		util.CheckArguments(args, 1, 1)
+		previousBuild,err := getPreviousBuild()
+		if err != nil{
+			util.PrintErrorFatal(err)
 		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "log"
-		param := "{\"server\":" + fmt.Sprintf(server) + ",\"node\":" + args[0] + "}"
-		fmt.Println(wsEmitListen(serverAddr, command, param))
+		s := previousBuild.Servers[0]
+		n, err := strconv.Atoi(args[0])
+
+		if err != nil {
+			util.InvalidInteger("node", args[0], true)
+		}
+
+		jsonRpcCallAndPrint("log", map[string]int{
+			"server": s,
+			"node":   n,
+			"lines":  logTail,
+		})
+
 	},
 }
 
@@ -140,14 +155,27 @@ Format: The blockchain to get the build params of
 Response: The params as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "get_defaults"
-		fmt.Println(wsEmitListen(serverAddr, command, args[0]))
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("get_defaults", args)
+	},
+}
+
+
+var getConfigsCmd = &cobra.Command{
+	Use:   "configs <blockchain> [file]",
+	Short: "Get the resources for a blockchain",
+	Long: `
+Get the resources for a blockchain. With one argument, lists what is availible. With two
+	arguments, get the contents of the file
+
+Params: <blockchain> [file]
+Format: The blockchain to get the resources of
+
+Response: The resoures as a list of key value params, of name and type respectively
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args, 1, 2)
+		jsonRpcCallAndPrint("get_resources", args)		
 	},
 }
 
@@ -159,11 +187,7 @@ Stats will allow the user to get statistics regarding the network.
 
 Response: JSON representation of network statistics
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nError: Invalid number of arguments given")
-		cmd.Help()
-		return
-	},
+	Run: util.PartialCommand,
 }
 
 var statsByTimeCmd = &cobra.Command{
@@ -178,16 +202,13 @@ Format: <start unix time stamp> <end unix time stamp>
 Response: JSON representation of network statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "stats"
-		param := "{\"startTime\":" + args[0] + ",\"endTime\":" + args[1] + ",\"startBlock\":0,\"endBlock\":0}"
-		data := wsEmitListen(serverAddr, command, param)
-		fmt.Println(data)
+		util.CheckArguments(args, 2, 2)
+		jsonRpcCallAndPrint("stats", map[string]int64{
+			"startTime":  util.CheckAndConvertInt64(args[0], "start unix timestamp"),
+			"endTime":    util.CheckAndConvertInt64(args[1], "end unix timestamp"),
+			"startBlock": 0,
+			"endBlock":   0,
+		})
 	},
 }
 
@@ -203,16 +224,13 @@ Format: <start block number> <end block number>
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "stats"
-		param := "{\"startTime\":0,\"endTime\":0,\"startBlock\":" + args[0] + ",\"endBlock\":" + args[1] + "}"
-		data := wsEmitListen(serverAddr, command, param)
-		fmt.Println(data)
+		util.CheckArguments(args, 2, 2)
+		jsonRpcCallAndPrint("stats", map[string]int64{
+			"startTime":  0,
+			"endTime":    0,
+			"startBlock": util.CheckAndConvertInt64(args[0], "start block number"),
+			"endBlock":   util.CheckAndConvertInt64(args[1], "end block number"),
+		})
 	},
 }
 
@@ -228,23 +246,13 @@ Format: <blocks>
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "stats"
-		blocks, err := strconv.Atoi(args[0])
-		if err != nil {
-			InvalidArgument(args[0])
-			cmd.Help()
-			return
-		}
-		blocks *= -1
-		param := fmt.Sprintf("{\"startTime\":0,\"endTime\":0,\"startBlock\":%d,\"endBlock\":0}", blocks)
-		data := wsEmitListen(serverAddr, command, param)
-		fmt.Println(data)
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("stats", map[string]int64{
+			"startTime":  0,
+			"endTime":    0,
+			"startBlock": util.CheckAndConvertInt64(args[0], "blocks") * -1, //Negative number signals past
+			"endBlock":   0,
+		})
 	},
 }
 
@@ -257,10 +265,7 @@ Stats all will allow the user to get all the statistics regarding the network.
 Response: JSON representation of network statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "all_stats"
-		data := wsEmitListen(serverAddr, command, "")
-		fmt.Println(data)
+		jsonRpcCallAndPrint("all_stats", []string{})
 	},
 }
 
@@ -273,11 +278,7 @@ var getBlockCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list below.")
-		cmd.Help()
-		return
-	},
+	Run:   util.PartialCommand,
 }
 
 var getBlockNumCmd = &cobra.Command{
@@ -290,22 +291,7 @@ Gets the most recent block number that had been added to the blockchain.
 Response: block number
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_block_number"
-		case "eos":
-			command = "eos::get_block_number"
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		data := wsEmitListen(serverAddr, command, "")
-		fmt.Println(data)
+		jsonRpcCallAndPrint("get_block_number", []string{})
 	},
 }
 
@@ -322,27 +308,31 @@ Params: Block number
 Response: JSON representation of the block
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_block"
-		case "eos":
-			command = "eos::get_block"
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
+		util.CheckArguments(args, 1, 1)
+		blockNum := 0
+		var err error
+		if len(args) > 0 {
+			blockNum, err = strconv.Atoi(args[0])
+			if err != nil {
+				util.PrintStringError("Invalid block number formatting.")
+				return
+			}
 		}
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
+		if blockNum < 1 && len(args) > 0 {
+			util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
 			return
+		} else {
+			res, err := jsonRpcCall("get_block_number", []string{})
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			blocknum := int(res.(float64))
+			if blocknum < 1 {
+				util.PrintStringError("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
+				return
+			}
 		}
-		data := wsEmitListen(serverAddr, command, args[0])
-		fmt.Println(data)
+		jsonRpcCallAndPrint("get_block", args)
 	},
 }
 
@@ -350,11 +340,7 @@ var getTxCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "tx <command",
 	Short: "Get information regarding transactions",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list below.")
-		cmd.Help()
-		return
-	},
+	Run:   util.PartialCommand,
 }
 
 var getTxInfoCmd = &cobra.Command{
@@ -370,28 +356,8 @@ Params: The transaction hash
 Response: JSON representation of the transaction.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_transaction"
-		case "eos":
-			fmt.Println("This function is not supported for the eos client.")
-			return
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		data := wsEmitListen(serverAddr, command, args[0])
-		fmt.Println(data)
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("get_transaction", args)
 	},
 }
 
@@ -415,7 +381,6 @@ Response: JSON representation of the transaction receipt.
 			cmd.Help()
 			return
 		}
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
 		command := ""
 		switch blockchain {
 		case "ethereum":
@@ -428,8 +393,7 @@ Response: JSON representation of the transaction receipt.
 			fmt.Println("No blockchain found. Please use the build function to create one")
 			return
 		}
-		data := wsEmitListen(serverAddr, command, args[0])
-		fmt.Println(data)
+		jsonRpcCallAndPrint(command, args)
 	},
 }
 */
@@ -438,11 +402,7 @@ var getAccountCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "account <command>",
 	Short: "Get account information",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nNo command given. Please choose a command from the list below.")
-		cmd.Help()
-		return
-	},
+	Run:   util.PartialCommand,
 }
 
 var getAccountInfoCmd = &cobra.Command{
@@ -455,27 +415,7 @@ Gets the account information relevant to the currently connected blockchain.
 Response: JSON representation of the accounts information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::accounts_status"
-			data := wsEmitListen(serverAddr, command, "")
-			fmt.Println(data)
-		case "eos":
-			nodenum, _ := strconv.Atoi(nodes)
-			AccBalances := make([]interface{}, 0)
-			for i := 0; i < nodenum; i++ {
-				AccBalances = append(AccBalances, wsEmitListen(serverAddr, "eos::get_info", strconv.Itoa(i)))
-			}
-			fmt.Println(AccBalances)
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
+		jsonRpcCallAndPrint("accounts_status", []string{})
 	},
 }
 
@@ -489,25 +429,19 @@ Gets the list of contracts that were deployed to the network. The information in
 Response: JSON representation of the contract information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		switch blockchain {
-		case "ethereum":
-			contracts, err := readContractsFile()
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			fmt.Println(prettyp(string(contracts)))
 
-		case "eos":
-			fmt.Println("This function is not supported for the eos client.")
-			return
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-			return
-		default:
-			fmt.Println("No blockchain found. Please use the build function to create one")
+		contracts, err := readContractsFile()
+		if err != nil {
+			fmt.Println(err)
 			return
 		}
+		if len(contracts) == 0 {
+			util.PrintStringError("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
+		} else {
+			fmt.Println(prettyp(string(contracts)))
+		}
+		
+		
 	},
 }
 
@@ -521,7 +455,9 @@ func init() {
 	statsByBlockCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	statsAllCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd)
+	getLogCmd.Flags().IntVarP(&logTail, "tail", "t", -1, "see tail(1)")
+
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd,getConfigsCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented

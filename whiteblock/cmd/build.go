@@ -3,131 +3,116 @@ package cmd
 import (
 	"bufio"
 	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
-
+	"errors"
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
 var (
-	serverAddr     string
-	previousYesAll bool
-	serversFlag    string
-	blockchainFlag string
-	nodesFlag      int
-	cpusFlag       string
-	memoryFlag     string
-	paramsFile     string
-	validators     int
+	serverAddr     	string
+	previousYesAll 	bool
+	serversFlag    	string
+	blockchainFlag 	string
+	nodesFlag      	int
+	cpusFlag       	string
+	memoryFlag     	string
+	paramsFile     	string
+	validators     	int
+	imageFlag      	string
+	optionsFlag		map[string]string
+	envFlag			map[string]string
+	filesFlag		map[string]string
+
 )
 
 type Config struct {
-	Servers    []int
-	Blockchain string
-	Nodes      int
-	Image      string
-	Resources  struct {
-		Cpus   string
-		Memory string
-	}
-	Params interface{}
+	Servers    		[]int                  	`json:"servers"`
+	Blockchain 		string                 	`json:"blockchain"`
+	Nodes      		int                    	`json:"nodes"`
+	Image      		string                 	`json:"image"`
+	Resources  		[]Resources            	`json:"resources"`
+	Params     		map[string]interface{} 	`json:"params"`
+	Environments    []map[string]string    	`json:"environments"`
+	Files			map[string]string		`json:"files"`
+	
 }
 
-func writePrevCmdFile(prevBuild string) {
-	cwd := os.Getenv("HOME")
-	err := os.MkdirAll(cwd+"/.config/whiteblock/", 0755)
+type Resources struct {
+	Cpus   string 	`json:"cpus"`
+	Memory string 	`json:"memory"`
+}
+
+func getPreviousBuildId() (string,error) {
+	buildId,err := util.ReadStore(".previous_build_id")
+	if err != nil || len(buildId) == 0 {
+		return "",errors.New("No previous build. Use build command to deploy a blockchain.")
+	}
+	return string(buildId),nil
+}
+
+func getPreviousBuild() (Config,error) {
+	buildId,err := getPreviousBuildId()
 	if err != nil {
-		log.Fatalf("could not create directory: %s", err)
+		return Config{},err
 	}
 
-	file, err := os.Create(cwd + "/.config/whiteblock/previous_build.txt")
-
+	prevBuild, err := jsonRpcCall("get_build", []string{buildId})
 	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
+		return Config{},err
 	}
-	defer file.Close() // Make sure to close the file when you're done
 
-	_, err = file.WriteString(prevBuild)
+	tmp,err := json.Marshal(prevBuild)
 	if err != nil {
-		log.Fatalf("failed writing to file: %s", err)
+		return Config{},err
+	}
+
+	var out Config
+	err = json.Unmarshal(tmp,&out)
+	return out,err
+}
+
+
+func build(buildConfig interface{}) {
+	buildReply, err := jsonRpcCall("build", buildConfig)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	fmt.Printf("Build Started successfully: %v\n", buildReply)
+	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	buildListener(buildReply.(string))
+	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
+	if err != nil {
+		util.PrintErrorFatal(err)
 	}
 }
 
-func readPrevCmdFile() (string, error) {
-	cwd := os.Getenv("HOME")
-	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/previous_build.txt")
-	if err != nil {
-		//fmt.Print(err)
-	}
-	return string(b), nil
-}
+func getServer() []int {
+	idList := make([]int, 0)
+	res, err := jsonRpcCall("get_servers", []string{})
 
-func writeConfigFile(configFile string) {
-	cwd := os.Getenv("HOME")
-	err := os.MkdirAll(cwd+"/.config/whiteblock/", 0755)
-	if err != nil {
-		log.Fatalf("could not create directory: %s", err)
-	}
-
-	file, err := os.Create(cwd + "/.config/whiteblock/config.json")
-
-	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
-	}
-	defer file.Close() // Make sure to close the file when you're done
-
-	_, err = file.WriteString(configFile)
-	if err != nil {
-		log.Fatalf("failed writing to file: %s", err)
-	}
-}
-
-func readConfigFile() ([]byte, error) {
-	cwd := os.Getenv("HOME")
-	b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/config.json")
-	if err != nil {
-		//fmt.Print(err)
-	}
-	return b, nil
-}
-
-/*
-func boolInput(input string) bool {
-	output := false
-	strings.ToLower(input)
-	if input == "yes" || input == "on" || input == "true" || input == "y" {
-		output = true
-	}
-	return output
-}
-*/
-
-func getServer() string {
-	idList := make([]string, 0)
-	getServerAddr := serverAddr
-	command := "get_servers"
-	serverResults := []byte(wsEmitListen(getServerAddr, command, ""))
-	var result map[string]Server
-	err := json.Unmarshal(serverResults, &result)
 	if err != nil {
 		panic(err)
 	}
-
+	servers := res.(map[string]interface{})
 	serverID := 0
-	for _, v := range result {
-		serverID = v.Id
+	for _, v := range servers {
+		serverID = int(v.(map[string]interface{})["id"].(float64))
 		//move this and take out break statement if instance has multiple servers
-		idList = append(idList, fmt.Sprintf("%d", serverID))
+		idList = append(idList,serverID)
 		break
 	}
 
-	server = strings.Join(idList, ",")
-	return server
+	return idList
 }
 
 func tern(exp bool, res1 string, res2 string) string {
@@ -135,6 +120,112 @@ func tern(exp bool, res1 string, res2 string) string {
 		return res1
 	}
 	return res2
+}
+
+func getImage(blockchain string,imageType string,defaultImage string) string {
+	cwd := os.Getenv("HOME")
+	b, err := ioutil.ReadFile("/etc/whiteblock.json")
+	if err != nil {
+		b, err = ioutil.ReadFile(cwd + "/cli/etc/whiteblock.json")
+		if err != nil {
+			panic(err)
+		}
+	}
+	var cont map[string]map[string]map[string]map[string]string
+	err = json.Unmarshal(b, &cont)
+	if err != nil {
+		panic(err)
+	}
+	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
+	if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
+		return cont["blockchains"][blockchain]["images"][imageType]
+	} else if(len(defaultImage) > 0){
+		return defaultImage
+	}else{
+		return "gcr.io/whiteblock/"+blockchain
+	}
+}
+
+func removeSmartContracts() {
+	cwd := os.Getenv("HOME")
+	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/contracts.json")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func processOptions(givenOptions map[string]string,format []interface{}) (map[string]interface{},error) {
+	out := map[string]interface{}{}
+	
+	for _,kv := range format {
+		_kv := kv.([]interface{})
+		name := _kv[0].(string)
+		key_type := _kv[1].(string)
+
+		val,ok := givenOptions[name]
+		if !ok {
+			continue
+		}
+		switch key_type {
+			case "string":
+				//needs to have filtering
+				out[name] = val
+			case "[]string":
+				preprocessed := strings.Replace(val, " ", ",", -1)
+				out[name] = strings.Split(preprocessed, ",")
+			case "int":
+				val, err := strconv.ParseInt(val, 0, 64)
+				if err != nil {
+					return nil,err
+				}
+				out[name] = val
+		}	
+	}
+	return out,nil
+}
+//-1 means for all
+func processEnvKey(in string) (int,string) {
+	node := -1
+	index := 0
+	for i,char := range in {
+		if char < '0' || char > '9' {
+			index = i
+			break
+		}
+	}
+	if index == 0 {
+		return node,in
+	}
+
+	if index == len(in) {
+		util.PrintStringError("Cannot have a numerical environment variable")
+		os.Exit(1)
+	}
+
+	var err error
+	node,err = strconv.Atoi(in[0:index])
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	return node,in[index:len(in)]
+}
+
+func processEnv(envVars map[string]string,nodes int) ([]map[string]string,error) {
+	out := make([]map[string]string,nodes)
+	for i,_ := range out {
+		out[i] = make(map[string]string)
+	}
+	for k,v := range envVars {
+		node,key := processEnvKey(k)
+		if node == -1 {
+			for i,_ := range out {
+				out[i][key] = v
+			}
+			continue
+		}
+		out[node][key] = v
+	}
+	return out,nil
 }
 
 var buildCmd = &cobra.Command{
@@ -146,83 +237,58 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serversEnabled := false
-		blockchainEnabled := false
-		nodesEnabled := false
-		cpusEnabled := false
-		memoryEnabled := false
-		if len(serversFlag) > 0 {
-			serversEnabled = true
-		}
-		if len(blockchainFlag) > 0 {
-			blockchainEnabled = true
-		}
-		if nodesFlag > 0 {
-			nodesEnabled = true
-		}
-		if len(cpusFlag) != 0 {
-			if cpusFlag == "0" {
-				cpusFlag = ""
-			} else {
-				cpus = cpusFlag
-			}
-			cpusEnabled = true
-		}
-		if len(memoryFlag) > 0 {
-			if memoryFlag == "0" {
-				memoryFlag = ""
-			} else {
-				memory = memoryFlag
-			}
-			memoryEnabled = true
-		}
 
-		if len(args) != 0 {
-			fmt.Println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
-		buildArr := make([]string, 0)
-		paramArr := make(map[string]interface{})
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		bldcommand := "build"
-
-		configFile, err := readConfigFile()
+		
+		util.CheckArguments(args,0,0)
+		buildConf,err := getPreviousBuild()
 		if err != nil {
-			panic(err)
+			//util.PrintError(err)
+		}
+		blockchainEnabled := len(blockchainFlag) > 0
+		nodesEnabled := nodesFlag > 0
+		cpusEnabled := len(cpusFlag) != 0
+		memoryEnabled := len(memoryFlag) > 0
+
+
+		
+		
+		defaultCpus := ""
+		defaultMemory := ""
+
+		if buildConf.Resources != nil && len(buildConf.Resources) > 0 {
+			defaultCpus = string(buildConf.Resources[0].Cpus)
+			defaultMemory = string(buildConf.Resources[0].Memory)
+		}else if buildConf.Resources == nil {
+			buildConf.Resources = []Resources{Resources{}}
 		}
 
-		var config Config
-		json.Unmarshal(configFile, &config)
-		defaultBlockchain := string(config.Blockchain)
-		defaultNodes := strconv.Itoa(config.Nodes)
-		//defaultImage := string(config.Image)
-		defaultCpus := string(config.Resources.Cpus)
-		defaultMemory := string(config.Resources.Memory)
+		if cpusFlag == "0" {
+			cpusFlag = ""
+		} else if cpusEnabled {
+			buildConf.Resources[0].Cpus = cpusFlag
+		}
+	
+		if memoryFlag == "0" {
+			memoryFlag = ""
+		} else if memoryEnabled {
+			buildConf.Resources[0].Memory = memoryFlag
+		}
+
+		
 
 		buildOpt := []string{}
 		defOpt := []string{}
 		allowEmpty := []bool{}
 
-		/*
-			if !serversEnabled {
-				allowEmpty = []bool{false}
-				buildOpt = []string{
-					"servers" + tern((len(server) == 0), "", " ("+server+")"),
-				}
-				defOpt = append(defOpt, fmt.Sprintf(server))
-			}
-		*/
 		if !blockchainEnabled {
 			allowEmpty = append(allowEmpty, false)
-			buildOpt = append(buildOpt, "blockchain"+tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"))
-			defOpt = append(defOpt, fmt.Sprintf(defaultBlockchain))
+			buildOpt = append(buildOpt, "blockchain"+tern((len(buildConf.Blockchain) == 0), "", " ("+buildConf.Blockchain+")"))
+			defOpt = append(defOpt, fmt.Sprintf(buildConf.Blockchain))
 		}
 		if !nodesEnabled {
 			allowEmpty = append(allowEmpty, false)
-			buildOpt = append(buildOpt, "nodes"+tern((defaultNodes == "0"), "", " ("+defaultNodes+")"))
-			defOpt = append(defOpt, fmt.Sprintf(defaultNodes))
+			buildOpt = append(buildOpt, fmt.Sprintf("nodes(%d)",buildConf.Nodes))
+			defOpt = append(defOpt, fmt.Sprintf("%d",buildConf.Nodes))
 		}
 		if !cpusEnabled {
 			allowEmpty = append(allowEmpty, true)
@@ -235,21 +301,9 @@ var buildCmd = &cobra.Command{
 			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 		}
 
-		// the code that was used when flag options were not implemented
-		/*
-			buildOpt = append(buildOpt, []string{
-				"blockchain" + tern((len(defaultBlockchain) == 0), "", " ("+defaultBlockchain+")"),
-				"nodes" + tern((defaultNodes == "0"), "", " ("+defaultNodes+")"),
-				"docker image" + tern((len(defaultImage) == 0), "", " ("+defaultImage+")"),
-				"cpus" + tern((len(defaultCpus) == 0), "(empty for no limit)", " ("+defaultCpus+")"),
-				"memory" + tern((len(defaultMemory) == 0), "(empty for no limit)", " ("+defaultMemory+")"),
-			}...)
-
-			defOpt = append(defOpt, []string{defaultCpus, defaultMemory}...)
-			allowEmpty = append(allowEmpty, []bool{true, true}...)
-		*/
-
+		buildArr := []string{}
 		scanner := bufio.NewScanner(os.Stdin)
+
 		for i := 0; i < len(buildOpt); i++ {
 			fmt.Print(buildOpt[i] + ": ")
 			scanner.Scan()
@@ -266,196 +320,208 @@ var buildCmd = &cobra.Command{
 			}
 		}
 
-		if len(serversFlag) == 0 {
-			server = string(getServer())
+		if len(serversFlag) > 0 {
+			serversInter := strings.Split(serversFlag,",")
+			buildConf.Servers = []int{}
+			for _,serverStr := range serversInter {
+				serverNum, err := strconv.Atoi(serverStr)
+				if err != nil {
+					util.InvalidInteger("servers",serverStr,true)
+				}
+				buildConf.Servers = append(buildConf.Servers,serverNum)
+			}
+		} else if len(buildConf.Servers) == 0 {
+			buildConf.Servers = getServer()
 		}
 
-		var offset = 0
-		if serversEnabled {
-			server = serversFlag
-		}
+		offset := 0
+
 		if blockchainEnabled {
-			blockchain = blockchainFlag
+			buildConf.Blockchain = blockchainFlag
 		} else {
-			blockchain = buildArr[offset]
-			offset++
-		}
-		if nodesEnabled {
-			nodes = strconv.Itoa(nodesFlag)
-		} else {
-			nodes = buildArr[offset]
+			buildConf.Blockchain = buildArr[offset]
 			offset++
 		}
 
-		image := "gcr.io/whiteblock/" + blockchain + ":master"
-		// image := blockchain
+		if nodesEnabled {
+			buildConf.Nodes = nodesFlag
+		} else {
+			buildConf.Nodes, err = strconv.Atoi(buildArr[offset])
+			if err != nil {
+				util.InvalidInteger("nodes", buildArr[offset], true)
+			}
+			offset++
+		}
+
+		buildConf.Image = getImage(buildConf.Blockchain, "stable",buildConf.Blockchain)
+
 		if !cpusEnabled {
-			cpus = buildArr[offset]
+			buildConf.Resources[0].Cpus = buildArr[offset]
 			offset++
 		}
 		if !memoryEnabled {
-			memory = buildArr[offset]
+			buildConf.Resources[0].Memory = buildArr[offset]
 			offset++
 		}
-		params := "{}"
 
-		if len(paramsFile) != 0 {
+		if optionsFlag != nil {
+			rawOptions, err := jsonRpcCall("get_params", []string{buildConf.Blockchain})
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			processedOptions, ok := rawOptions.([]interface{})
+			if !ok {
+				util.PrintStringError("Unexpected format for params")
+				os.Exit(1)
+			}
+			buildConf.Params,err = processOptions(optionsFlag,processedOptions)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+		}else if len(paramsFile) != 0 {
 			f, err := os.Open(paramsFile)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				util.PrintErrorFatal(err)
 			}
 
 			decoder := json.NewDecoder(f)
 			decoder.UseNumber()
-			err = decoder.Decode(&paramArr)
+			err = decoder.Decode(&buildConf.Params)
 			if err != nil {
-				fmt.Println(err)
+				util.PrintErrorFatal(err)
+			}
+		} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
+			rawOptions, err := jsonRpcCall("get_params", []string{buildConf.Blockchain})
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			options, ok := rawOptions.([]interface{})
+			if !ok {
+				util.PrintStringError("Unexpected format for params")
 				os.Exit(1)
 			}
-		} else if !previousYesAll {
-		Params:
-			fmt.Print("Use default parameters? (y/n) ")
-			scanner.Scan()
-			ask := scanner.Text()
-			ask = strings.Trim(ask, "\n\t\r\v ")
 
-			switch ask {
-			case "n":
-				fallthrough
-			case "no":
-				getParamCommand := "get_params"
-				bcparam := []byte(wsEmitListen(serverAddr, getParamCommand, blockchain))
-				var paramlist []map[string]string
+			scanner := bufio.NewScanner(os.Stdin)
 
-				json.Unmarshal(bcparam, &paramlist)
-
-				scanner := bufio.NewScanner(os.Stdin)
-
-				for i := 0; i < len(paramlist); i++ {
-					for key, value := range paramlist[i] {
-						fmt.Printf("%s (%s): ", key, value)
-						scanner.Scan()
-						text := scanner.Text()
-						if len(text) == 0 {
-							continue
-						}
-						switch value {
-						case "string":
-							if fmt.Sprint(reflect.TypeOf(text)) != "string" {
-								fmt.Println("Entry must be a string")
-								i--
-								continue
-							}
-							paramArr[key] = "\"" + text + "\""
-						case "[]string":
-							paramArr[key] = "[" + strings.Replace(text, " ", ",", -1) + "]"
-						case "int":
-							_, err := strconv.ParseInt(text, 0, 64)
-							if err != nil {
-								fmt.Println("Entry must be an integer")
-								i--
-								continue
-							}
-							paramArr[key] = text
-						}
-					}
+			for i := 0; i < len(options); i++ {
+				opt := options[i].([]interface{})
+				if len(opt) != 2 {
+					fmt.Println("Unexpected format for params")
+					os.Exit(1)
 				}
-			case "y":
-				fallthrough
-			case "yes":
-			default:
-				fmt.Println("Unknown Option")
-				goto Params
-			}
+
+				key := opt[0].(string)
+				key_type := opt[1].(string)
+
+				fmt.Printf("%s (%s): ", key, key_type)
+				scanner.Scan()
+				text := scanner.Text()
+				if len(text) == 0 {
+					continue
+				}
+				switch key_type {
+				case "string":
+					//needs to have filtering
+					buildConf.Params[key] = text
+				case "[]string":
+					preprocessed := strings.Replace(text, " ", ",", -1)
+					buildConf.Params[key] = strings.Split(preprocessed, ",")
+				case "int":
+					val, err := strconv.ParseInt(text, 0, 64)
+					if err != nil {
+						util.InvalidInteger(key, text, false)
+						i--
+						continue
+					}
+					buildConf.Params[key] = val
+				}
+			}	
 		}
 		if validators >= 0 {
-			paramArr["validators"] = fmt.Sprintf("%d", validators)
+			buildConf.Params["validators"] = validators
 		}
 
-		params = "{"
-		first := true
-		for key, value := range paramArr {
-			if first {
-				first = false
-			} else {
-				params += ","
-			}
-			params += fmt.Sprintf("\"%s\""+":"+"%v", key, value)
-		}
-		params += "}"
-
-		if blockchain == "eos" {
-			ns, _ := strconv.Atoi(nodes)
+		if buildConf.Blockchain == "eos" {
 			if validators < 0 {
-				ns += 21
+				buildConf.Nodes += 21
 			} else {
-				ns += validators
+				buildConf.Nodes += validators
 			}
-			nodes = fmt.Sprintf("%d", ns)
 		}
-		param := "{\"servers\":[" + server + "],\"blockchain\":\"" + blockchain + "\",\"nodes\":" + nodes +
-			",\"image\":\"" + image + "\",\"resources\":{\"cpus\":\"" + cpus + "\",\"memory\":\"" + memory +
-			"\"},\"params\":" + params + "}"
-		stat := wsEmitListen(serverAddr, bldcommand, param)
+		buildConf.Blockchain = strings.ToLower(buildConf.Blockchain)
 
-		if stat == "" {
-			writePrevCmdFile(param)
-			writeConfigFile(param)
+		if filesFlag != nil{
+			buildConf.Files = map[string]string{}
+			for name,file := range filesFlag {
+				data,err := ioutil.ReadFile(file)
+				if err != nil{
+					util.PrintErrorFatal(err)
+				}
+				buildConf.Files[name] = base64.StdEncoding.EncodeToString(data)
+
+			}
 		}
+		
+		if envFlag != nil {
+			buildConf.Environments,err = processEnv(envFlag,buildConf.Nodes)
+		}
+		//fmt.Printf("%+v\n",buildConf)
+		build(buildConf)
+		removeSmartContracts()
+	},
+}
 
+var buildAttachCmd = &cobra.Command{
+	Use:     "attach",
+	Aliases: []string{"resume"},
+	Short:   "Build a blockchain using previous configurations",
+	Long:    "\nAttach to a current in progress build process\n",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		buildId,err := util.ReadStore(".previous_build_id")
+		if err != nil || len(buildId) == 0 {
+			fmt.Println("No previous build Use build command to deploy a blockchain.")
+			os.Exit(1)
+		}
+		buildListener(string(buildId))
 	},
 }
 
 var previousCmd = &cobra.Command{
 	Use:     "previous",
 	Aliases: []string{"prev"},
-	Short:   "Build a blockchain using previous configurations",
-	Long: `
-Build previous will recreate and deploy the previously built blockchain and specified number of nodes.
-	`,
+	Short:  "Build a blockchain using previous configurations",
+	Long: 	"\nBuild previous will recreate and deploy the previously built blockchain and specified number of nodes.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		bldcommand := "build"
-		prevBuild, _ := readPrevCmdFile()
 
-		if len(prevBuild) == 0 {
-			fmt.Println("No previous build. Use build command to deploy a blockchain.")
-			return
+		prevBuild, err := getPreviousBuild()		
+		if err != nil {
+			util.PrintErrorFatal(err)
 		}
 
 		fmt.Println(prevBuild)
-		if previousYesAll {
+		if previousYesAll || util.YesNoPrompt("Build from previous?"){
 			fmt.Println("building from previous configuration")
-			wsEmitListen(serverAddr, bldcommand, prevBuild)
+			build(prevBuild)
+			removeSmartContracts()
 			return
 		}
+	},
+}
 
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			fmt.Print("Build from previous? (y/n) ")
-			scanner.Scan()
-			ask := scanner.Text()
-			ask = strings.Trim(ask, "\n\t\r\v ")
+var buildStopCmd = &cobra.Command{
+	Use:     "stop",
+	Aliases: []string{"halt", "cancel"},
+	Short:   "Stops the current build",
+	Long: "\nBuild stops the current building process.\n",
 
-			switch ask {
-			case "y":
-				fallthrough
-			case "yes":
-				fmt.Println("building from previous configuration")
-				wsEmitListen(serverAddr, bldcommand, prevBuild)
-				return
-			case "n":
-				fallthrough
-			case "no":
-				fmt.Println("Build cancelled.")
-				return
-			default:
-				fmt.Println("Unknown Option " + ask)
-			}
+	Run: func(cmd *cobra.Command, args []string) {
+		buildId,err := getPreviousBuildId()
+		if err != nil {
+			log.Println(err)
 		}
-
+		jsonRpcCallAndPrint("stop_build", []string{buildId})
 	},
 }
 
@@ -469,10 +535,14 @@ func init() {
 	buildCmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
+	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
+	buildCmd.Flags().StringToStringVarP(&optionsFlag,"option","o",nil,"blockchain specific options")
+	buildCmd.Flags().StringToStringVarP(&envFlag,"env","e",nil,"set environment variables for the nodes")
+	buildCmd.Flags().StringToStringVarP(&filesFlag,"template","t",nil,"file templates")
 
 	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
-	buildCmd.AddCommand(previousCmd)
+	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd)
 	RootCmd.AddCommand(buildCmd)
 }

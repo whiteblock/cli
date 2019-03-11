@@ -1,24 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"strconv"
-
-	homedir "github.com/mitchellh/go-homedir"
+	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
-
-var (
-	blockchain string
-	server     string
-	nodes      string
-	image      string
-	cpus       string
-	memory     string
 )
 
 type Iface struct {
@@ -58,46 +43,4 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
-}
-
-func initConfig() {
-	home, err := homedir.Dir()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	viper.AddConfigPath("./.config/whiteblock")
-	viper.AddConfigPath(home + "/.config/whiteblock")
-	viper.SetConfigName("config")
-
-	b, err := ioutil.ReadFile(home + "/.config/whiteblock/config.json")
-	if err != nil {
-		//fmt.Print(err)
-	}
-	var config Config
-	json.Unmarshal(b, &config)
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		//fmt.Println("Default parameters are not set. Please continue and enter build fields.")
-		return
-	}
-
-	if len(config.Servers) > 0 {
-		server = strconv.Itoa(config.Servers[0])
-	}
-
-	blockchain = config.Blockchain
-	nodes = fmt.Sprintf("%d", config.Nodes)
-	image = config.Image
-	cpus = config.Resources.Cpus
-	memory = config.Resources.Memory
-
-	viper.WatchConfig()
-	viper.AutomaticEnv()
 }
