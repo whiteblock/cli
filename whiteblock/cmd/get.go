@@ -145,6 +145,7 @@ Response: stdout and stderr of the blockchain process
 
 var getDefaultsCmd = &cobra.Command{
 	Use:   "default <blockchain>",
+	Aliases: []string{"defaults"},
 	Short: "Default gets the blockchain params.",
 	Long: `
 Get the blockchain specific parameters for a deployed blockchain.
@@ -163,6 +164,7 @@ Response: The params as a list of key value params, of name and type respectivel
 
 var getConfigsCmd = &cobra.Command{
 	Use:   "configs <blockchain> [file]",
+	Aliases: []string{"config"},
 	Short: "Get the resources for a blockchain",
 	Long: `
 Get the resources for a blockchain. With one argument, lists what is availible. With two
