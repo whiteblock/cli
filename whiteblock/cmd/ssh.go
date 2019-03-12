@@ -42,7 +42,10 @@ SSH will allow the user to go into the contianer where the specified node exists
 		if err != nil {
 			panic(err)
 		}
-
+		if nodeNumber >= len(nodes) {
+			util.PrintStringError("Node number too high")
+			os.Exit(1)
+		}
 		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP)}

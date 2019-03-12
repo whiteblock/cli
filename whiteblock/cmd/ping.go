@@ -39,6 +39,17 @@ Params: sending node, receiving node
 			cmd.Help()
 			return
 		}
+
+		if sendingNodeNumber >= len(nodes) {
+			util.PrintStringError("Sending node number too high")
+			os.Exit(1)
+		}
+
+		if receivingNodeNumber >= len(nodes) {
+			util.PrintStringError("Receiving node number too high")
+			os.Exit(1)
+		}
+
 		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.master",
 												"-o","UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking no", 
 												"root@" + fmt.Sprintf(nodes[sendingNodeNumber].IP), "ping", 
