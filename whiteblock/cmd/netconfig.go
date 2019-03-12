@@ -71,7 +71,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 			netInfo["loss"] = lossFlag
 		}
 		if delayFlag > 0 {
-			netInfo["delay"] = delayFlag
+			netInfo["delay"] = delayFlag * 1000
 		}
 		if rateFlag > 0 {
 			rate := strconv.Itoa(rateFlag)
