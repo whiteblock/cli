@@ -353,7 +353,11 @@ Response: JSON object of transaction data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 1, 1)
-		jsonRpcCallAndPrint("eth::get_recent_sent_tx", args)
+		num, err := strconv.Atoi(args[0])
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		jsonRpcCallAndPrint("eth::get_recent_sent_tx", []interface{}{num})
 	},
 }
 
