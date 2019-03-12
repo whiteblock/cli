@@ -32,6 +32,10 @@ Params: node number, file/dir source, file/dir destination
 		if err != nil {
 			panic(err)
 		}
+		if nodeNumber >= len(nodes) {
+			util.PrintStringError("Node number too high")
+			os.Exit(1)
+		}
 		err = unix.Exec("/usr/bin/scp", []string{"scp", "-i", "/home/master-secrets/id.master", "-r", "-o", "UserKnownHostsFile=/dev/null",
 			"-o", "StrictHostKeyChecking no", args[1], "root@" + fmt.Sprintf(nodes[nodeNumber].IP) + ":" + args[2]}, os.Environ())
 		log.Fatal(err)
