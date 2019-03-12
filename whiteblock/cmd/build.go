@@ -438,6 +438,9 @@ var buildCmd = &cobra.Command{
 			}	
 		}
 		if validators >= 0 {
+			if buildConf.Params == nil {
+				buildConf.Params = map[string]interface{}{}
+			}
 			buildConf.Params["validators"] = validators
 		}
 
