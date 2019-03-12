@@ -273,7 +273,7 @@ Output: Deployed contract address
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			
+
 			if nodeNumber >= len(nodes) {
 				util.PrintStringError("Node number too high")
 				os.Exit(1)
@@ -322,7 +322,7 @@ Response: stdout of geth console`,
 			os.Exit(1)
 		}
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
-			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no","-o","ConnectTimeout=10", "-y",
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "-t", "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
 	},
 }
