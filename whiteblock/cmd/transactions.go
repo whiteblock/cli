@@ -261,7 +261,12 @@ The user must specify the blockchain flag as well as any other flags that will b
 Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("stop_transactions", []string{})
+		res,err := jsonRpcCall("state::kill", []string{})
+		if res.(float64) == 0 && err == nil{
+			fmt.Println("Transactions stopped successfully")
+		}else{
+			fmt.Println("There was an error stopping transactions")
+		}
 	},
 }
 
