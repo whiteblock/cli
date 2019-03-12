@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
+	"os"
 	"github.com/spf13/cobra"
 	util "../util"
 )
@@ -50,7 +50,15 @@ Params: sending node, receiving node
 			cmd.Help()
 			return
 		}
+		if sendingNodeNumber >= len(nodes) {
+			util.PrintStringError("Sending node number too high")
+			os.Exit(1)
+		}
 
+		if receivingNodeNumber >= len(nodes) {
+			util.PrintStringError("Receiving node number too high")
+			os.Exit(1)
+		}
 		wg.Add(2)
 		// command to run iperf as a server
 		go func() {
