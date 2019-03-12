@@ -145,6 +145,8 @@ Optional Parameters:
 		}
 
 		switch previousBuild.Blockchain {
+		case "geth":
+			fallthrough
 		case "ethereum":
 			//error handling for invalid flags
 			if !(txSizeFlag == 0) {
