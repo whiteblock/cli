@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"strings"
 
+	util "../util"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
-	util "../util"
 )
 
 var (
@@ -191,7 +191,6 @@ func installNpmDeps() {
 	// fmt.Printf("%s", output)
 
 	fmt.Println("\rDependencies has been successfully generated.")
-
 }
 
 func deployContract(fileName, IP string) string {
@@ -220,7 +219,7 @@ Geth will allow the user to get infromation and run geth commands.
 	},
 }
 
-var gethSocCmd = &cobra.Command{
+var gethSolcCmd = &cobra.Command{
 	Use:   "solc",
 	Short: "Smart contract deployment tool",
 	Long: `
@@ -306,6 +305,53 @@ Response: stdout of geth console`,
 	},
 }
 
+var gethGetTxReceiptCmd = &cobra.Command{
+	Use:   "get_transaction_receipt <hash>",
+	Short: "Get transaction receipt",
+	Long: `
+Get the transaction receipt by the tx hash
+
+Format: <hash>
+Params: The transaction hash
+
+Response: JSON representation of the transaction receipt.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
+	},
+}
+
+var gethGetHashRateCmd = &cobra.Command{
+	Use:   "get_hash_rate",
+	Short: "Get hash rate",
+	Long: `
+Get the current hash rate per node
+
+Response: The hash rate of a single node in the network`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
+	},
+}
+
+var gethGetRecentSentTxCmd = &cobra.Command{
+	Use:   "get_recent_sent_tx <number>",
+	Short: "Get recently sent transaction",
+	Long: `
+Get a number of the most recent transactions sent
+
+Format: <number>
+Params: The number of transactions to retrieve
+
+Response: JSON object of transaction data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args, 1, 1)
+		jsonRpcCallAndPrint("eth::get_recent_sent_tx", args)
+	},
+}
+
+/*
 var gethGetBlockNumberCmd = &cobra.Command{
 	Use:   "get_block_number",
 	Short: "Get block number",
@@ -396,35 +442,6 @@ Response: JSON representation of the transaction.`,
 	},
 }
 
-var gethGetTxReceiptCmd = &cobra.Command{
-	Use:   "get_transaction_receipt <hash>",
-	Short: "Get transaction receipt",
-	Long: `
-Get the transaction receipt by the tx hash
-
-Format: <hash>
-Params: The transaction hash
-
-Response: JSON representation of the transaction receipt.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
-		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
-	},
-}
-
-var gethGetHashRateCmd = &cobra.Command{
-	Use:   "get_hash_rate",
-	Short: "Get hash rate",
-	Long: `
-Get the current hash rate per node
-
-Response: The hash rate of a single node in the network`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 0, 1)
-		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
-	},
-}
-
 var gethStartTxCmd = &cobra.Command{
 	Use:   "start_transactions <tx/s> <value> [destination]",
 	Short: "Start transactions",
@@ -497,32 +514,16 @@ Response: The number of nodes which successfully received the signal to stop min
 	},
 }
 
-var gethGetRecentSentTxCmd = &cobra.Command{
-	Use:   "get_recent_sent_tx <number>",
-	Short: "Get recently sent transaction",
-	Long: `
-Get a number of the most recent transactions sent
-
-Format: <number>
-Params: The number of transactions to retrieve
-
-Response: JSON object of transaction data`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
-		jsonRpcCallAndPrint("eth::get_recent_sent_tx", args)
-	},
-}
+*/
 
 func init() {
 	// gethCmd.Flags().StringVarP(&gethcommand, "command", "c", "", "Geth command")
 	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
-	gethCmd.AddCommand(gethGetBlockNumberCmd, gethGetBlockCmd, gethGetAccountCmd, gethSendTxCmd,
-		gethGetTxCountCmd, gethGetTxCmd, gethGetTxReceiptCmd, gethGetHashRateCmd, gethStartTxCmd, gethStopTxCmd,
-		gethStartMiningCmd, gethStopMiningCmd, gethGetRecentSentTxCmd, gethConsole, gethSocCmd)
+	gethCmd.AddCommand(gethGetTxReceiptCmd, gethGetHashRateCmd,
+		gethGetRecentSentTxCmd, gethConsole, gethSolcCmd)
 
-	gethSocCmd.AddCommand(gethSolcInitCmd, gethSolcDeployCmd)
+	gethSolcCmd.AddCommand(gethSolcInitCmd, gethSolcDeployCmd)
 	RootCmd.AddCommand(gethCmd)
 }

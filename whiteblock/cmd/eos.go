@@ -1,18 +1,34 @@
 package cmd
 
 import (
-	"fmt"
-	"strconv"
-	"github.com/spf13/cobra"
 	util "../util"
+	"github.com/spf13/cobra"
 )
 
 var eosCmd = &cobra.Command{
 	Use:   "eos <command>",
 	Short: "Run eos commands",
-	Long: "\nEos will allow the user to get information and run EOS commands.\n",
-	Run: util.PartialCommand,
+	Long:  "\nEos will allow the user to get information and run EOS commands.\n",
+	Run:   util.PartialCommand,
 }
+
+var eosGetInfoCmd = &cobra.Command{
+	Use:   "get_info [node]",
+	Short: "Get EOS info",
+	Long: `
+Roughly equivalent to calling cleos get info
+
+Params: The node to get info from
+Format: [node]
+
+Response: eos blockchain state info`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eos::get_info", args)
+	},
+}
+
+/*
 
 var eosGetBlockCmd = &cobra.Command{
 	Use:   "get_block <block number>",
@@ -27,22 +43,6 @@ Response: Block data for that block`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args,1,1)
 		jsonRpcCallAndPrint("eos::get_block",args)
-	},
-}
-
-var eosGetInfoCmd = &cobra.Command{
-	Use:   "get_info [node]",
-	Short: "Get EOS info",
-	Long: `
-Roughly equivalent to calling cleos get info
-
-Params: The node to get info from
-Format: [node]
-
-Response: eos blockchain state info`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args,0,1)
-		jsonRpcCallAndPrint("eos::get_info",args)
 	},
 }
 
@@ -102,6 +102,16 @@ Response: success or ERROR`,
 	},
 }
 
+var eosStopTxCmd = &cobra.Command{
+	Use:   "stop_transactions",
+	Short: "Stop transactions",
+	Long: `
+Stops the sending of transactions if transactions are currently being sent`,
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("eth::stop_transactions",[]string{})
+	},
+}
+
 var eosGetBlockNumCmd = &cobra.Command{
 	Use:   "get_block_number [node]",
 	Short: "Get current block number",
@@ -118,21 +128,13 @@ Response: Data on the last x test results`,
 	},
 }
 
-var eosStopTxCmd = &cobra.Command{
-	Use:   "stop_transactions",
-	Short: "Stop transactions",
-	Long: `
-Stops the sending of transactions if transactions are currently being sent`,
-	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::stop_transactions",[]string{})
-	},
-}
+*/
 
 func init() {
 	eosCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//eos subcommands
-	eosCmd.AddCommand(eosGetBlockCmd, eosGetInfoCmd, eosSendTxCmd, eosSendBurstTxCmd, eosConstTpsCmd, eosGetBlockNumCmd, stopTxCmd)
+	eosCmd.AddCommand(eosGetInfoCmd)
 
 	RootCmd.AddCommand(eosCmd)
 }
