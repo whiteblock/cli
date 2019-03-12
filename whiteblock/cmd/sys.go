@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"fmt"
 	"github.com/spf13/cobra"
 	util "../util"
@@ -70,6 +71,10 @@ Params: Test number
 
 		rc := result["results"].([]interface{})[0]
 		s := rc.(map[string]interface{})["series"]
+		if s == nil{
+			fmt.Println("No results availible")
+			os.Exit(1)
+		}
 		sc := s.([]interface{})[0].(map[string]interface{})
 		c := sc["columns"].([]interface{})
 		v := sc["values"].([]interface{})
