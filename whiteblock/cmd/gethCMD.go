@@ -252,6 +252,17 @@ Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 2, 2)
+		//assertions for sanity
+		//
+		res, err := jsonRpcCall("get_block_number", []string{})
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		blocknum := int(res.(float64))
+		if blocknum == 0 {
+			util.PrintStringError("Please start the miner before attempting to deploy a smart contract.")
+		}
+
 		if checkContractFiles(args[1]) {
 			nodes, err := GetNodes()
 			if err != nil {
@@ -261,6 +272,11 @@ Output: Deployed contract address
 			nodeNumber, err := strconv.Atoi(args[0])
 			if err != nil {
 				util.PrintErrorFatal(err)
+			}
+			
+			if nodeNumber >= len(nodes) {
+				util.PrintStringError("Node number too high")
+				os.Exit(1)
 			}
 
 			nodeIP := nodes[nodeNumber].IP
