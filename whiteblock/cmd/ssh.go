@@ -40,7 +40,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 		}
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 		if nodeNumber >= len(nodes) {
 			util.PrintStringError("Node number too high")

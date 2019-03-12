@@ -30,7 +30,7 @@ Params: node number, file/dir source, file/dir destination
 		}
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 		if nodeNumber >= len(nodes) {
 			util.PrintStringError("Node number too high")
