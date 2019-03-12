@@ -28,7 +28,7 @@ This command will rest the configuration file when called.
 		cwd := os.Getenv("HOME")
 		err := os.RemoveAll(cwd + "/.config/whiteblock/config.json")
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 		fmt.Println("Configuration file has been reset. Run a command to be prompted to create a new one.")
 	},

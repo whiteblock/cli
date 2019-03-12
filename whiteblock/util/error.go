@@ -38,7 +38,6 @@ func ClientNotSupported(client string){
 
 func PrintErrorFatal(err error){
     PrintError(err)
-    //panic(err)
     os.Exit(1)
 }
 

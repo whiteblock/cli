@@ -73,7 +73,7 @@ Params: sending node, receiving node
 
 			client, err := util.NewSshClient(fmt.Sprintf(nodes[sendingNodeNumber].IP))
 			if err != nil {
-				panic(err)
+				util.PrintErrorFatal(err)
 			}
 			defer client.Close()
 
@@ -82,7 +82,7 @@ Params: sending node, receiving node
 			result, err := client.Run(iPerfcmd)
 			if err != nil {
 				fmt.Println(result)
-				panic(err)
+				util.PrintErrorFatal(err)
 			}
 			fmt.Println(result)
 
@@ -115,7 +115,7 @@ Params: sending node, receiving node
 
 			client, err := util.NewSshClient(fmt.Sprintf(nodes[receivingNodeNumber].IP))
 			if err != nil {
-				panic(err)
+				util.PrintErrorFatal(err)
 			}
 			defer client.Close()
 
@@ -124,7 +124,7 @@ Params: sending node, receiving node
 			result, err := client.Run(iPerfcmd)
 			if err != nil {
 				fmt.Println(result)
-				panic(err)
+				util.PrintErrorFatal(err)
 			}
 			fmt.Println(result)
 		}()

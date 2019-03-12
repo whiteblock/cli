@@ -99,9 +99,8 @@ func build(buildConfig interface{}) {
 func getServer() []int {
 	idList := make([]int, 0)
 	res, err := jsonRpcCall("get_servers", []string{})
-
 	if err != nil {
-		panic(err)
+		util.PrintErrorFatal(err)
 	}
 	servers := res.(map[string]interface{})
 	serverID := 0
@@ -128,13 +127,13 @@ func getImage(blockchain string,imageType string,defaultImage string) string {
 	if err != nil {
 		b, err = ioutil.ReadFile(cwd + "/cli/etc/whiteblock.json")
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 	}
 	var cont map[string]map[string]map[string]map[string]string
 	err = json.Unmarshal(b, &cont)
 	if err != nil {
-		panic(err)
+		util.PrintErrorFatal(err)
 	}
 	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
 	if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
@@ -150,7 +149,7 @@ func removeSmartContracts() {
 	cwd := os.Getenv("HOME")
 	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/contracts.json")
 	if err != nil {
-		panic(err)
+		util.PrintErrorFatal(err)
 	}
 }
 

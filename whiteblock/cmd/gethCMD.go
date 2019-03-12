@@ -260,7 +260,7 @@ Output: Deployed contract address
 
 			nodeNumber, err := strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				util.PrintErrorFatal(err)
 			}
 
 			nodeIP := nodes[nodeNumber].IP
@@ -274,7 +274,10 @@ Output: Deployed contract address
 				ContractName:        args[1],
 				ContractAddress:     addrList[1],
 			})
-			contracts, _ := json.Marshal(ContractList)
+			contracts, err := json.Marshal(ContractList)
+			if err != nil{
+				util.PrintErrorFatal(err)
+			}
 			writeContractListFile(fmt.Sprintf("%s", contracts))
 		}
 	},

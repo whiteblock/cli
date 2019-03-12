@@ -66,7 +66,7 @@ Params: Test number
 		}
 		result, ok := results.(map[string]interface{})
 		if !ok {
-			panic(1)
+			util.PrintStringError("Got back the results in an invalid format")
 		}
 
 		rc := result["results"].([]interface{})[0]

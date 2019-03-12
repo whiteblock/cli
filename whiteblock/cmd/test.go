@@ -23,7 +23,7 @@ This command will read from a file to run a test.
 		cwd := os.Getenv("PWD")
 		b, err := ioutil.ReadFile(cwd + "/" + args[0])
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 
 		fmt.Println(prettyp(string(b)))
@@ -31,7 +31,7 @@ This command will read from a file to run a test.
 		var cont map[string]interface{}
 		err = json.Unmarshal(b, &cont)
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 
 		fmt.Println(cont["build"])
