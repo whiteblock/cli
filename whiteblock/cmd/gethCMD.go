@@ -378,34 +378,7 @@ Response: JSON object of transaction data`,
 }
 
 /*
-var gethGetBlockNumberCmd = &cobra.Command{
-	Use:   "get_block_number",
-	Short: "Get block number",
-	Long: `
-Get the current highest block number of the chain
 
-Response: The block number`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 0, 1)
-		jsonRpcCallAndPrint("eth::get_block_number", []string{})
-	},
-}
-
-var gethGetBlockCmd = &cobra.Command{
-	Use:   "get_block <block number>",
-	Short: "Get block information",
-	Long: `
-Get the data of a block
-
-Format: <Block Number>
-Params: Block number
-
-Response: JSON Representation of the block.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
-		jsonRpcCallAndPrint("eth::get_block", args)
-	},
-}
 
 var gethGetAccountCmd = &cobra.Command{
 	Use:   "get_accounts",
@@ -485,17 +458,6 @@ Params: The amount of transactions to send in a second, the value of each transa
 	},
 }
 
-var gethStopTxCmd = &cobra.Command{
-	Use:   "stop_transactions",
-	Short: "Stop transactions",
-	Long: `
-Stops the sending of transactions if transactions are currently being sent`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 0, 1)
-		jsonRpcCallAndPrint("eth::stop_transactions", []string{})
-	},
-}
-
 var gethStartMiningCmd = &cobra.Command{
 	Use:   "start_mining [node 1 number] [node 2 number]...",
 	Short: "Start Mining",
@@ -544,7 +506,6 @@ Response: The number of nodes which successfully received the signal to stop min
 
 func init() {
 	// gethCmd.Flags().StringVarP(&gethcommand, "command", "c", "", "Geth command")
-	gethCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
 	//geth subcommands
 	gethCmd.AddCommand(gethGetTxReceiptCmd, gethGetHashRateCmd,

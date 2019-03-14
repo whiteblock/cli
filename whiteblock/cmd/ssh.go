@@ -57,7 +57,6 @@ SSH will allow the user to go into the contianer where the specified node exists
 }
 
 func init() {
-	sshCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
+	
 	RootCmd.AddCommand(sshCmd)
 }

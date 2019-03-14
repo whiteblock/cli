@@ -90,9 +90,6 @@ Params: Test number
 }
 
 func init() {
-	testStartCMD.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// testResultsCMD.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
 	sysTestCMD.AddCommand(testStartCMD, testResultsCMD)
 	sysCMD.AddCommand(sysTestCMD)
 	RootCmd.AddCommand(sysCMD)

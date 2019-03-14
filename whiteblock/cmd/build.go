@@ -528,7 +528,6 @@ var buildStopCmd = &cobra.Command{
 }
 
 func init() {
-	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	buildCmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
 	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	buildCmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
@@ -542,7 +541,6 @@ func init() {
 	buildCmd.Flags().StringToStringVarP(&envFlag,"env","e",nil,"set environment variables for the nodes")
 	buildCmd.Flags().StringToStringVarP(&filesFlag,"template","t",nil,"file templates")
 
-	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
 	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd)

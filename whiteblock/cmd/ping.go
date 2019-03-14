@@ -60,7 +60,5 @@ Params: sending node, receiving node
 }
 
 func init() {
-	pingCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
 	RootCmd.AddCommand(pingCmd)
 }

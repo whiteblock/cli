@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"io/ioutil"
 	"encoding/json"
 	"github.com/spf13/cobra"
@@ -20,8 +19,7 @@ This command will read from a file to run a test.
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 1, 1)
 
-		cwd := os.Getenv("PWD")
-		b, err := ioutil.ReadFile(cwd + "/" + args[0])
+		b, err := ioutil.ReadFile(args[0])
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}

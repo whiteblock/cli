@@ -134,7 +134,6 @@ Params: sending node, receiving node
 }
 
 func init() {
-	iPerfCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	iPerfCmd.Flags().StringVarP(&bw, "bandwidth", "b", "", "set target bandwidth in bits/sec (default 1 Mbit/sec); requires udp enabled")
 	iPerfCmd.Flags().BoolVarP(&dualEnabled, "dualtest", "d", false, "enable bidirectional test simultaneously")
 	iPerfCmd.Flags().StringVarP(&testTime, "time", "t", "", "how long to run test for")

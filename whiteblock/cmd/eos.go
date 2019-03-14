@@ -30,22 +30,6 @@ Response: eos blockchain state info`,
 
 /*
 
-var eosGetBlockCmd = &cobra.Command{
-	Use:   "get_block <block number>",
-	Short: "Get block information",
-	Long: `
-Roughly equivalent to calling cleos get block <block number>
-
-Params: The block number
-Format: <block number>
-
-Response: Block data for that block`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args,1,1)
-		jsonRpcCallAndPrint("eos::get_block",args)
-	},
-}
-
 var eosSendTxCmd = &cobra.Command{
 	Use:   "send_transaction <node> <from> <to> <amount> [symbol=SYS] [code=eosio.token] [memo=]",
 	Short: "Send single transaction to another account",
@@ -102,37 +86,9 @@ Response: success or ERROR`,
 	},
 }
 
-var eosStopTxCmd = &cobra.Command{
-	Use:   "stop_transactions",
-	Short: "Stop transactions",
-	Long: `
-Stops the sending of transactions if transactions are currently being sent`,
-	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::stop_transactions",[]string{})
-	},
-}
-
-var eosGetBlockNumCmd = &cobra.Command{
-	Use:   "get_block_number [node]",
-	Short: "Get current block number",
-	Long: `
-This command will get the block number.
-
-Params: The node to get it from, default is 0
-Format: [node]
-
-Response: Data on the last x test results`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args,0,1)
-		jsonRpcCallAndPrint("eos::get_block_number",args)
-	},
-}
-
 */
 
 func init() {
-	eosCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
 	//eos subcommands
 	eosCmd.AddCommand(eosGetInfoCmd)
 
