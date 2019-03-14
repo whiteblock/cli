@@ -15,11 +15,6 @@ var (
 	rateFlag  int
 )
 
-/*type NetConfig struct {
-	Servers []int
-	NetInfo map[string]interface{}
-}*/
-
 var netconfigCmd = &cobra.Command{
 	Use:     "netconfig <command>",
 	Aliases: []string{"emulate"},

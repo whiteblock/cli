@@ -40,7 +40,7 @@ var (
 )
 
 func newGenManCmd() {
-	manCmd := (&cobra.Command{
+	manCmd := &cobra.Command{
 		Use:   "man",
 		Short: "Generate man pages for the Hugo CLI",
 		Long: `This command automatically generates up-to-date man pages of Hugo's
@@ -62,7 +62,7 @@ in the "man" directory under the current directory.`,
 
 			return nil
 		},
-	})
+	}
 
 	manCmd.Flags().StringVarP(&mandir, "dir", "d", "/tmp", "the directory to write the man pages.")
 
