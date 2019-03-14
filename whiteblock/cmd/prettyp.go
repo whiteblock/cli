@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"os"
 	"encoding/json"
 	"strings"
-
-	"github.com/hokaccha/go-prettyjson"
+	"github.com/Whiteblock/go-prettyjson"
 )
 
 func prettyp(s string) string {
@@ -33,6 +33,11 @@ func prettyp(s string) string {
 }
 
 func prettypi(i interface{}) string {
+	_,noPretty := os.LookupEnv("NO_PRETTY")
+	if noPretty {
+		out,_ := json.Marshal(i)
+		return string(out)
+	}
 	out, _ := prettyjson.Marshal(i)
 	return string(out)
 }
