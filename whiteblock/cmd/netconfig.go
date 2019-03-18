@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"strconv"
-
+	"os"
 	"github.com/spf13/cobra"
 	util "../util"
 )
@@ -141,12 +141,12 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
-			util.PrintErrorFatal(err)
+		testnetId,err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
 		}
-		serverID := previousBuild.Servers[0]
-		jsonRpcCallAndPrint("netem_delete", []interface{}{serverID})
+		jsonRpcCallAndPrint("netem_delete", []interface{}{testnetId})
 	},
 }
 
