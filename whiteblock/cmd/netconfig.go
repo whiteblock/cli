@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strconv"
 	"os"
 	"github.com/spf13/cobra"
@@ -98,14 +97,9 @@ Netconfig all will introduce persisting network conditions for testing to all no
 	Run: func(cmd *cobra.Command, args []string) {
 
 		netInfo := make(map[string]interface{})
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
-			util.PrintErrorFatal(err)
-		}
-		serverID := previousBuild.Servers[0]
+		testnetId,err := getPreviousBuildId()
 		if err != nil {
-			fmt.Println("conversion error, invalid type for server")
-			return
+			util.PrintErrorFatal(err)
 		}
 
 		if limitFlag != 1000 {
@@ -124,7 +118,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 		}
 
 		networkConf := []interface{}{
-			serverID,
+			testnetId,
 			netInfo,
 		}
 
