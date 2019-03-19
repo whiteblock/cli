@@ -29,7 +29,11 @@ func cwFile(path, data string) {
 */
 
 func GetNodes() ([]Node, error) {
-	res, err := jsonRpcCall("nodes", []string{})
+	testnetId,err := getPreviousBuildId()
+	if err != nil{
+		return nil,err
+	}
+	res, err := jsonRpcCall("nodes", []string{testnetId})
 	if err != nil {
 		return nil, err
 	}
