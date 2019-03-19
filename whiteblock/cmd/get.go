@@ -90,7 +90,11 @@ Nodes will output all of the nodes in the current network.
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("get_nodes", []string{})
+		testnetId,err := getPreviousBuildId()
+		if err != nil{
+			util.PrintErrorFatal(err)
+		}
+		jsonRpcCallAndPrint("status_nodes", []string{testnetId})
 	},
 }
 
