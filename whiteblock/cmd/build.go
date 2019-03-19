@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -491,7 +490,7 @@ var buildAttachCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		buildId,err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
-			fmt.Println("No previous build Use build command to deploy a blockchain.")
+			fmt.Println("No in progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
 		buildAttach(string(buildId))
@@ -528,11 +527,13 @@ var buildStopCmd = &cobra.Command{
 	Long: "\nBuild stops the current building process.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId,err := getPreviousBuildId()
-		if err != nil {
-			log.Println(err)
+		buildId,err := util.ReadStore(".in_progress_build_id")
+		if err != nil || len(buildId) == 0 {
+			fmt.Println("No inprogress build found. Use build command to deploy a blockchain.")
+			os.Exit(1)
 		}
-		jsonRpcCallAndPrint("stop_build", []string{buildId})
+		defer util.DeleteStore(".in_progress_build_id")
+		jsonRpcCallAndPrint("stop_build", []string{string(buildId)})
 	},
 }
 
