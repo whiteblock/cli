@@ -112,6 +112,7 @@ Response: true or false, on whether or not a test is running; The name of the te
 
 var getLogCmd = &cobra.Command{
 	Use:   "log <node>",
+	Aliases: []string{"logs"},
 	Short: "Log will dump data pertaining to the node.",
 	Long: `
 Get stdout and stderr from a node.
@@ -123,19 +124,18 @@ Response: stdout and stderr of the blockchain process
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 1, 1)
-		previousBuild,err := getPreviousBuild()
+		testNetId,err := getPreviousBuildId()
 		if err != nil{
 			util.PrintErrorFatal(err)
 		}
-		s := previousBuild.Servers[0]
 		n, err := strconv.Atoi(args[0])
 
 		if err != nil {
 			util.InvalidInteger("node", args[0], true)
 		}
 
-		jsonRpcCallAndPrint("log", map[string]int{
-			"server": s,
+		jsonRpcCallAndPrint("log", map[string]interface{}{
+			"testnetId": testNetId,
 			"node":   n,
 			"lines":  logTail,
 		})
