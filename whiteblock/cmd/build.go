@@ -78,6 +78,15 @@ func getPreviousBuild() (Config,error) {
 	return out,err
 }
 
+func buildAttach(buildId string) {
+	buildListener(buildId)
+	err := util.WriteStore(".previous_build_id",[]byte(buildId))
+	util.DeleteStore(".in_progress_build_id")
+
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+}
 
 func build(buildConfig interface{}) {
 	buildReply, err := jsonRpcCall("build", buildConfig)
@@ -85,16 +94,16 @@ func build(buildConfig interface{}) {
 		util.PrintErrorFatal(err)
 	}
 	fmt.Printf("Build Started successfully: %v\n", buildReply)
-	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
+
+	//Store the in progress builds temporary id until the build finishes
+	err = util.WriteStore(".in_progress_build_id",[]byte(buildReply.(string)))
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	buildListener(buildReply.(string))
-	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
+	
+	buildAttach(buildReply.(string))
 }
+
 
 func getServer() []int {
 	idList := make([]int, 0)
@@ -480,12 +489,12 @@ var buildAttachCmd = &cobra.Command{
 	Long:    "\nAttach to a current in progress build process\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId,err := util.ReadStore(".previous_build_id")
+		buildId,err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
 			fmt.Println("No previous build Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
-		buildListener(string(buildId))
+		buildAttach(string(buildId))
 	},
 }
 
