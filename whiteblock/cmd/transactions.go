@@ -131,8 +131,6 @@ Optional Parameters:
 			cmd.Help()
 			return
 		}
-		command := ""
-
 		params := []string{strconv.Itoa(tpsFlag)}
 
 		previousBuild,err := getPreviousBuild()
@@ -152,26 +150,24 @@ Optional Parameters:
 				cmd.Help()
 				return
 			}
-			if valueFlag == 0 {
+			/*if valueFlag == 0 {
 				fmt.Println("Invalid value for \"valueFlag\" has been provided. Please input the value flag with a value.")
 				cmd.Help()
 				return
-			}
+			}*/
 
-			command = "eth::start_transactions"
 			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
 			params = append(params, toEth)
 			if len(toFlag) > 0 {
 				params = append(params, toFlag)
 			}
 		case "eos":
-			command = "eos::run_constant_tps"
 			//error handling for invalid flags
-			if valueFlag != 0 {
+			/*if valueFlag != 0 {
 				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
 				cmd.Help()
 				return
-			}
+			}*/
 
 			if txSizeFlag >= 174 {
 				params = append(params, strconv.Itoa(txSizeFlag))
@@ -182,7 +178,7 @@ Optional Parameters:
 		default:
 			util.ClientNotSupported(previousBuild.Blockchain)
 		}
-		jsonRpcCallAndPrint(command, params)
+		jsonRpcCallAndPrint("run_constant_tps", params)
 	},
 }
 
