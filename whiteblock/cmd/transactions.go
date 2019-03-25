@@ -143,6 +143,8 @@ Optional Parameters:
 		switch previousBuild.Blockchain {
 		case "geth":
 			fallthrough
+		case "parity":
+			fallthrough
 		case "ethereum":
 			//error handling for invalid flags
 			if !(txSizeFlag == 0) {
@@ -151,26 +153,7 @@ Optional Parameters:
 				return
 			}
 			if valueFlag == 0 {
-				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
-				cmd.Help()
-				return
-			}
-
-			command = "eth::start_transactions"
-			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
-			params = append(params, toEth)
-			if len(toFlag) > 0 {
-				params = append(params, toFlag)
-			}
-		case "parity":
-			//error handling for invalid flags
-			if !(txSizeFlag == 0) {
-				fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
-				cmd.Help()
-				return
-			}
-			if valueFlag == 0 {
-				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
+				fmt.Println("Invalid value for \"valueFlag\" has been provided. Please input the value flag with a value.")
 				cmd.Help()
 				return
 			}
@@ -280,12 +263,12 @@ func init() {
 	startStreamTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
 	startStreamTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
 	startStreamTxCmd.Flags().IntVarP(&tpsFlag, "tps", "t", 0, "transactions per second")
-	startStreamTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
+	startStreamTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
 
 	startBurstTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
 	startBurstTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
 	startBurstTxCmd.Flags().IntVarP(&txsFlag, "txs", "t", 0, "transactions per second")
-	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
+	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
 
 	startTxCmd.AddCommand(startStreamTxCmd, startBurstTxCmd)
 	txCmd.AddCommand(sendSingleTxCmd, startTxCmd, stopTxCmd)

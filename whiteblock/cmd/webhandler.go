@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"io/ioutil"
 	"strings"
 	"sync"
 	"net/http"
+	//"crypto/ecdsa"
+	//"github.com/Whiteblock/jwt-go"
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
@@ -40,9 +43,39 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 		}else{
 			util.PrintErrorFatal(err)
 		}
-		
 	}
 	fmt.Println(prettypi(reply))
+}
+
+
+func CreateAuthNHeader() (string,error){
+	/*Uncomment this code and comment code below to sign jwt manually
+	file := os.Getenv("HOME")+"/.ssh/id_ecdsa"
+
+	claims := &jwt.StandardClaims{
+	    Id: "user",
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token.Header["kid"] = "12345678790";
+
+	signingKeyRaw,err := ioutil.ReadFile(file)
+	if err != nil{
+		log.Println(err)
+		return "",err
+	}
+	var ecdsaKey *ecdsa.PrivateKey
+	if ecdsaKey, err = jwt.ParseECPrivateKeyFromPEM(signingKeyRaw); err != nil {
+		return "",fmt.Errorf("Unable to parse ECDSA private key: %v", err)
+	}
+
+	ss, err := token.SignedString(ecdsaKey)
+	if err != nil{
+		log.Println(err)
+		return "",err
+	}*/
+	res,err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
+	return fmt.Sprintf("Bearer %s",string(res)),err
 }
 
 func jsonRpcCall(method string,params interface{}) (interface{},error) {
@@ -59,6 +92,13 @@ func jsonRpcCall(method string,params interface{}) (interface{},error) {
 		return nil,err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	auth,err := CreateAuthNHeader()
+	if err != nil {
+		log.Println(err)
+		return nil,err
+	}
+
+	req.Header.Set("Authorization",auth)
 
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)
