@@ -8,10 +8,32 @@ import (
 	"os"
 	"io"
 	"bufio"
+	"syscall"
+	"unsafe"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	util "../util"
 )
+
+type winsize struct {
+    Row    uint16
+    Col    uint16
+    Xpixel uint16
+    Ypixel uint16
+}
+
+func getWidth() uint {
+    ws := &winsize{}
+    retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+        uintptr(syscall.Stdin),
+        uintptr(syscall.TIOCGWINSZ),
+        uintptr(unsafe.Pointer(ws)))
+
+    if int(retCode) == -1 {
+        panic(errno)
+    }
+    return uint(ws.Col)
+}
 
 var (
 	bw          string
@@ -38,7 +60,7 @@ func PadString(str string,target int) string {
 }
 
 func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int) {
-	width := 213
+	
 	scanner1 := bufio.NewScanner(r1)
 	scanner1.Split(bufio.ScanLines)
 
@@ -50,12 +72,16 @@ func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int) {
 	var txt1 string
 	var txt2 string
 
+	
+	width := getWidth()
 	centerSize := int(width/20)
 	panelSize := int(width/2) - centerSize
-
 	padding := PadString("",centerSize)
+	
 	counter := 0
 	for{
+		
+
 		red1 = scanner1.Scan()
 		if counter >= offset {
 			red2 = scanner2.Scan()
