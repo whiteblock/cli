@@ -59,8 +59,9 @@ func PadString(str string,target int) string {
 	return out
 }
 
-func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int) {
-	
+func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int,label1 string,label2 string) {
+	minWidth := 160
+
 	scanner1 := bufio.NewScanner(r1)
 	scanner1.Split(bufio.ScanLines)
 
@@ -73,12 +74,15 @@ func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int) {
 	var txt2 string
 
 	
-	width := getWidth()
+	width := int(getWidth())
 	centerSize := int(width/20)
 	panelSize := int(width/2) - centerSize
 	padding := PadString("",centerSize)
-	
+
 	counter := 0
+	if width > minWidth {
+		fmt.Printf("%s%s%s\n",PadString(label1,panelSize),padding,PadString(label2,panelSize))
+	}
 	for{
 		
 
@@ -104,8 +108,12 @@ func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int) {
 		}
 		txt1 = PadString(txt1,panelSize)
 		txt2 = PadString(txt2,panelSize)
-
-		fmt.Printf("%s%s%s\n",txt1,padding,txt2)
+		if width > minWidth{
+			fmt.Printf("%s%s%s\n",txt1,padding,txt2)
+		}else{
+			fmt.Printf("%s:%s\n%s:%s\n",label1,txt1,label2,txt2)
+		}
+		
 		counter++
 	}
 }
@@ -210,7 +218,7 @@ Params: sending node, receiving node
 
 		go func() {
 			// command to run iperf as a client
-			time.Sleep(1 * time.Second)
+			time.Sleep(500 * time.Millisecond)
 			defer wg.Done()
 
 			iPerfcmd := "iperf3 -c "
@@ -272,7 +280,7 @@ Params: sending node, receiving node
 			session.Wait()
 		}()
 		awaitReaders.Wait()
-		go CaptureAndDisplayTogether(outReader1,outReader2,3)
+		go CaptureAndDisplayTogether(outReader1,outReader2,3,"SERVER","CLIENT")
 		wg.Wait()
 	},
 }
