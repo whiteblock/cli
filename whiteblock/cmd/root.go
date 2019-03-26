@@ -6,21 +6,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Iface struct {
-	Ip      string `json:"ip"`
-	Gateway string `json:"gateway"`
-	Subnet  int    `json:"subnet"`
-}
-
-
 type Server struct {
 	Addr     string   `json:"addr"`  //IP to access the server
-	Iaddr    Iface    `json:"iaddr"` //Internal IP of the server for node connection
 	Nodes    int      `json:"nodes"`
 	Max      int      `json:"max"`
 	Id       int      `json:"id"`
-	ServerID int      `json:"serverID"`
-	Iface    string   `json:"iface"`
+	SubnetID int      `json:"subnetID"`
 	Ips      []string `json:"ips"`
 }
 
