@@ -440,68 +440,6 @@ Response: JSON representation of the transaction.`,
 		jsonRpcCallAndPrint("eth::get_transaction", args)
 	},
 }
-
-var gethStartTxCmd = &cobra.Command{
-	Use:   "start_transactions <tx/s> <value> [destination]",
-	Short: "Start transactions",
-	Long: `
-Start sending transactions according to the given parameters.
-
-Format: <tx/s> <value> [destination]
-Params: The amount of transactions to send in a second, the value of each transaction in wei, the destination for the transaction
-`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(command)
-		util.CheckArguments(args, 2, 3)
-		args[1] = args[1] + "000000000000000000"
-		jsonRpcCallAndPrint("eth::start_transactions", args)
-	},
-}
-
-var gethStartMiningCmd = &cobra.Command{
-	Use:   "start_mining [node 1 number] [node 2 number]...",
-	Short: "Start Mining",
-	Long: `
-Send the start mining signal to nodes, may take a while to take effect due to DAG generation
-
-Format: [node 1 number] [node 2 number]...
-Params: A list of the nodes to start mining or None for all nodes
-
-Response: The number of nodes which successfully received the signal to start mining`,
-	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::start_mining", args)
-		DagReady := false
-		for !DagReady {
-			fmt.Printf("\rDAG is being generated...")
-			res, err := jsonRpcCall("eth::get_block_number", []string{})
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-			blocknum := res.(int)
-			if blocknum > 4 {
-				DagReady = true
-			}
-		}
-		fmt.Println("\rDAG has been successfully generated.")
-	},
-}
-
-var gethStopMiningCmd = &cobra.Command{
-	Use:   "stop_mining [node 1 number] [node 2 number]...",
-	Short: "Stop mining",
-	Long: `
-Send the stop mining signal to nodes
-
-Format: [node 1 number] [node 2 number]...
-Params: A list of the nodes to stop mining or None for all nodes
-
-
-Response: The number of nodes which successfully received the signal to stop mining`,
-	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::stop_mining", args)
-	},
-}
-
 */
 
 func init() {
