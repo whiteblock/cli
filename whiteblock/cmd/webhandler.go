@@ -13,7 +13,7 @@ import (
 	"github.com/Whiteblock/jwt-go"*/
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
-	"github.com/graarh/golang-socketio/transport"
+	//"github.com/graarh/golang-socketio/transport"
 	util "../util"
 )
 
@@ -122,7 +122,7 @@ func buildListener(testnetId string){
 	mutex.Lock()
 	c, err := gosocketio.Dial(
 		"ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket",
-		transport.GetDefaultWebsocketTransport(),
+		GetDefaultWebsocketTransport(),
 	)
 	if err != nil {
 		util.PrintErrorFatal(err)
