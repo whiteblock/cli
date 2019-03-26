@@ -6,7 +6,10 @@ import (
 	"sync"
 	"time"
 	"os"
+	"io"
+	"bufio"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
 	util "../util"
 )
 
@@ -16,6 +19,70 @@ var (
 	udpEnabled  bool
 	dualEnabled bool
 )
+
+func CaptureAndOutput(r io.Reader) {
+    scanner := bufio.NewScanner(r)
+    scanner.Split(bufio.ScanLines)
+    for scanner.Scan() {
+        m := scanner.Text()
+        fmt.Println(m)
+    }	
+}
+
+func PadString(str string,target int) string {
+	out := str
+	for i := len(str); i  < target ; i++ {
+		out += " "
+	}
+	return out
+}
+
+func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int) {
+	width := 213
+	scanner1 := bufio.NewScanner(r1)
+	scanner1.Split(bufio.ScanLines)
+
+	scanner2 := bufio.NewScanner(r2)
+	scanner2.Split(bufio.ScanLines)
+
+	var red1 bool 
+	var red2 bool
+	var txt1 string
+	var txt2 string
+
+	centerSize := int(width/20)
+	panelSize := int(width/2) - centerSize
+
+	padding := PadString("",centerSize)
+	counter := 0
+	for{
+		red1 = scanner1.Scan()
+		if counter >= offset {
+			red2 = scanner2.Scan()
+		}
+		
+		if !(red1 || red2){
+			break
+		}
+
+		if red1 {
+			txt1 = scanner1.Text()
+		}else{
+			txt1 = ""
+		}
+
+		if red2 && counter >= offset {
+			txt2 = scanner2.Text()
+		}else{
+			txt2 = ""
+		}
+		txt1 = PadString(txt1,panelSize)
+		txt2 = PadString(txt2,panelSize)
+
+		fmt.Printf("%s%s%s\n",txt1,padding,txt2)
+		counter++
+	}
+}
 
 var iPerfCmd = &cobra.Command{
 	Use:   "iperf <sending node> <receiving node>",
@@ -59,6 +126,11 @@ Params: sending node, receiving node
 			util.PrintStringError("Receiving node number too high")
 			os.Exit(1)
 		}
+
+		var outReader1 io.Reader
+		var outReader2 io.Reader
+		var awaitReaders sync.WaitGroup 
+		awaitReaders.Add(2)
 		wg.Add(2)
 		// command to run iperf as a server
 		go func() {
@@ -77,20 +149,42 @@ Params: sending node, receiving node
 			}
 			defer client.Close()
 
-			client.Run("pkill -9 iperf3")
+			client.Run("pkill -9 iperf3")//Kill iperf if it is running
 
-			result, err := client.Run(iPerfcmd)
+			session,err := client.GetSession()
 			if err != nil {
-				fmt.Println(result)
 				util.PrintErrorFatal(err)
 			}
-			fmt.Println(result)
+			defer session.Close()//Open up a session
+
+			modes := ssh.TerminalModes{
+			    ssh.ECHO:          0,     // disable echoing
+			    ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+			    ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+			}
+
+			if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
+			    util.PrintErrorFatal(err)
+			}
+
+			outReader1,err = session.StdoutPipe()
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			awaitReaders.Done()
+			//go CaptureAndOutput(outReader)
+
+			err = session.Start(iPerfcmd)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			session.Wait()
 
 		}()
 
 		go func() {
 			// command to run iperf as a client
-			time.Sleep(5 * time.Second)
+			time.Sleep(1 * time.Second)
 			defer wg.Done()
 
 			iPerfcmd := "iperf3 -c "
@@ -120,15 +214,39 @@ Params: sending node, receiving node
 			defer client.Close()
 
 			client.Run("pkill -9 iperf3")
-
-			result, err := client.Run(iPerfcmd)
+			
+			session,err := client.GetSession()
 			if err != nil {
-				fmt.Println(result)
 				util.PrintErrorFatal(err)
 			}
-			fmt.Println(result)
-		}()
+			defer session.Close()//Open up a session
 
+			modes := ssh.TerminalModes{
+			    ssh.ECHO:          0,     // disable echoing
+			    ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+			    ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+			}
+
+			if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
+			    util.PrintErrorFatal(err)
+			}
+
+			outReader2,err = session.StdoutPipe()
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			awaitReaders.Done()
+			awaitReaders.Wait()
+			//go CaptureAndOutput(outReader)
+
+			err = session.Start(iPerfcmd)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			session.Wait()
+		}()
+		awaitReaders.Wait()
+		go CaptureAndDisplayTogether(outReader1,outReader2,3)
 		wg.Wait()
 	},
 }
