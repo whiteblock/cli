@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 	"net/http"
-	"crypto/ecdsa"
-	"github.com/Whiteblock/jwt-go"
+	/*"crypto/ecdsa"
+	"github.com/Whiteblock/jwt-go"*/
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
@@ -50,7 +50,7 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 
 func CreateAuthNHeader() (string,error){
 	//Uncomment this code and comment code below to sign jwt manually
-	file := os.Getenv("HOME")+"/keys/pk1"
+	/*file := os.Getenv("HOME")+"/keys/pk1"
 
 	claims := &jwt.StandardClaims{
 	    Id: "user",
@@ -73,9 +73,9 @@ func CreateAuthNHeader() (string,error){
 	if err != nil{
 		log.Println(err)
 		return "",err
-	}
+	}*/
 	//fmt.Println(res)
-	//res,err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
+	res,err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
 	return fmt.Sprintf("Bearer %s",string(res)),err
 }
 
