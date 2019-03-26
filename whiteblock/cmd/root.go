@@ -12,22 +12,15 @@ type Iface struct {
 	Subnet  int    `json:"subnet"`
 }
 
-type Switch struct {
-	Addr  string `json:"addr"`
-	Iface string `json:"iface"`
-	Brand int    `json:"brand"`
-	Id    int    `json:"id"`
-}
 
 type Server struct {
 	Addr     string   `json:"addr"`  //IP to access the server
-	Iaddr    Iface    `json:"iaddr"` //Internal IP of the server for NIC attached to the vyos
+	Iaddr    Iface    `json:"iaddr"` //Internal IP of the server for node connection
 	Nodes    int      `json:"nodes"`
 	Max      int      `json:"max"`
 	Id       int      `json:"id"`
 	ServerID int      `json:"serverID"`
 	Iface    string   `json:"iface"`
-	Switches []Switch `json:"switches"`
 	Ips      []string `json:"ips"`
 }
 
