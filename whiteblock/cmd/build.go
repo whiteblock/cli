@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	serverAddr     	string
 	previousYesAll 	bool
 	serversFlag    	string
 	blockchainFlag 	string

@@ -75,6 +75,10 @@ func CreateAuthNHeader() (string,error){
 		return "",err
 	}*/
 	//fmt.Println(res)
+	if util.StoreExists("jwt") {
+		res,err := util.ReadStore("jwt")
+		return fmt.Sprintf("Bearer %s",string(res)),err
+	}
 	res,err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
 	return fmt.Sprintf("Bearer %s",string(res)),err
 }
