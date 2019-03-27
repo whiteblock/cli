@@ -1,0 +1,68 @@
+package cmd
+
+import (
+	"fmt"
+	"errors"
+	"bytes"
+	"strings"
+	"io/ioutil"
+	"net/http"
+	"github.com/spf13/cobra"
+//	"golang.org/x/sys/unix"
+	util "../util"
+)
+
+
+func GetRawProfileFromJwt(jwt string) ([]byte,error) {
+	body := strings.NewReader("")
+	req, err := http.NewRequest("GET", "https://api.whiteblock.io/user",body)
+	if err != nil {
+		return nil,err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization",fmt.Sprintf("Bearer %s",jwt))
+	req.Close = true
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil,err
+	}
+
+	defer resp.Body.Close()
+	buf := new(bytes.Buffer)
+	
+	_, err = buf.ReadFrom(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil,errors.New(buf.String())
+	}
+	return []byte(buf.String()),nil
+}
+
+var loginCmd = &cobra.Command{
+	Use:   "login <jwt>",
+	Short: "Authorize the cli using jwt ",
+	Long: "\nGives the user the ability to specify a jwt, within a file, to be used for authentication\n Can be given a file path or a jwt\n",
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args,1,1)
+
+		jwt,err := ioutil.ReadFile(args[0])
+		if err != nil {
+			jwt = []byte(args[0])
+		}
+		rawProfile,err := GetRawProfileFromJwt(string(jwt))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		util.WriteStore("jwt",jwt)
+		util.WriteStore("profile",rawProfile)
+		fmt.Println("Login Success")
+	},
+}
+
+
+func init(){
+	RootCmd.AddCommand(loginCmd)
+}
