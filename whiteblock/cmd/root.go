@@ -6,15 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Server struct {
-	Addr     string   `json:"addr"`  //IP to access the server
-	Nodes    int      `json:"nodes"`
-	Max      int      `json:"max"`
-	Id       int      `json:"id"`
-	SubnetID int      `json:"subnetID"`
-	Ips      []string `json:"ips"`
-}
-
 var RootCmd = &cobra.Command{
 	Use:   "whiteblock",
 	Short: "Create and test blockchains",

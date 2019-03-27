@@ -452,14 +452,12 @@ Response: JSON representation of the contract information.
 		} else {
 			fmt.Println(prettyp(string(contracts)))
 		}
-		
-		
 	},
 }
 
 func init() {
 
-	getLogCmd.Flags().IntVarP(&logTail, "tail", "t", -1, "see tail(1)")
+	getLogCmd.Flags().IntVarP(&logTail, "tail", "t", -1, "Get only the last x lines")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd,getConfigsCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
