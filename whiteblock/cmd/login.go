@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"github.com/spf13/cobra"
-//	"golang.org/x/sys/unix"
 	util "../util"
 )
 

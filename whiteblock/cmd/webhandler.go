@@ -101,9 +101,11 @@ func jsonRpcCall(method string,params interface{}) (interface{},error) {
 	if err != nil {
 		log.Println(err)
 		return nil,err
+	}else{
+		req.Header.Set("Authorization",auth)//If there is an error, dont send this header for now
 	}
 
-	req.Header.Set("Authorization",auth)
+	
 
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)

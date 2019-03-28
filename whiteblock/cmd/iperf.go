@@ -58,7 +58,7 @@ func PadString(str string,target int) string {
 	}
 	return out
 }
-
+//Display the contents of two readers, line by line, together
 func CaptureAndDisplayTogether(r1 io.Reader,r2 io.Reader,offset int,label1 string,label2 string) {
 	minWidth := 160
 
@@ -133,6 +133,9 @@ Params: sending node, receiving node
 		var wg sync.WaitGroup
 
 		util.CheckArguments(args,2,2)
+		spinner := Spinner{}
+		spinner.SetText("Setting Up Iperf")
+		spinner.Run(100)
 
 		nodes,err := GetNodes()
 		if err != nil{
@@ -248,7 +251,7 @@ Params: sending node, receiving node
 			defer client.Close()
 
 			client.Run("pkill -9 iperf3")
-			
+			spinner.Kill()
 			session,err := client.GetSession()
 			if err != nil {
 				util.PrintErrorFatal(err)
