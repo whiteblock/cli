@@ -27,7 +27,6 @@ var (
 	optionsFlag		map[string]string
 	envFlag			map[string]string
 	filesFlag		map[string]string
-
 )
 
 type Config struct {

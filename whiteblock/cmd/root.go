@@ -14,7 +14,6 @@ import (
 
 var (
 	serverAddr	string
-	jwt			string
 )
 
 var RootCmd = &cobra.Command{
@@ -53,7 +52,6 @@ To configure your bash shell to load completions for each session add to your ba
 func init(){
 	RootCmd.PersistentFlags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	RootCmd.AddCommand(completionCmd)
-	
 	//Possibly update this on load.
 	if util.StoreExists("profile") {
 		rawProfile,err := util.ReadStore("profile")
