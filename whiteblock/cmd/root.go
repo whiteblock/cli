@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 	"fmt"
-	"encoding/json"
 	"github.com/spf13/cobra"
 	util "../util"
 )
@@ -54,33 +53,15 @@ func init(){
 	RootCmd.AddCommand(completionCmd)
 	//Possibly update this on load.
 	if util.StoreExists("profile") {
-		rawProfile,err := util.ReadStore("profile")
-		if err != nil{
-			panic(err)
-		}
-		var profile map[string]interface{}
-		err = json.Unmarshal(rawProfile,&profile)
+		
+		err := LoadProfile()//Load the profile into the profile global
 		if err != nil {
-			panic(err)
-		}
-		biomes,ok := profile["biomes"].([]interface{})
-		if !ok {
-			//If there aren't any biomes for the jwt, don't continue or try fetching?
-			return
-		}
-		if len(biomes) == 0 {
-			return
+			util.PrintErrorFatal(err)
 		}
 
-		biome,ok := biomes[0].(map[string]interface{})
-		if !ok {
-			return
+		err = LoadBiomeAddress()
+		if err != nil {
+			util.PrintErrorFatal(err)
 		}
-		host,ok := biome["host"].(string)
-		if !ok {
-			return
-		}
-		serverAddr = host + ":5001"
-		
 	}
 }
