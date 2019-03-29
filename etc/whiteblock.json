@@ -26,7 +26,7 @@
         },
         "ethereum": {
             "images": {
-                "stable": "gcr.io/whiteblock/ethereum:34b61c761d71df81666ea00c3cf14cb7c6a120b8",
+                "stable": "gcr.io/whiteblock/ethereum:9cd12011c47489df08c55b4fce8f3d5b1fd72542 ",
                 "latest": "gcr.io/whiteblock/ethereum:master"
             }
         },

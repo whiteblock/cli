@@ -323,7 +323,7 @@ Response: stdout of geth console`,
 		}
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no","-o","ConnectTimeout=10", "-y",
-			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "-t", "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
+			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "-t", "geth", "attach", "/geth/geth.ipc"}, os.Environ()))
 	},
 }
 
