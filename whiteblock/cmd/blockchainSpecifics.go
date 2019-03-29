@@ -7,14 +7,6 @@ import (
 	util "../util"
 )
 
-type List struct {
-	Results []struct {
-		Series []struct {
-			Columns []string        `json:"columns"`
-			Values  [][]interface{} `json:"values"`
-		}
-	} `json:"results"`
-}
 
 var sysCMD = &cobra.Command{
 	Use:   "sys <command>",
@@ -29,6 +21,31 @@ var sysTestCMD = &cobra.Command{
 	Long:  "\nSys test will allow the user to get infromation and run SYS tests.\n",
 	Run:   util.PartialCommand,
 }
+
+var eosCmd = &cobra.Command{
+	Use:   "eos <command>",
+	Short: "Run eos commands",
+	Long:  "\nEos will allow the user to get information and run EOS commands.\n",
+	Run:   util.PartialCommand,
+}
+
+var eosGetInfoCmd = &cobra.Command{
+	Use:   "get_info [node]",
+	Short: "Get EOS info",
+	Long: `
+Roughly equivalent to calling cleos get info
+
+Params: The node to get info from
+Format: [node]
+
+Response: eos blockchain state info`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(args, 0, 1)
+		jsonRpcCallAndPrint("eos::get_info", args)
+	},
+}
+
+
 
 var testStartCMD = &cobra.Command{
 	Use:   "start <minimum latency> <minimum completion percentage> <number of assets to send> <asset sends per block>",
@@ -90,7 +107,10 @@ Params: Test number
 }
 
 func init() {
+	eosCmd.AddCommand(eosGetInfoCmd)
+
 	sysTestCMD.AddCommand(testStartCMD, testResultsCMD)
 	sysCMD.AddCommand(sysTestCMD)
-	RootCmd.AddCommand(sysCMD)
+
+	RootCmd.AddCommand(sysCMD,eosCmd)
 }

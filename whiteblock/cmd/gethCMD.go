@@ -253,7 +253,6 @@ Output: Deployed contract address
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(args, 2, 2)
 		//assertions for sanity
-		//
 		res, err := jsonRpcCall("get_block_number", []string{})
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -378,37 +377,6 @@ Response: JSON object of transaction data`,
 }
 
 /*
-
-
-var gethGetAccountCmd = &cobra.Command{
-	Use:   "get_accounts",
-	Short: "Get account information",
-	Long: `
-Get a list of all unlocked accounts, current balance of accounts, tx counts, and other relevant information.
-
-Response: A JSON array of the accounts`,
-	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("eth::accounts_status", []string{})
-	},
-}
-
-var gethSendTxCmd = &cobra.Command{
-	Use:   "send_transaction <from address> <to address> <gas> <gas price> <value to send>",
-	Short: "Sends a transaction",
-	Long: `
-Send a transaction between two accounts
-
-Format: <from> <to> <gas> <gas price> <value>
-Params: Sending account, receiving account, gas, gas price, amount to send in ETH
-
-Response: The transaction hash`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 5, 5)
-		args[4] = args[4] + "000000000000000000"
-		jsonRpcCallAndPrint("eth::send_transaction", args)
-	},
-}
-
 var gethGetTxCountCmd = &cobra.Command{
 	Use:   "get_transaction_count <address> [block number]",
 	Short: "Get transaction count",
@@ -443,7 +411,6 @@ Response: JSON representation of the transaction.`,
 */
 
 func init() {
-	// gethCmd.Flags().StringVarP(&gethcommand, "command", "c", "", "Geth command")
 
 	//geth subcommands
 	gethCmd.AddCommand(gethGetTxReceiptCmd, gethGetHashRateCmd,
