@@ -35,11 +35,6 @@ Please use the help commands to make sure you provide the correct flags. If the 
 }
 
 /*
-We have to figure out a generalized format of how the user will enter the arguments.
-Right now, geth, eos, and sys all have different parameters they need to provide to
-send tx. I am just using the geth description of the send_tx as a place holder for
-now. This is for all the commands in the file.
-
 The primary use of these methods is to be able to send one line commands through a
 testing script that will be able to automate transaction tests.
 */
@@ -150,11 +145,6 @@ Optional Parameters:
 				cmd.Help()
 				return
 			}
-			/*if valueFlag == 0 {
-				fmt.Println("Invalid value for \"valueFlag\" has been provided. Please input the value flag with a value.")
-				cmd.Help()
-				return
-			}*/
 
 			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
 			params = append(params, toEth)
@@ -163,11 +153,6 @@ Optional Parameters:
 			}
 		case "eos":
 			//error handling for invalid flags
-			/*if valueFlag != 0 {
-				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
-				cmd.Help()
-				return
-			}*/
 
 			if txSizeFlag >= 174 {
 				params = append(params, strconv.Itoa(txSizeFlag))

@@ -147,7 +147,6 @@ Response: stdout and stderr of the blockchain process
 			"node":   n,
 			"lines":  logTail,
 		})
-
 	},
 }
 

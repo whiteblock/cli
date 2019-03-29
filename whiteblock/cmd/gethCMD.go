@@ -17,9 +17,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var (
-	gethcommand string
-)
 
 type Contracts struct {
 	DeployedNodeAddress string `json:",omitempty"`
