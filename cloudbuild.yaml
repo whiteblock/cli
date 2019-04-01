@@ -1,7 +1,7 @@
 # https://cloud.google.com/cloud-build/docs/speeding-up-builds
 # https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
 substitutions:
-  _IMAGE: 'gcr.io/wb-genesis/bitbucket.org/whiteblockio/cli'
+  _IMAGE: 'gcr.io/whiteblock/github.com/whiteblockio/cli'
 timeout: '45m'
 steps:
 # allow these steps to fail, they try to pull cache first
