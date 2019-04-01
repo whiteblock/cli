@@ -32,8 +32,8 @@
         },
         "geth": {
             "images": {
-                "stable": "gcr.io/whiteblock/ethereum:34b61c761d71df81666ea00c3cf14cb7c6a120b8",
-                "latest": "gcr.io/whiteblock/ethereum:master"
+                "stable": "gcr.io/whiteblock/geth:1836f48baea2ce49266a27cfcef1b317be869029 ",
+                "latest": "gcr.io/whiteblock/geth:master"
             }
         },
         "tendermint":{
