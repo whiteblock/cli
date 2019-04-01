@@ -9,11 +9,8 @@ import (
 	"strings"
 	"sync"
 	"net/http"
-	/*"crypto/ecdsa"
-	"github.com/Whiteblock/jwt-go"*/
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
-	//"github.com/graarh/golang-socketio/transport"
 	util "../util"
 )
 
@@ -49,32 +46,6 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 
 
 func CreateAuthNHeader() (string,error){
-	//Uncomment this code and comment code below to sign jwt manually
-	/*file := os.Getenv("HOME")+"/keys/pk1"
-
-	claims := &jwt.StandardClaims{
-	    Id: "user",
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
-	token.Header["kid"] = "12345678790";
-
-	signingKeyRaw,err := ioutil.ReadFile(file)
-	if err != nil{
-		log.Println(err)
-		return "",err
-	}
-	var ecdsaKey *ecdsa.PrivateKey
-	if ecdsaKey, err = jwt.ParseECPrivateKeyFromPEM(signingKeyRaw); err != nil {
-		return "",fmt.Errorf("Unable to parse ECDSA private key: %v", err)
-	}
-
-	res, err := token.SignedString(ecdsaKey)
-	if err != nil{
-		log.Println(err)
-		return "",err
-	}*/
-	//fmt.Println(res)
 	if util.StoreExists("jwt") {
 		res,err := util.ReadStore("jwt")
 		return fmt.Sprintf("Bearer %s",string(res)),err

@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	util "../util"
 )
 
 var (
@@ -29,10 +29,8 @@ in the "man" directory under the current directory.`,
 
 		err := doc.GenManTree(cmd.Root(), header, mandir)
 		if err != nil {
-			log.Fatal(err)
-		}
-
-		return 
+			util.PrintErrorFatal(err)
+		} 
 	},
 }
 func init(){
