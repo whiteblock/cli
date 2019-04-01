@@ -10,18 +10,7 @@ import(
 var (
 	profile 	Profile
 )
-/**
- * biome
- * 	"id": 321,
-          "organization_id": 321,
-          "host": "mybox.boxes.whiteblock.io",
-          "max_nodes": 10,
-          "alias": "mybox",
-          "kind_id": 203,
-          "zone": "us-west1-a",
-          "created_at": "2019-02-03T20:47:29.991374Z",
-          "updated_at": "2019-02-03T20:47:29.991374Z"
- */
+
 type Organization struct {
 	Id			int 					`json:"id"`
 	Name		string					`json:"name"`

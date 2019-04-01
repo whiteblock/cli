@@ -252,7 +252,7 @@ var buildCmd = &cobra.Command{
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
-		memoryEnabled := len(memoryFlag) > 0
+		memoryEnabled := len(memoryFlag) != 0
 
 
 		
