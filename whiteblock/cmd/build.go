@@ -147,7 +147,7 @@ func getImage(blockchain string,imageType string,defaultImage string) string {
 	} else if(len(defaultImage) > 0){
 		return defaultImage
 	}else{
-		return "gcr.io/whiteblock/"+blockchain
+		return "gcr.io/whiteblock/"+blockchain+":master"
 	}
 }
 
