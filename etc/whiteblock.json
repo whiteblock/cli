@@ -59,7 +59,7 @@
                 "stable":"gcr.io/whiteblock/pantheon:dev",
                 "latest":"gcr.io/whiteblock/pantheon:dev"
             }
-        }
+        },
         "artemis":{
             "images":{
                 "stable":"gcr.io/whiteblock/artemis:dev",
