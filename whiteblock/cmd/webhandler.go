@@ -24,7 +24,13 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 	reply,err := jsonRpcCall(method,params)
 	switch reply.(type) {
 		case string:
-			fmt.Printf("\033[97m%s\033[0m\n",reply.(string))
+			_,noPretty := os.LookupEnv("NO_PRETTY")
+			if noPretty {
+				fmt.Println(reply.(string))
+			}else{
+				fmt.Printf("\033[97m%s\033[0m\n",reply.(string))
+			}
+			
 			return
 	}
 
