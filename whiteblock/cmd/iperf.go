@@ -124,7 +124,6 @@ var iPerfCmd = &cobra.Command{
 
 Iperf will show the user network conditions and other data. This command will establish the sending node as a server and the receiving node as a client node. They will send packets and at the end of the test, the output will give bandwidth, transfer size, and other relevant
 
-Format: <sending node> <receiving node>
 Params: sending node, receiving node
 	`,
 

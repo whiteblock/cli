@@ -15,7 +15,7 @@ var pingCmd = &cobra.Command{
 	Short: "Ping will send packets to a node.",
 	Long: `
 Ping will send packets to a node and will output information
-Format: <sending node> <receiving node>
+
 Params: sending node, receiving node
 	`,
 

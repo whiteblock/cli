@@ -358,7 +358,6 @@ var gethGetRecentSentTxCmd = &cobra.Command{
 	Long: `
 Get a number of the most recent transactions sent
 
-Format: <number>
 Params: The number of transactions to retrieve
 
 Response: JSON object of transaction data`,

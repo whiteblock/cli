@@ -5,28 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-
 	"github.com/spf13/cobra"
 	util "../util"
 )
-
-/*
-func cwFile(path, data string) {
-	time := time.Now().UTC().String()
-	time = strings.Replace(time, " ", "", -1)
-
-	file, err := os.Create(path + "/dataset_" + time + ".txt")
-	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
-	}
-	defer file.Close() // Make sure to close the file when you're done
-
-	_, err = file.WriteString(data)
-	if err != nil {
-		log.Fatalf("failed writing to file: %s", err)
-	}
-}
-*/
 
 func GetNodes() ([]Node, error) {
 	testnetId,err := getPreviousBuildId()
@@ -157,7 +138,6 @@ var getDefaultsCmd = &cobra.Command{
 	Long: `
 Get the blockchain specific parameters for a deployed blockchain.
 
-Params: <blockchain>
 Format: The blockchain to get the build params of
 
 Response: The params as a list of key value params, of name and type respectively
@@ -177,8 +157,7 @@ var getConfigsCmd = &cobra.Command{
 Get the resources for a blockchain. With one argument, lists what is availible. With two
 	arguments, get the contents of the file
 
-Params: <blockchain> [file]
-Format: The blockchain to get the resources of
+Params: The blockchain to get the resources of, the resource/file name 
 
 Response: The resoures as a list of key value params, of name and type respectively
 	`,
@@ -205,8 +184,7 @@ var statsByTimeCmd = &cobra.Command{
 	Long: `
 Stats time will allow the user to get statistics by specifying a start time and stop time (unix time stamp).
 
-Params: Unix time stamps
-Format: <start unix time stamp> <end unix time stamp>
+Params: start unix timestamp, end unix timestamp
 
 Response: JSON representation of network statistics
 	`,
@@ -227,8 +205,7 @@ var statsByBlockCmd = &cobra.Command{
 	Long: `
 Stats block will allow the user to get statistics regarding the network.
 
-Params: Block numbers
-Format: <start block number> <end block number>
+Params: start block number end block number
 
 Response: JSON representation of statistics
 	`,
@@ -250,7 +227,6 @@ var statsPastBlocksCmd = &cobra.Command{
 Stats block will allow the user to get statistics regarding the network.
 
 Params: Number of blocks 
-Format: <blocks>
 
 Response: JSON representation of statistics
 	`,
@@ -339,7 +315,6 @@ var getBlockInfoCmd = &cobra.Command{
 	Long: `
 Gets the information inside a block including transactions and other information relevant to the currently connected blockchain.
 
-Format: <Block Number>
 Params: Block number
 
 Response: JSON representation of the block
@@ -361,7 +336,6 @@ var getTxInfoCmd = &cobra.Command{
 	Long: `
 Get a transaction by its hash. The user can find the transaction hash by viewing block information. To view block information, the command 'get block info <block number>' can be used.
 
-Format: <hash>
 Params: The transaction hash
 
 Response: JSON representation of the transaction.
