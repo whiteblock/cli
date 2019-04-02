@@ -25,7 +25,7 @@ func InvalidArgument(arg string){
 }
 
 func InvalidInteger(name string,value string,fatal bool){
-    PrintStringError(fmt.Sprintf("Invalid integer given (%s) for %s.",value,name))
+    PrintStringError(fmt.Sprintf("Invalid integer, given \"%s\" for %s.",value,name))
     if fatal {
         os.Exit(1)
     }
@@ -46,5 +46,5 @@ func PrintError(err error){
 }
 
 func PrintStringError(err string){
-    fmt.Printf("\n\033[31mError:\033[0m %s\n",err)
+    fmt.Printf("\033[31mError:\033[0m %s\n",err)
 }

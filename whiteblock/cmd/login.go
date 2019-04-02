@@ -52,6 +52,7 @@ var loginCmd = &cobra.Command{
 		}
 		rawProfile,err := GetRawProfileFromJwt(string(jwt))
 		if err != nil {
+			util.PrintStringError("Given jwt is invalid")
 			util.PrintErrorFatal(err)
 		}
 		util.WriteStore("jwt",jwt)
