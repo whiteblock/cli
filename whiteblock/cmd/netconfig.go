@@ -20,12 +20,7 @@ var netconfigCmd = &cobra.Command{
 	Short:   "Network conditions",
 	Long: `
 Netconfig will introduce persisting network conditions for testing.
-	
-	bandwidth <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|kbps|mbps|gbps];
-	delay <amount> 				Specifies the latency to add [ms];
-	loss <percent>				Specifies the amount of packet loss to add [%%];
-	
-	`,
+`,
 
 	Run: util.PartialCommand,
 }
@@ -36,12 +31,7 @@ var netconfigSetCmd = &cobra.Command{
 	Short:   "Set network conditions",
 	Long: `
 Netconfig set will introduce persisting network conditions for testing to a specific node. Please indicate the proper flags with the amount to set.
-	
-	--bandwidth <amount>	Specifies the bandwidth of the network in mbps;
-	--delay <amount> 				Specifies the latency to add [ms];
-	--loss <percent>				Specifies the amount of packet loss to add [%%];
-	
-	`,
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd,args, 1, 1)
 		testnetId,err := getPreviousBuildId()
@@ -85,11 +75,6 @@ var netconfigAllCmd = &cobra.Command{
 	Short:   "Set network conditions",
 	Long: `
 Netconfig all will introduce persisting network conditions for testing to all nodes. Please indicate the proper flags with the amount to set.
-	
-	--bandwidth <amount>	Specifies the bandwidth of the network in mbps;
-	--delay <amount> 				Specifies the latency to add [ms];
-	--loss <percent>				Specifies the amount of packet loss to add [%%];
-	
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -144,14 +129,14 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 
 func init() {
 	netconfigSetCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
-	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "sets packet loss")
-	netconfigSetCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "sets latency")
-	netconfigSetCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "sets the bandwidth")
+	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%%];")
+	netconfigSetCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms];")
+	netconfigSetCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps;")
 
 	netconfigAllCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
-	netconfigAllCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "sets packet loss")
-	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "sets latency")
-	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "sets the bandwidth")
+	netconfigAllCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%%];")
+	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms];")
+	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps;")
 
 	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd)
 
