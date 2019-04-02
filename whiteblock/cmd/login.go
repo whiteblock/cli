@@ -14,7 +14,7 @@ import (
 
 func GetRawProfileFromJwt(jwt string) ([]byte,error) {
 	body := strings.NewReader("")
-	req, err := http.NewRequest("GET", "https://api.whiteblock.io/user",body)
+	req, err := http.NewRequest("GET", "https://api.whiteblock.io/me",body)
 	if err != nil {
 		return nil,err
 	}
