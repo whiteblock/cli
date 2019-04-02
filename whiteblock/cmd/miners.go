@@ -24,7 +24,6 @@ var minerStartCmd = &cobra.Command{
 	Long: `
 Send the start mining signal to nodes, may take a while to take effect due to DAG generation. If no arguments are given, all nodes will begin mining.
 
-Format: [node 1 number] [node 2 number]...
 Params: A list of the nodes to start mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to start mining`,
@@ -35,8 +34,6 @@ Response: The number of nodes which successfully received the signal to start mi
 		res, err := jsonRpcCall("start_mining", args)
 		if err != nil {
 			util.PrintErrorFatal(err)
-			/*util.PrintStringError("There was an error building the DAG.")
-			os.Exit(1)*/
 		}
 		DagReady := false
 		for !DagReady {
@@ -64,9 +61,7 @@ var minerStopCmd = &cobra.Command{
 	Long: `
 Send the stop mining signal to nodes
 
-Format: [node 1 number] [node 2 number]...
 Params: A list of the nodes to stop mining or None for all nodes
-
 
 Response: The number of nodes which successfully received the signal to stop mining`,
 	Run: func(cmd *cobra.Command, args []string) {

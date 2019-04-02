@@ -42,11 +42,7 @@ var logTail int = -1
 
 func readContractsFile() ([]byte, error) {
 	cwd := os.Getenv("HOME")
-	b, err := ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
-	if err != nil {
-		//fmt.Print(err)
-	}
-	return b, nil
+	return ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
 }
 
 var getCmd = &cobra.Command{
@@ -70,9 +66,7 @@ var getNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
 	Short:   "Nodes will show all nodes in the network.",
-	Long: `
-Nodes will output all of the nodes in the current network.
-	`,
+	Long: "\nNodes will output all of the nodes in the current network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		testnetId,err := getPreviousBuildId()

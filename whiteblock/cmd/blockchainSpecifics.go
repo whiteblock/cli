@@ -36,7 +36,6 @@ var eosGetInfoCmd = &cobra.Command{
 Roughly equivalent to calling cleos get info
 
 Params: The node to get info from
-Format: [node]
 
 Response: eos blockchain state info`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -53,7 +52,6 @@ var testStartCMD = &cobra.Command{
 	Long: `
 Sys test start will start the propagation test. It will wait for the signal start time, have nodes send messages at the same time, and require to wait a minimum amount of time then check receivers with a completion rate of minimum completion percentage. 
 
-Format: <minimum latency> <minimum completion percentage> <number of assets to send> <asset sends per block>
 Params: Time in seconds, percentage, number of assets to send, asset sends per block
 
 `,
@@ -70,9 +68,7 @@ var testResultsCMD = &cobra.Command{
 	Long: `
 Sys test results pulls data from a previous test or tests and outputs as csv.
 
-Format: <test number>
 Params: Test number
-
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
