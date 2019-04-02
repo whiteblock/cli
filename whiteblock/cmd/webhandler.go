@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"io/ioutil"
 	"strings"
 	"sync"
 	"net/http"
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
-	"github.com/graarh/golang-socketio/transport"
 	util "../util"
 )
 
@@ -24,7 +24,13 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 	reply,err := jsonRpcCall(method,params)
 	switch reply.(type) {
 		case string:
-			fmt.Printf("\033[97m%s\033[0m\n",reply.(string))
+			_,noPretty := os.LookupEnv("NO_PRETTY")
+			if noPretty {
+				fmt.Println(reply.(string))
+			}else{
+				fmt.Printf("\033[97m%s\033[0m\n",reply.(string))
+			}
+			
 			return
 	}
 
@@ -33,16 +39,25 @@ func jsonRpcCallAndPrint(method string,params interface{}) {
 		if ok && jsonError.Data != nil {
 			res,err := json.Marshal(jsonError.Data)
 			if err != nil {
-				panic(err)
+				util.PrintErrorFatal(err)
 			}
 			util.PrintStringError(string(res))
 			os.Exit(1)
 		}else{
 			util.PrintErrorFatal(err)
 		}
-		
 	}
 	fmt.Println(prettypi(reply))
+}
+
+
+func CreateAuthNHeader() (string,error){
+	if util.StoreExists("jwt") {
+		res,err := util.ReadStore("jwt")
+		return fmt.Sprintf("Bearer %s",string(res)),err
+	}
+	res,err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
+	return fmt.Sprintf("Bearer %s",string(res)),err
 }
 
 func jsonRpcCall(method string,params interface{}) (interface{},error) {
@@ -59,6 +74,12 @@ func jsonRpcCall(method string,params interface{}) (interface{},error) {
 		return nil,err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	auth,err := CreateAuthNHeader()
+	if err != nil {
+		log.Println(err)
+	}else{
+		req.Header.Set("Authorization",auth)//If there is an error, dont send this header for now
+	}
 
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)
@@ -81,7 +102,7 @@ func buildListener(testnetId string){
 	mutex.Lock()
 	c, err := gosocketio.Dial(
 		"ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket",
-		transport.GetDefaultWebsocketTransport(),
+		GetDefaultWebsocketTransport(),
 	)
 	if err != nil {
 		util.PrintErrorFatal(err)

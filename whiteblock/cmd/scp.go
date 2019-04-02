@@ -22,7 +22,7 @@ Params: node number, file/dir source, file/dir destination
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 3, 3)
+		util.CheckArguments(cmd,args, 3, 3)
 
 		nodes, err := GetNodes()
 		if err != nil {
@@ -30,7 +30,11 @@ Params: node number, file/dir source, file/dir destination
 		}
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
+		}
+		if nodeNumber >= len(nodes) {
+			util.PrintStringError("Node number too high")
+			os.Exit(1)
 		}
 		err = unix.Exec("/usr/bin/scp", []string{"scp", "-i", "/home/master-secrets/id.master", "-r", "-o", "UserKnownHostsFile=/dev/null",
 			"-o", "StrictHostKeyChecking no", args[1], "root@" + fmt.Sprintf(nodes[nodeNumber].IP) + ":" + args[2]}, os.Environ())
@@ -39,7 +43,5 @@ Params: node number, file/dir source, file/dir destination
 }
 
 func init() {
-	scpCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
 	RootCmd.AddCommand(scpCmd)
 }

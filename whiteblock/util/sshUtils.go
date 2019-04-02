@@ -25,7 +25,7 @@ func NewSshClient(host string) (*SshClient, error) {
     }
     return out, nil
 }
-func (this SshClient) getSession() (*ssh.Session, error) {
+func (this SshClient) GetSession() (*ssh.Session, error) {
     for _, client := range this.clients {
         session, err := client.NewSession()
         if err != nil {
@@ -69,16 +69,17 @@ func (this SshClient) FastMultiRun(commands ...string) (string, error) {
     return this.Run(cmd)
 }
 func (this SshClient) Run(command string) (string, error) {
-    session, err := this.getSession()
-
+    session, err := this.GetSession()
+    defer session.Close()
     if err != nil {
         log.Println(err)
         return "", err
     }
-    defer session.Close()
+   
     out, err := session.CombinedOutput(command)
     return string(out), err
 }
+
 func (this SshClient) DockerExec(node int, command string) (string, error) {
     return this.Run(fmt.Sprintf("docker exec whiteblock-node%d %s", node, command))
 }
@@ -106,7 +107,7 @@ func (this SshClient) DockerMultiExec(node int, commands []string) (string, erro
  * @param  string   dest    The destination path of the file
  */
 func (this SshClient) Scp(src string, dest string) error {
-    session, err := this.getSession()
+    session, err := this.GetSession()
     if err != nil {
         return err
     }

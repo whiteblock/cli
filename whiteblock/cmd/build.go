@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -16,7 +15,6 @@ import (
 )
 
 var (
-	serverAddr     	string
 	previousYesAll 	bool
 	serversFlag    	string
 	blockchainFlag 	string
@@ -29,7 +27,6 @@ var (
 	optionsFlag		map[string]string
 	envFlag			map[string]string
 	filesFlag		map[string]string
-
 )
 
 type Config struct {
@@ -78,6 +75,15 @@ func getPreviousBuild() (Config,error) {
 	return out,err
 }
 
+func buildAttach(buildId string) {
+	buildListener(buildId)
+	err := util.WriteStore(".previous_build_id",[]byte(buildId))
+	util.DeleteStore(".in_progress_build_id")
+
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+}
 
 func build(buildConfig interface{}) {
 	buildReply, err := jsonRpcCall("build", buildConfig)
@@ -85,23 +91,22 @@ func build(buildConfig interface{}) {
 		util.PrintErrorFatal(err)
 	}
 	fmt.Printf("Build Started successfully: %v\n", buildReply)
-	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
+
+	//Store the in progress builds temporary id until the build finishes
+	err = util.WriteStore(".in_progress_build_id",[]byte(buildReply.(string)))
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	buildListener(buildReply.(string))
-	err = util.WriteStore(".previous_build_id",[]byte(buildReply.(string)))
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
+	
+	buildAttach(buildReply.(string))
 }
+
 
 func getServer() []int {
 	idList := make([]int, 0)
 	res, err := jsonRpcCall("get_servers", []string{})
-
 	if err != nil {
-		panic(err)
+		util.PrintErrorFatal(err)
 	}
 	servers := res.(map[string]interface{})
 	serverID := 0
@@ -128,13 +133,13 @@ func getImage(blockchain string,imageType string,defaultImage string) string {
 	if err != nil {
 		b, err = ioutil.ReadFile(cwd + "/cli/etc/whiteblock.json")
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 	}
 	var cont map[string]map[string]map[string]map[string]string
 	err = json.Unmarshal(b, &cont)
 	if err != nil {
-		panic(err)
+		util.PrintErrorFatal(err)
 	}
 	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
 	if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
@@ -142,7 +147,7 @@ func getImage(blockchain string,imageType string,defaultImage string) string {
 	} else if(len(defaultImage) > 0){
 		return defaultImage
 	}else{
-		return "gcr.io/whiteblock/"+blockchain
+		return "gcr.io/whiteblock/"+blockchain+":master"
 	}
 }
 
@@ -150,7 +155,7 @@ func removeSmartContracts() {
 	cwd := os.Getenv("HOME")
 	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/contracts.json")
 	if err != nil {
-		panic(err)
+		util.PrintErrorFatal(err)
 	}
 }
 
@@ -239,7 +244,7 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		
-		util.CheckArguments(args,0,0)
+		util.CheckArguments(cmd,args,0,0)
 		buildConf,err := getPreviousBuild()
 		if err != nil {
 			//util.PrintError(err)
@@ -247,7 +252,7 @@ var buildCmd = &cobra.Command{
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
-		memoryEnabled := len(memoryFlag) > 0
+		memoryEnabled := len(memoryFlag) != 0
 
 
 		
@@ -481,12 +486,12 @@ var buildAttachCmd = &cobra.Command{
 	Long:    "\nAttach to a current in progress build process\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId,err := util.ReadStore(".previous_build_id")
+		buildId,err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
-			fmt.Println("No previous build Use build command to deploy a blockchain.")
+			fmt.Println("No in progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
-		buildListener(string(buildId))
+		buildAttach(string(buildId))
 	},
 }
 
@@ -520,16 +525,17 @@ var buildStopCmd = &cobra.Command{
 	Long: "\nBuild stops the current building process.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId,err := getPreviousBuildId()
-		if err != nil {
-			log.Println(err)
+		buildId,err := util.ReadStore(".in_progress_build_id")
+		if err != nil || len(buildId) == 0 {
+			fmt.Println("No inprogress build found. Use build command to deploy a blockchain.")
+			os.Exit(1)
 		}
-		jsonRpcCallAndPrint("stop_build", []string{buildId})
+		defer util.DeleteStore(".in_progress_build_id")
+		jsonRpcCallAndPrint("stop_build", []string{string(buildId)})
 	},
 }
 
 func init() {
-	buildCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	buildCmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
 	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	buildCmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
@@ -543,7 +549,6 @@ func init() {
 	buildCmd.Flags().StringToStringVarP(&envFlag,"env","e",nil,"set environment variables for the nodes")
 	buildCmd.Flags().StringToStringVarP(&filesFlag,"template","t",nil,"file templates")
 
-	previousCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
 	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd)

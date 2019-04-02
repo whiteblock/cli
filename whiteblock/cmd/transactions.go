@@ -35,11 +35,6 @@ Please use the help commands to make sure you provide the correct flags. If the 
 }
 
 /*
-We have to figure out a generalized format of how the user will enter the arguments.
-Right now, geth, eos, and sys all have different parameters they need to provide to
-send tx. I am just using the geth description of the send_tx as a place holder for
-now. This is for all the commands in the file.
-
 The primary use of these methods is to be able to send one line commands through a
 testing script that will be able to automate transaction tests.
 */
@@ -70,14 +65,10 @@ Optional Parameters:
 		}
 
 		switch previousBuild.Blockchain {
+		case "geth":
+			fallthrough
 		case "ethereum":
-			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
-				fmt.Println("Required flags were not provided. Please input the required flags.")
-				cmd.Help()
-				return
-			}
-			command = "eth::send_transaction"
-			params = []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
+			fallthrough
 		case "parity":
 			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
 				fmt.Println("Required flags were not provided. Please input the required flags.")
@@ -135,8 +126,6 @@ Optional Parameters:
 			cmd.Help()
 			return
 		}
-		command := ""
-
 		params := []string{strconv.Itoa(tpsFlag)}
 
 		previousBuild,err := getPreviousBuild()
@@ -145,6 +134,10 @@ Optional Parameters:
 		}
 
 		switch previousBuild.Blockchain {
+		case "geth":
+			fallthrough
+		case "parity":
+			fallthrough
 		case "ethereum":
 			//error handling for invalid flags
 			if !(txSizeFlag == 0) {
@@ -152,45 +145,14 @@ Optional Parameters:
 				cmd.Help()
 				return
 			}
-			if valueFlag == 0 {
-				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
-				cmd.Help()
-				return
-			}
 
-			command = "eth::start_transactions"
-			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
-			params = append(params, toEth)
-			if len(toFlag) > 0 {
-				params = append(params, toFlag)
-			}
-		case "parity":
-			//error handling for invalid flags
-			if !(txSizeFlag == 0) {
-				fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
-				cmd.Help()
-				return
-			}
-			if valueFlag == 0 {
-				fmt.Println("No \"valueFlag\" has been provided. Please input the value flag with a value.")
-				cmd.Help()
-				return
-			}
-
-			command = "eth::start_transactions"
 			toEth := strconv.Itoa(valueFlag) + "000000000000000000"
 			params = append(params, toEth)
 			if len(toFlag) > 0 {
 				params = append(params, toFlag)
 			}
 		case "eos":
-			command = "eos::run_constant_tps"
 			//error handling for invalid flags
-			if valueFlag != 0 {
-				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
-				cmd.Help()
-				return
-			}
 
 			if txSizeFlag >= 174 {
 				params = append(params, strconv.Itoa(txSizeFlag))
@@ -201,7 +163,7 @@ Optional Parameters:
 		default:
 			util.ClientNotSupported(previousBuild.Blockchain)
 		}
-		jsonRpcCallAndPrint(command, params)
+		jsonRpcCallAndPrint("run_constant_tps", params)
 	},
 }
 
@@ -271,9 +233,7 @@ Stops the sending of transactions if transactions are currently being sent
 }
 
 func init() {
-	txCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 
-	sendSingleTxCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	sendSingleTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
 	sendSingleTxCmd.Flags().StringVarP(&fromFlag, "from", "f", "", "where the transaction will be sent from")
 	sendSingleTxCmd.Flags().StringVarP(&gasFlag, "gas", "g", "", "specify gas for tx")
@@ -281,19 +241,15 @@ func init() {
 	sendSingleTxCmd.Flags().StringVarP(&gasPriceFlag, "gasprice", "p", "", "specify gas price for tx")
 	sendSingleTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
 
-	startStreamTxCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	startStreamTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
 	startStreamTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
 	startStreamTxCmd.Flags().IntVarP(&tpsFlag, "tps", "t", 0, "transactions per second")
-	startStreamTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
+	startStreamTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
 
-	startBurstTxCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	startBurstTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
 	startBurstTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
 	startBurstTxCmd.Flags().IntVarP(&txsFlag, "txs", "t", 0, "transactions per second")
-	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
-
-	stopTxCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
 
 	startTxCmd.AddCommand(startStreamTxCmd, startBurstTxCmd)
 	txCmd.AddCommand(sendSingleTxCmd, startTxCmd, stopTxCmd)

@@ -4,32 +4,16 @@ import (
 	"os"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "../util"
 )
 
-type Iface struct {
-	Ip      string `json:"ip"`
-	Gateway string `json:"gateway"`
-	Subnet  int    `json:"subnet"`
-}
+/*
+	Globals
+ */
 
-type Switch struct {
-	Addr  string `json:"addr"`
-	Iface string `json:"iface"`
-	Brand int    `json:"brand"`
-	Id    int    `json:"id"`
-}
-
-type Server struct {
-	Addr     string   `json:"addr"`  //IP to access the server
-	Iaddr    Iface    `json:"iaddr"` //Internal IP of the server for NIC attached to the vyos
-	Nodes    int      `json:"nodes"`
-	Max      int      `json:"max"`
-	Id       int      `json:"id"`
-	ServerID int      `json:"serverID"`
-	Iface    string   `json:"iface"`
-	Switches []Switch `json:"switches"`
-	Ips      []string `json:"ips"`
-}
+var (
+	serverAddr	string
+)
 
 var RootCmd = &cobra.Command{
 	Use:   "whiteblock",
@@ -42,5 +26,42 @@ func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+}
+
+
+var completionCmd = &cobra.Command{
+	Hidden:true,
+	Use:   "completion",
+	Short: "Generates bash completion scripts",
+	Long: `To load completion run
+
+. <(whiteblock completion)
+
+To configure your bash shell to load completions for each session add to your bashrc
+
+# ~/.bashrc or ~/.profile
+. <(whiteblock completion)
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		RootCmd.GenBashCompletion(os.Stdout);
+	},
+}
+
+func init(){
+	RootCmd.PersistentFlags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	RootCmd.AddCommand(completionCmd)
+	//Possibly update this on load.
+	if util.StoreExists("profile") {
+		
+		err := LoadProfile()//Load the profile into the profile global
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		err = LoadBiomeAddress()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 	}
 }

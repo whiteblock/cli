@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"io/ioutil"
 	"encoding/json"
 	"github.com/spf13/cobra"
@@ -18,12 +17,11 @@ var testCmd = &cobra.Command{
 This command will read from a file to run a test.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 
-		cwd := os.Getenv("PWD")
-		b, err := ioutil.ReadFile(cwd + "/" + args[0])
+		b, err := ioutil.ReadFile(args[0])
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 
 		fmt.Println(prettyp(string(b)))
@@ -31,7 +29,7 @@ This command will read from a file to run a test.
 		var cont map[string]interface{}
 		err = json.Unmarshal(b, &cont)
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
 
 		fmt.Println(cont["build"])

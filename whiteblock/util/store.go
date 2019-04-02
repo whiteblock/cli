@@ -24,3 +24,13 @@ func ReadStore(name string) ([]byte,error) {
 func WriteStore(name string,data []byte) error {
     return Write(storeDirectory+name,data)
 }
+
+func DeleteStore(name string) error {
+    return os.Remove(storeDirectory+name)
+}
+
+func StoreExists(name string) bool {
+    file := storeDirectory+name
+     _, err := os.Stat(file)
+    return !os.IsNotExist(err) 
+}

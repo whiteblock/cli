@@ -40,11 +40,14 @@ SSH will allow the user to go into the contianer where the specified node exists
 		}
 		nodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
-
+		if nodeNumber >= len(nodes) {
+			util.PrintStringError("Node number too high")
+			os.Exit(1)
+		}
 		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
-			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-y",
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no","-o","ConnectTimeout=10", "-y",
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP)}
 
 		sshArgs = append(sshArgs, args[1:]...)
@@ -54,7 +57,6 @@ SSH will allow the user to go into the contianer where the specified node exists
 }
 
 func init() {
-	sshCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
+	
 	RootCmd.AddCommand(sshCmd)
 }

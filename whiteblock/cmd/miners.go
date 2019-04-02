@@ -75,7 +75,6 @@ Response: The number of nodes which successfully received the signal to stop min
 }
 
 func init() {
-	minerCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	minerCmd.AddCommand(minerStartCmd, minerStopCmd)
 	RootCmd.AddCommand(minerCmd)
 }

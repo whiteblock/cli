@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"strconv"
-
+	"os"
 	"github.com/spf13/cobra"
 	util "../util"
 )
@@ -14,11 +13,6 @@ var (
 	delayFlag int
 	rateFlag  int
 )
-
-/*type NetConfig struct {
-	Servers []int
-	NetInfo map[string]interface{}
-}*/
 
 var netconfigCmd = &cobra.Command{
 	Use:     "netconfig <command>",
@@ -49,18 +43,16 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 	
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
+		util.CheckArguments(cmd,args, 1, 1)
+		testnetId,err := getPreviousBuildId()
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		serverID := previousBuild.Servers[0]
-
 
 		netInfo := make(map[string]interface{})
 		node, err := strconv.Atoi(args[0])
 		if err != nil {
-			util.PrintErrorFatal(err)
+			util.InvalidInteger("node",args[0],true)
 		}
 
 		netInfo["node"] = node
@@ -79,7 +71,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 			netInfo["rate"] = rate
 		}
 		networkConf := []interface{}{
-			serverID,
+			testnetId,
 			netInfo,
 		}
 
@@ -103,14 +95,9 @@ Netconfig all will introduce persisting network conditions for testing to all no
 	Run: func(cmd *cobra.Command, args []string) {
 
 		netInfo := make(map[string]interface{})
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
-			util.PrintErrorFatal(err)
-		}
-		serverID := previousBuild.Servers[0]
+		testnetId,err := getPreviousBuildId()
 		if err != nil {
-			fmt.Println("conversion error, invalid type for server")
-			return
+			util.PrintErrorFatal(err)
 		}
 
 		if limitFlag != 1000 {
@@ -129,7 +116,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 		}
 
 		networkConf := []interface{}{
-			serverID,
+			testnetId,
 			netInfo,
 		}
 
@@ -146,12 +133,12 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
-			util.PrintErrorFatal(err)
+		testnetId,err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
 		}
-		serverID := previousBuild.Servers[0]
-		jsonRpcCallAndPrint("netem_delete", []interface{}{serverID})
+		jsonRpcCallAndPrint("netem_delete", []interface{}{testnetId})
 	},
 }
 

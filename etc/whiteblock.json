@@ -26,14 +26,14 @@
         },
         "ethereum": {
             "images": {
-                "stable": "gcr.io/whiteblock/ethereum:34b61c761d71df81666ea00c3cf14cb7c6a120b8",
+                "stable": "gcr.io/whiteblock/ethereum:9cd12011c47489df08c55b4fce8f3d5b1fd72542 ",
                 "latest": "gcr.io/whiteblock/ethereum:master"
             }
         },
         "geth": {
             "images": {
-                "stable": "gcr.io/whiteblock/ethereum:34b61c761d71df81666ea00c3cf14cb7c6a120b8",
-                "latest": "gcr.io/whiteblock/ethereum:master"
+                "stable": "gcr.io/whiteblock/geth:1836f48baea2ce49266a27cfcef1b317be869029 ",
+                "latest": "gcr.io/whiteblock/geth:master"
             }
         },
         "tendermint":{
@@ -52,6 +52,18 @@
             "images":{
                 "stable":"gcr.io/whiteblock/parity:dev",
                 "latest":"gcr.io/whiteblock/parity:dev"
+            }
+        },
+        "pantheon":{
+            "images":{
+                "stable":"gcr.io/whiteblock/pantheon:dev",
+                "latest":"gcr.io/whiteblock/pantheon:dev"
+            }
+        },
+        "artemis":{
+            "images":{
+                "stable":"gcr.io/whiteblock/artemis:dev",
+                "latest":"gcr.io/whiteblock/artemis:dev"
             }
         }
     }

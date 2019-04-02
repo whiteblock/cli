@@ -7,14 +7,6 @@ import (
 	util "../util"
 )
 
-type List struct {
-	Results []struct {
-		Series []struct {
-			Columns []string        `json:"columns"`
-			Values  [][]interface{} `json:"values"`
-		}
-	} `json:"results"`
-}
 
 var sysCMD = &cobra.Command{
 	Use:   "sys <command>",
@@ -30,6 +22,31 @@ var sysTestCMD = &cobra.Command{
 	Run:   util.PartialCommand,
 }
 
+var eosCmd = &cobra.Command{
+	Use:   "eos <command>",
+	Short: "Run eos commands",
+	Long:  "\nEos will allow the user to get information and run EOS commands.\n",
+	Run:   util.PartialCommand,
+}
+
+var eosGetInfoCmd = &cobra.Command{
+	Use:   "get_info [node]",
+	Short: "Get EOS info",
+	Long: `
+Roughly equivalent to calling cleos get info
+
+Params: The node to get info from
+Format: [node]
+
+Response: eos blockchain state info`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd,args, 0, 1)
+		jsonRpcCallAndPrint("eos::get_info", args)
+	},
+}
+
+
+
 var testStartCMD = &cobra.Command{
 	Use:   "start <minimum latency> <minimum completion percentage> <number of assets to send> <asset sends per block>",
 	Short: "Starts propagation test.",
@@ -41,7 +58,7 @@ Params: Time in seconds, percentage, number of assets to send, asset sends per b
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 4, 4)
+		util.CheckArguments(cmd,args, 4, 4)
 		jsonRpcCallAndPrint("sys::start_test", args)
 		return
 	},
@@ -59,14 +76,14 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		results, err := jsonRpcCall("sys::get_recent_test_results", args)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 		result, ok := results.(map[string]interface{})
 		if !ok {
-			panic(1)
+			util.PrintStringError("Got back the results in an invalid format")
 		}
 
 		rc := result["results"].([]interface{})[0]
@@ -90,10 +107,10 @@ Params: Test number
 }
 
 func init() {
-	testStartCMD.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-	// testResultsCMD.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	eosCmd.AddCommand(eosGetInfoCmd)
 
 	sysTestCMD.AddCommand(testStartCMD, testResultsCMD)
 	sysCMD.AddCommand(sysTestCMD)
-	RootCmd.AddCommand(sysCMD)
+
+	RootCmd.AddCommand(sysCMD,eosCmd)
 }

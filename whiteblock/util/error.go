@@ -3,18 +3,21 @@ package util
 import (
     "fmt"
     "os"
+    "github.com/spf13/cobra"
 )
 
 /**
  * Unify error messages through function calls
  */
 
-func CheckArguments(args []string,min int,max int){
+func CheckArguments(cmd *cobra.Command,args []string,min int,max int){
     if len(args) < min {
+        fmt.Println(cmd.UsageString())
         PrintStringError("Missing arguments.")
         os.Exit(1)
     }
     if max != -1 &&  len(args) > max {
+        fmt.Println(cmd.UsageString())
         PrintStringError("Too many arguments.")
         os.Exit(1)
     }
@@ -25,8 +28,18 @@ func InvalidArgument(arg string){
 }
 
 func InvalidInteger(name string,value string,fatal bool){
-    PrintStringError(fmt.Sprintf("Invalid integer given (%s) for %s.",value,name))
+    PrintStringError(fmt.Sprintf("Invalid integer, given \"%s\" for %s.",value,name))
     if fatal {
+        os.Exit(1)
+    }
+}
+
+func CheckIntegerBounds(cmd *cobra.Command,name string,val int,min int,max int){
+    if val < min {
+        PrintStringError(fmt.Sprintf("The value given for %s, %d cannot be less than %d.",name,val,min))
+        os.Exit(1)
+    }else if val > max {
+        PrintStringError(fmt.Sprintf("The value given for %s, %d cannot be greater than %d.",name,val,max))
         os.Exit(1)
     }
 }
@@ -38,7 +51,6 @@ func ClientNotSupported(client string){
 
 func PrintErrorFatal(err error){
     PrintError(err)
-    //panic(err)
     os.Exit(1)
 }
 
@@ -47,5 +59,5 @@ func PrintError(err error){
 }
 
 func PrintStringError(err string){
-    fmt.Printf("\n\033[31mError:\033[0m %s\n",err)
+    fmt.Printf("\033[31mError:\033[0m %s\n",err)
 }
