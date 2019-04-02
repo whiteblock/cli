@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-
 	"os/exec"
 	"strconv"
 	"strings"
@@ -206,14 +205,8 @@ func deployContract(fileName, IP string) string {
 var gethCmd = &cobra.Command{
 	Use:   "geth <command>",
 	Short: "Run geth commands",
-	Long: `
-Geth will allow the user to get infromation and run geth commands.
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-		return
-	},
+	Long: "\nGeth will allow the user to get infromation and run geth commands.\n",
+	Run:util.PartialCommand,
 }
 
 var gethSolcCmd = &cobra.Command{
@@ -329,7 +322,6 @@ var gethGetTxReceiptCmd = &cobra.Command{
 	Long: `
 Get the transaction receipt by the tx hash
 
-Format: <hash>
 Params: The transaction hash
 
 Response: JSON representation of the transaction receipt.`,
