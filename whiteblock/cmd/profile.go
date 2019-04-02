@@ -22,7 +22,7 @@ type Organization struct {
 type Profile struct {
 	Id 				int						`json:"id"`
 	Email 			string					`json:"email"`
-	EmailVerified	string 					`json:"email_verified"`
+	EmailVerified	interface{}				`json:"email_verified"`
 	Name 			string					`json:"name"`
 	Picture 		string 					`json:"picture"`
 	CreatedAt 		string 					`json:"created_at"`
@@ -105,5 +105,6 @@ func LoadBiomeAddress() error {
 		}
 	}
 	serverAddr = biome["host"].(string) + ":5001"
+	//fmt.Println(serverAddr)
 	return nil
 }

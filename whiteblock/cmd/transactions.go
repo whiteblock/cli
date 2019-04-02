@@ -245,6 +245,7 @@ func init() {
 	startStreamTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
 	startStreamTxCmd.Flags().IntVarP(&tpsFlag, "tps", "t", 0, "transactions per second")
 	startStreamTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
+	startStreamTxCmd.MarkFlagRequired("tps")
 
 	startBurstTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
 	startBurstTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
