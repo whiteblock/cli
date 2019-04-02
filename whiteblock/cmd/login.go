@@ -40,6 +40,7 @@ func GetRawProfileFromJwt(jwt string) ([]byte,error) {
 }
 
 var loginCmd = &cobra.Command{
+	Hidden: true,
 	Use:   "login <jwt> [organization] [biome]",
 	Short: "Authorize the cli using jwt ",
 	Long: "\nGives the user the ability to specify a jwt, within a file, to be used for authentication\n Can be given a file path or a jwt\n",

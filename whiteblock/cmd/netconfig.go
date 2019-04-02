@@ -52,7 +52,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 		netInfo := make(map[string]interface{})
 		node, err := strconv.Atoi(args[0])
 		if err != nil {
-			util.PrintErrorFatal(err)
+			util.InvalidInteger("node",args[0],true)
 		}
 
 		netInfo["node"] = node

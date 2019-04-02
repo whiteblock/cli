@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-	"os"
 	"io"
 	"bufio"
 	"syscall"
@@ -144,25 +143,15 @@ Params: sending node, receiving node
 
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			util.InvalidArgument(args[0])
-			cmd.Help()
-			return
+			util.InvalidInteger("sending node number",args[0],true)
 		}
 		receivingNodeNumber, err := strconv.Atoi(args[1])
 		if err != nil {
-			util.InvalidArgument(args[1])
-			cmd.Help()
-			return
-		}
-		if sendingNodeNumber >= len(nodes) {
-			util.PrintStringError("Sending node number too high")
-			os.Exit(1)
+			util.InvalidInteger("receiving node number",args[1],true)
 		}
 
-		if receivingNodeNumber >= len(nodes) {
-			util.PrintStringError("Receiving node number too high")
-			os.Exit(1)
-		}
+		util.CheckIntegerBounds(cmd,"sending node number",sendingNodeNumber,0,len(nodes)-1)
+		util.CheckIntegerBounds(cmd,"receiving node number",receivingNodeNumber,0,len(nodes)-1)
 
 		var outReader1 		io.Reader
 		var outReader2 		io.Reader
@@ -174,6 +163,7 @@ Params: sending node, receiving node
 			defer wg.Done()
 
 			iPerfcmd := "iperf3 -s "
+
 			if udpEnabled {
 				iPerfcmd = iPerfcmd + "-u "
 			}
