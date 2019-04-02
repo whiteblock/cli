@@ -29,26 +29,19 @@ Params: sending node, receiving node
 		}
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			util.InvalidArgument(args[0])
+			util.InvalidInteger("sending node number",args[0],false)
 			cmd.Help()
-			return
+			os.Exit(1)
 		}
 		receivingNodeNumber, err := strconv.Atoi(args[1])
 		if err != nil {
-			util.InvalidArgument(args[1])
+			util.InvalidInteger("receiving node number",args[1],false)
 			cmd.Help()
-			return
-		}
-
-		if sendingNodeNumber >= len(nodes) {
-			util.PrintStringError("Sending node number too high")
 			os.Exit(1)
 		}
+		util.CheckIntegerBounds(cmd,"sending node number",sendingNodeNumber,0,len(nodes)-1)
+		util.CheckIntegerBounds(cmd,"receiving node number",receivingNodeNumber,0,len(nodes)-1)
 
-		if receivingNodeNumber >= len(nodes) {
-			util.PrintStringError("Receiving node number too high")
-			os.Exit(1)
-		}
 
 		err = unix.Exec("/usr/bin/ssh", []string{
 												"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
