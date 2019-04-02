@@ -411,7 +411,7 @@ var buildCmd = &cobra.Command{
 			for i := 0; i < len(options); i++ {
 				opt := options[i].([]interface{})
 				if len(opt) != 2 {
-					fmt.Println("Unexpected format for params")
+					util.PrintStringError("Unexpected format for params")
 					os.Exit(1)
 				}
 

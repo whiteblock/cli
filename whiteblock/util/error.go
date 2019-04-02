@@ -11,14 +11,31 @@ import (
  */
 
 func CheckArguments(cmd *cobra.Command,args []string,min int,max int){
+    if min == max && len(args) != min {
+        fmt.Println(cmd.UsageString())
+        plural := "s"
+        if min == 1 {
+            plural = ""
+        }
+        PrintStringError(fmt.Sprintf("Invalid number of arguments. Expected exactly %d argument%s. Given %d.",min,plural,len(args)))
+        os.Exit(1)
+    }
     if len(args) < min {
         fmt.Println(cmd.UsageString())
-        PrintStringError("Missing arguments.")
+        plural := "s"
+        if min == 1 {
+            plural = ""
+        }
+        PrintStringError(fmt.Sprintf("Missing arguments. Expected atleast %d argument%s. Given %d.",min,plural,len(args)))
         os.Exit(1)
     }
     if max != -1 &&  len(args) > max {
         fmt.Println(cmd.UsageString())
-        PrintStringError("Too many arguments.")
+        plural := "s"
+        if max == 1 {
+            plural = ""
+        }
+        PrintStringError(fmt.Sprintf("Too many arguments. Expected atmost %d argument%s. Given %d.",max,plural,len(args)))
         os.Exit(1)
     }
 }
