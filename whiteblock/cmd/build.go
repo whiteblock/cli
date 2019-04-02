@@ -244,7 +244,7 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		
-		util.CheckArguments(args,0,0)
+		util.CheckArguments(cmd,args,0,0)
 		buildConf,err := getPreviousBuild()
 		if err != nil {
 			//util.PrintError(err)

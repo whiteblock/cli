@@ -22,7 +22,7 @@ Params: sending node, receiving node
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		util.CheckArguments(args,2,2)
+		util.CheckArguments(cmd,args,2,2)
 		nodes,err := GetNodes()
 		if err != nil{
 			util.PrintErrorFatal(err)

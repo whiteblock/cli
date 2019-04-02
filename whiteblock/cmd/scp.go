@@ -22,7 +22,7 @@ Params: node number, file/dir source, file/dir destination
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 3, 3)
+		util.CheckArguments(cmd,args, 3, 3)
 
 		nodes, err := GetNodes()
 		if err != nil {

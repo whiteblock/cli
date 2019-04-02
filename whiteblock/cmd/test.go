@@ -17,7 +17,7 @@ var testCmd = &cobra.Command{
 This command will read from a file to run a test.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 
 		b, err := ioutil.ReadFile(args[0])
 		if err != nil {

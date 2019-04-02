@@ -43,7 +43,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 	
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		testnetId,err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)

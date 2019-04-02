@@ -3,18 +3,21 @@ package util
 import (
     "fmt"
     "os"
+    "github.com/spf13/cobra"
 )
 
 /**
  * Unify error messages through function calls
  */
 
-func CheckArguments(args []string,min int,max int){
+func CheckArguments(cmd *cobra.Command,args []string,min int,max int){
     if len(args) < min {
+        fmt.Println(cmd.UsageString())
         PrintStringError("Missing arguments.")
         os.Exit(1)
     }
     if max != -1 &&  len(args) > max {
+        fmt.Println(cmd.UsageString())
         PrintStringError("Too many arguments.")
         os.Exit(1)
     }

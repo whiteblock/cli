@@ -40,7 +40,7 @@ Format: [node]
 
 Response: eos blockchain state info`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 0, 1)
+		util.CheckArguments(cmd,args, 0, 1)
 		jsonRpcCallAndPrint("eos::get_info", args)
 	},
 }
@@ -58,7 +58,7 @@ Params: Time in seconds, percentage, number of assets to send, asset sends per b
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 4, 4)
+		util.CheckArguments(cmd,args, 4, 4)
 		jsonRpcCallAndPrint("sys::start_test", args)
 		return
 	},
@@ -76,7 +76,7 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		results, err := jsonRpcCall("sys::get_recent_test_results", args)
 		if err != nil {
 			util.PrintErrorFatal(err)

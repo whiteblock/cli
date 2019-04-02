@@ -248,7 +248,7 @@ Deploy will compile the smart contract and deploy it to the ethereum blockchain.
 Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 2, 2)
+		util.CheckArguments(cmd,args, 2, 2)
 		//assertions for sanity
 		res, err := jsonRpcCall("get_block_number", []string{})
 		if err != nil {
@@ -303,7 +303,7 @@ Console will log into the geth console.
 
 Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		nodes, err := GetNodes()
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -334,7 +334,7 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction receipt.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
 	},
 }
@@ -347,7 +347,7 @@ Get the current hash rate per node
 
 Response: The hash rate of a single node in the network`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 0, 1)
+		util.CheckArguments(cmd,args, 0, 1)
 		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
 	},
 }
@@ -364,7 +364,7 @@ Params: The number of transactions to retrieve
 Response: JSON object of transaction data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		num, err := strconv.Atoi(args[0])
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -385,7 +385,7 @@ Params: The sender account, a block number
 
 Response: The transaction count`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 2)
+		util.CheckArguments(cmd,args, 1, 2)
 		jsonRpcCallAndPrint("eth::get_transaction_count", args)
 	},
 }
@@ -401,7 +401,7 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		jsonRpcCallAndPrint("eth::get_transaction", args)
 	},
 }

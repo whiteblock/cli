@@ -112,7 +112,7 @@ Response: true or false, on whether or not a test is running; The name of the te
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 0, 0)
+		util.CheckArguments(cmd,args, 0, 0)
 		jsonRpcCallAndPrint("state::is_running", []string{})
 		jsonRpcCallAndPrint("state::what_is_running", []string{})
 	},
@@ -131,7 +131,7 @@ Response: stdout and stderr of the blockchain process
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		testNetId,err := getPreviousBuildId()
 		if err != nil{
 			util.PrintErrorFatal(err)
@@ -163,7 +163,7 @@ Format: The blockchain to get the build params of
 Response: The params as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		jsonRpcCallAndPrint("get_defaults", args)
 	},
 }
@@ -183,7 +183,7 @@ Format: The blockchain to get the resources of
 Response: The resoures as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 2)
+		util.CheckArguments(cmd,args, 1, 2)
 		jsonRpcCallAndPrint("get_resources", args)		
 	},
 }
@@ -211,7 +211,7 @@ Format: <start unix time stamp> <end unix time stamp>
 Response: JSON representation of network statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 2, 2)
+		util.CheckArguments(cmd,args, 2, 2)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  util.CheckAndConvertInt64(args[0], "start unix timestamp"),
 			"endTime":    util.CheckAndConvertInt64(args[1], "end unix timestamp"),
@@ -233,7 +233,7 @@ Format: <start block number> <end block number>
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 2, 2)
+		util.CheckArguments(cmd,args, 2, 2)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
@@ -255,7 +255,7 @@ Format: <blocks>
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
@@ -284,7 +284,7 @@ commands separated by blockchains.
 */
 
 func getBlockCobra(cmd *cobra.Command, args []string) {
-	util.CheckArguments(args, 1, 1)
+	util.CheckArguments(cmd,args, 1, 1)
 	blockNum := 0
 	var err error
 	if len(args) > 0 {
@@ -367,7 +367,7 @@ Params: The transaction hash
 Response: JSON representation of the transaction.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(args, 1, 1)
+		util.CheckArguments(cmd,args, 1, 1)
 		jsonRpcCallAndPrint("get_transaction", args)
 	},
 }
