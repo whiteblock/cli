@@ -7,10 +7,11 @@ import (
 
 
 var doneCmd = &cobra.Command{
+	Aliases: []string{"die", "stop","teardown"},
 	Use:   "done",
 	Short: "Tear down the testnet",
 	Long: `
-	Tears down the in use resource of the built testnet
+	Tears down the nodes!
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
