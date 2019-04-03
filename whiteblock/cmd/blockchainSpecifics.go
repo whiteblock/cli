@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"os"
+	util "../util"
 	"fmt"
 	"github.com/spf13/cobra"
-	util "../util"
+	"os"
 )
-
 
 var sysCMD = &cobra.Command{
 	Use:   "sys <command>",
@@ -39,12 +38,10 @@ Params: The node to get info from
 
 Response: eos blockchain state info`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 0, 1)
+		util.CheckArguments(cmd, args, 0, 1)
 		jsonRpcCallAndPrint("eos::get_info", args)
 	},
 }
-
-
 
 var testStartCMD = &cobra.Command{
 	Use:   "start <minimum latency> <minimum completion percentage> <number of assets to send> <asset sends per block>",
@@ -56,7 +53,7 @@ Params: Time in seconds, percentage, number of assets to send, asset sends per b
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 4, 4)
+		util.CheckArguments(cmd, args, 4, 4)
 		jsonRpcCallAndPrint("sys::start_test", args)
 		return
 	},
@@ -72,7 +69,7 @@ Params: Test number
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 		results, err := jsonRpcCall("sys::get_recent_test_results", args)
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -84,7 +81,7 @@ Params: Test number
 
 		rc := result["results"].([]interface{})[0]
 		s := rc.(map[string]interface{})["series"]
-		if s == nil{
+		if s == nil {
 			fmt.Println("No results availible")
 			os.Exit(1)
 		}
@@ -108,5 +105,5 @@ func init() {
 	sysTestCMD.AddCommand(testStartCMD, testResultsCMD)
 	sysCMD.AddCommand(sysTestCMD)
 
-	RootCmd.AddCommand(sysCMD,eosCmd)
+	RootCmd.AddCommand(sysCMD, eosCmd)
 }

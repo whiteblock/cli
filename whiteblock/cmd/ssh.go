@@ -6,9 +6,9 @@ import (
 	"os"
 	"strconv"
 
+	util "../util"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
-	util "../util"
 )
 
 type Node struct {
@@ -47,7 +47,7 @@ SSH will allow the user to go into the contianer where the specified node exists
 			os.Exit(1)
 		}
 		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
-			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no","-o","ConnectTimeout=10", "-y",
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y",
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP)}
 
 		sshArgs = append(sshArgs, args[1:]...)
@@ -57,6 +57,6 @@ SSH will allow the user to go into the contianer where the specified node exists
 }
 
 func init() {
-	
+
 	RootCmd.AddCommand(sshCmd)
 }

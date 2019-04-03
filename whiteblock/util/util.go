@@ -2,9 +2,9 @@ package util
 
 import (
 	"fmt"
-	"strconv"
-	"io/ioutil"
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"strconv"
 )
 
 func PartialCommand(cmd *cobra.Command, args []string) {
@@ -29,11 +29,10 @@ func CheckAndConvertInt64(num string, name string) int64 {
 	return out
 }
 
-
- /*
-    Write writes data to a file, creating it if it doesn't exist,
-    deleting and recreating it if it does.
-  */
-func Write(path string,data []byte) error {    
-    return ioutil.WriteFile(path,data,0664)
+/*
+   Write writes data to a file, creating it if it doesn't exist,
+   deleting and recreating it if it does.
+*/
+func Write(path string, data []byte) error {
+	return ioutil.WriteFile(path, data, 0664)
 }

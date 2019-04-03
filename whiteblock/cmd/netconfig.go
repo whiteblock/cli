@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"strconv"
-	"os"
-	"github.com/spf13/cobra"
 	util "../util"
+	"github.com/spf13/cobra"
+	"os"
+	"strconv"
 )
 
 var (
@@ -33,8 +33,8 @@ var netconfigSetCmd = &cobra.Command{
 Netconfig set will introduce persisting network conditions for testing to a specific node. Please indicate the proper flags with the amount to set.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
-		testnetId,err := getPreviousBuildId()
+		util.CheckArguments(cmd, args, 1, 1)
+		testnetId, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -42,7 +42,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 		netInfo := make(map[string]interface{})
 		node, err := strconv.Atoi(args[0])
 		if err != nil {
-			util.InvalidInteger("node",args[0],true)
+			util.InvalidInteger("node", args[0], true)
 		}
 
 		netInfo["node"] = node
@@ -80,7 +80,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 	Run: func(cmd *cobra.Command, args []string) {
 
 		netInfo := make(map[string]interface{})
-		testnetId,err := getPreviousBuildId()
+		testnetId, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -92,7 +92,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 			netInfo["loss"] = lossFlag
 		}
 		if delayFlag > 0 {
-			netInfo["delay"] = (delayFlag*1000) / 2
+			netInfo["delay"] = (delayFlag * 1000) / 2
 		}
 		if rateFlag > 0 {
 			rate := strconv.Itoa(rateFlag)
@@ -118,7 +118,7 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetId,err := getPreviousBuildId()
+		testnetId, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintStringError("No previous build found")
 			os.Exit(1)

@@ -5,17 +5,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 var doneCmd = &cobra.Command{
-	Aliases: []string{"die", "stop","teardown"},
-	Use:   "done",
-	Short: "Tear down the testnet",
+	Aliases: []string{"die", "stop", "teardown"},
+	Use:     "done",
+	Short:   "Tear down the testnet",
 	Long: `
 	Tears down the nodes!
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetId,err := getPreviousBuildId()
+		testnetId, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -23,7 +22,6 @@ var doneCmd = &cobra.Command{
 	},
 }
 
-
-func init() {	
+func init() {
 	RootCmd.AddCommand(doneCmd)
 }

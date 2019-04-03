@@ -1,4 +1,5 @@
 package cmd
+
 /*
 (The MIT License)
 
@@ -22,23 +23,23 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 import (
-	"log"
 	"errors"
-	"github.com/graarh/golang-socketio/transport"
 	"github.com/gorilla/websocket"
+	"github.com/graarh/golang-socketio/transport"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
 
 const (
-	upgradeFailed     = "Upgrade failed: "
+	upgradeFailed = "Upgrade failed: "
 )
 
 var (
-	ErrorMethodNotAllowed  = errors.New("Method not allowed")
+	ErrorMethodNotAllowed = errors.New("Method not allowed")
 )
 
 type WebsocketConnection struct {
@@ -110,13 +111,13 @@ type WebsocketTransport struct {
 func (wst *WebsocketTransport) Connect(url string) (conn transport.Connection, err error) {
 	dialer := websocket.Dialer{}
 
-	auth,err := CreateAuthNHeader()
+	auth, err := CreateAuthNHeader()
 	if err != nil {
 		log.Println(err)
-		return nil,err
+		return nil, err
 	}
 	wst.RequestHeader = make(http.Header)
-	wst.RequestHeader.Set("Authorization",auth)
+	wst.RequestHeader.Set("Authorization", auth)
 	socket, _, err := dialer.Dial(url, wst.RequestHeader)
 	if err != nil {
 		return nil, err

@@ -1,24 +1,24 @@
 package cmd
 
 import (
-	"os"
+	util "../util"
 	"fmt"
 	"github.com/spf13/cobra"
-	util "../util"
+	"os"
 )
 
 /*
 	Globals
- */
+*/
 
 var (
-	serverAddr	string
+	serverAddr string
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "whiteblock",
+	Use:     "whiteblock",
 	Version: VERSION,
-	Short: "Create and test blockchains",
+	Short:   "Create and test blockchains",
 	Long: `This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. 
 	Documentation, usages, and exmaples can be found at www.whiteblock.io/docs/cli.
 	`,
@@ -31,26 +31,25 @@ func Execute() {
 	}
 }
 
-
 var completionCmd = &cobra.Command{
-	Hidden:true,
-	Use:   "completion",
-	Short: "Generates bash completion scripts",
+	Hidden: true,
+	Use:    "completion",
+	Short:  "Generates bash completion scripts",
 	Long: `To load completion run
 . <(whiteblock completion)
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		RootCmd.GenBashCompletion(os.Stdout);
+		RootCmd.GenBashCompletion(os.Stdout)
 	},
 }
 
-func init(){
+func init() {
 	RootCmd.PersistentFlags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	RootCmd.AddCommand(completionCmd)
 	//Possibly update this on load.
 	if util.StoreExists("profile") {
-		
-		err := LoadProfile()//Load the profile into the profile global
+
+		err := LoadProfile() //Load the profile into the profile global
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}

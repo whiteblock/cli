@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/spf13/cobra"
 	util "../util"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -59,8 +59,8 @@ Optional Parameters:
 		command := ""
 		params := []string{}
 
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
+		previousBuild, err := getPreviousBuild()
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
@@ -128,8 +128,8 @@ Optional Parameters:
 		}
 		params := []string{strconv.Itoa(tpsFlag)}
 
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
+		previousBuild, err := getPreviousBuild()
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
@@ -183,8 +183,8 @@ Optional Parameters:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		params := []string{strconv.Itoa(txsFlag)}
-		previousBuild,err := getPreviousBuild()
-		if err != nil{
+		previousBuild, err := getPreviousBuild()
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
@@ -223,10 +223,10 @@ The user must specify the blockchain flag as well as any other flags that will b
 Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		res,err := jsonRpcCall("state::kill", []string{})
-		if res.(float64) == 0 && err == nil{
+		res, err := jsonRpcCall("state::kill", []string{})
+		if res.(float64) == 0 && err == nil {
 			fmt.Println("Transactions stopped successfully")
-		}else{
+		} else {
 			fmt.Println("There was an error stopping transactions")
 		}
 	},

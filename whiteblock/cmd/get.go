@@ -1,18 +1,18 @@
 package cmd
 
 import (
+	util "../util"
 	"fmt"
+	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
 	"strconv"
-	"github.com/spf13/cobra"
-	util "../util"
 )
 
 func GetNodes() ([]Node, error) {
-	testnetId,err := getPreviousBuildId()
-	if err != nil{
-		return nil,err
+	testnetId, err := getPreviousBuildId()
+	if err != nil {
+		return nil, err
 	}
 	res, err := jsonRpcCall("nodes", []string{testnetId})
 	if err != nil {
@@ -64,11 +64,11 @@ var getNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
 	Short:   "Nodes will show all nodes in the network.",
-	Long: "\nNodes will output all of the nodes in the current network.\n",
+	Long:    "\nNodes will output all of the nodes in the current network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetId,err := getPreviousBuildId()
-		if err != nil{
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 		jsonRpcCallAndPrint("status_nodes", []string{testnetId})
@@ -85,16 +85,16 @@ Response: true or false, on whether or not a test is running; The name of the te
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 0, 0)
+		util.CheckArguments(cmd, args, 0, 0)
 		jsonRpcCallAndPrint("state::is_running", []string{})
 		jsonRpcCallAndPrint("state::what_is_running", []string{})
 	},
 }
 
 var getLogCmd = &cobra.Command{
-	Use:   "log <node>",
+	Use:     "log <node>",
 	Aliases: []string{"logs"},
-	Short: "Log will dump data pertaining to the node.",
+	Short:   "Log will dump data pertaining to the node.",
 	Long: `
 Get stdout and stderr from a node.
 
@@ -104,9 +104,9 @@ Response: stdout and stderr of the blockchain process
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
-		testNetId,err := getPreviousBuildId()
-		if err != nil{
+		util.CheckArguments(cmd, args, 1, 1)
+		testNetId, err := getPreviousBuildId()
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 		n, err := strconv.Atoi(args[0])
@@ -114,22 +114,22 @@ Response: stdout and stderr of the blockchain process
 		if err != nil {
 			util.InvalidInteger("node", args[0], true)
 		}
-		tailval,err := cmd.Flags().GetInt("tail")
+		tailval, err := cmd.Flags().GetInt("tail")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 		jsonRpcCallAndPrint("log", map[string]interface{}{
 			"testnetId": testNetId,
-			"node":   n,
-			"lines":  tailval,
+			"node":      n,
+			"lines":     tailval,
 		})
 	},
 }
 
 var getDefaultsCmd = &cobra.Command{
-	Use:   "default <blockchain>",
+	Use:     "default <blockchain>",
 	Aliases: []string{"defaults"},
-	Short: "Default gets the blockchain params.",
+	Short:   "Default gets the blockchain params.",
 	Long: `
 Get the blockchain specific parameters for a deployed blockchain.
 
@@ -138,16 +138,15 @@ Format: The blockchain to get the build params of
 Response: The params as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 		jsonRpcCallAndPrint("get_defaults", args)
 	},
 }
 
-
 var getConfigsCmd = &cobra.Command{
-	Use:   "configs <blockchain> [file]",
+	Use:     "configs <blockchain> [file]",
 	Aliases: []string{"config"},
-	Short: "Get the resources for a blockchain",
+	Short:   "Get the resources for a blockchain",
 	Long: `
 Get the resources for a blockchain. With one argument, lists what is availible. With two
 	arguments, get the contents of the file
@@ -157,8 +156,8 @@ Params: The blockchain to get the resources of, the resource/file name
 Response: The resoures as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 2)
-		jsonRpcCallAndPrint("get_resources", args)		
+		util.CheckArguments(cmd, args, 1, 2)
+		jsonRpcCallAndPrint("get_resources", args)
 	},
 }
 
@@ -184,7 +183,7 @@ Params: start unix timestamp, end unix timestamp
 Response: JSON representation of network statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 2, 2)
+		util.CheckArguments(cmd, args, 2, 2)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  util.CheckAndConvertInt64(args[0], "start unix timestamp"),
 			"endTime":    util.CheckAndConvertInt64(args[1], "end unix timestamp"),
@@ -205,7 +204,7 @@ Params: start block number end block number
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 2, 2)
+		util.CheckArguments(cmd, args, 2, 2)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
@@ -226,7 +225,7 @@ Params: Number of blocks
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 		jsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
@@ -255,7 +254,7 @@ commands separated by blockchains.
 */
 
 func getBlockCobra(cmd *cobra.Command, args []string) {
-	util.CheckArguments(cmd,args, 1, 1)
+	util.CheckArguments(cmd, args, 1, 1)
 	blockNum := 0
 	var err error
 	if len(args) > 0 {
@@ -336,7 +335,7 @@ Params: The transaction hash
 Response: JSON representation of the transaction.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 		jsonRpcCallAndPrint("get_transaction", args)
 	},
 }
@@ -427,7 +426,7 @@ func init() {
 
 	getLogCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
 
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd,getConfigsCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd, getConfigsCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented

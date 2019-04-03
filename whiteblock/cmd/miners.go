@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/cobra"
 	util "../util"
+	"github.com/spf13/cobra"
 )
 
 var minerCmd = &cobra.Command{
@@ -28,9 +28,9 @@ Params: A list of the nodes to start mining or None for all nodes
 
 Response: The number of nodes which successfully received the signal to start mining`,
 	Run: func(cmd *cobra.Command, args []string) {
-		spinner := &Spinner{txt:"Starting the miner",die:false}
+		spinner := &Spinner{txt: "Starting the miner", die: false}
 		spinner.Run(100)
-		
+
 		res, err := jsonRpcCall("start_mining", args)
 		if err != nil {
 			util.PrintErrorFatal(err)

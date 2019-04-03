@@ -1,23 +1,23 @@
 package cmd
 
 import (
-	"fmt"
-	"io/ioutil"
-	"encoding/json"
-	"github.com/spf13/cobra"
 	util "../util"
+	"encoding/json"
+	"fmt"
+	"github.com/spf13/cobra"
+	"io/ioutil"
 )
 
 var testCmd = &cobra.Command{
 	// Hidden: true,
-	Use:    "test <file>",
-	Short:  "Run test cases.",
+	Use:   "test <file>",
+	Short: "Run test cases.",
 	Long: `
 
 This command will read from a file to run a test.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 
 		b, err := ioutil.ReadFile(args[0])
 		if err != nil {
@@ -38,7 +38,7 @@ This command will read from a file to run a test.
 		fmt.Println(cont["tests"])
 
 		jsonRpcCallAndPrint("add_commands", cont["rpc"])
-		res,err := jsonRpcCall("build", cont["build"])
+		res, err := jsonRpcCall("build", cont["build"])
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -51,4 +51,3 @@ This command will read from a file to run a test.
 func init() {
 	RootCmd.AddCommand(testCmd)
 }
-

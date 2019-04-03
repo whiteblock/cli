@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"os"
 	"encoding/json"
-	"strings"
 	"github.com/Whiteblock/go-prettyjson"
+	"os"
+	"strings"
 )
 
 func prettyp(s string) string {
-	_,noPretty := os.LookupEnv("NO_PRETTY")
+	_, noPretty := os.LookupEnv("NO_PRETTY")
 	if noPretty {
 		return s
 	}
@@ -26,9 +26,9 @@ func prettyp(s string) string {
 }
 
 func prettypi(i interface{}) string {
-	_,noPretty := os.LookupEnv("NO_PRETTY")
+	_, noPretty := os.LookupEnv("NO_PRETTY")
 	if noPretty {
-		out,_ := json.Marshal(i)
+		out, _ := json.Marshal(i)
 		return string(out)
 	}
 	out, _ := prettyjson.Marshal(i)

@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"regexp"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -16,10 +16,9 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-
 type Contracts struct {
 	DeployedNodeAddress string `json:",omitempty"`
-	ContractName        string `json:,omitempty`
+	ContractName        string `json:",omitempty"`
 	ContractAddress     string `json:",omitempty"`
 }
 
@@ -205,8 +204,8 @@ func deployContract(fileName, IP string) string {
 var gethCmd = &cobra.Command{
 	Use:   "geth <command>",
 	Short: "Run geth commands",
-	Long: "\nGeth will allow the user to get infromation and run geth commands.\n",
-	Run:util.PartialCommand,
+	Long:  "\nGeth will allow the user to get infromation and run geth commands.\n",
+	Run:   util.PartialCommand,
 }
 
 var gethSolcCmd = &cobra.Command{
@@ -241,7 +240,7 @@ Deploy will compile the smart contract and deploy it to the ethereum blockchain.
 Output: Deployed contract address
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 2, 2)
+		util.CheckArguments(cmd, args, 2, 2)
 		//assertions for sanity
 		res, err := jsonRpcCall("get_block_number", []string{})
 		if err != nil {
@@ -280,7 +279,7 @@ Output: Deployed contract address
 				ContractAddress:     addrList[1],
 			})
 			contracts, err := json.Marshal(ContractList)
-			if err != nil{
+			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 			writeContractListFile(fmt.Sprintf("%s", contracts))
@@ -296,7 +295,7 @@ Console will log into the geth console.
 
 Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 		nodes, err := GetNodes()
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -311,7 +310,7 @@ Response: stdout of geth console`,
 			os.Exit(1)
 		}
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
-			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no","-o","ConnectTimeout=10", "-y",
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y",
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "-t", "geth", "attach", "/geth/geth.ipc"}, os.Environ()))
 	},
 }
@@ -326,7 +325,7 @@ Params: The transaction hash
 
 Response: JSON representation of the transaction receipt.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
 	},
 }
@@ -339,7 +338,7 @@ Get the current hash rate per node
 
 Response: The hash rate of a single node in the network`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 0, 1)
+		util.CheckArguments(cmd, args, 0, 1)
 		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
 	},
 }
@@ -355,7 +354,7 @@ Params: The number of transactions to retrieve
 Response: JSON object of transaction data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
+		util.CheckArguments(cmd, args, 1, 1)
 		num, err := strconv.Atoi(args[0])
 		if err != nil {
 			util.PrintErrorFatal(err)

@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/spf13/cobra"
 	util "../util"
+	"github.com/spf13/cobra"
 )
 
 var confCmd = &cobra.Command{
