@@ -38,8 +38,6 @@ func GetNodes() ([]Node, error) {
 	return out, nil
 }
 
-var logTail int = -1
-
 func readContractsFile() ([]byte, error) {
 	cwd := os.Getenv("HOME")
 	return ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
@@ -116,11 +114,14 @@ Response: stdout and stderr of the blockchain process
 		if err != nil {
 			util.InvalidInteger("node", args[0], true)
 		}
-
+		tailval,err := cmd.Flags().GetInt("tail")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 		jsonRpcCallAndPrint("log", map[string]interface{}{
 			"testnetId": testNetId,
 			"node":   n,
-			"lines":  logTail,
+			"lines":  tailval,
 		})
 	},
 }
@@ -424,7 +425,7 @@ Response: JSON representation of the contract information.
 
 func init() {
 
-	getLogCmd.Flags().IntVarP(&logTail, "tail", "t", -1, "Get only the last x lines")
+	getLogCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd,getConfigsCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
