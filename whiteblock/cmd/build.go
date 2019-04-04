@@ -341,7 +341,9 @@ var buildCmd = &cobra.Command{
 
 		for i := 0; i < len(buildOpt); i++ {
 			fmt.Print(buildOpt[i] + ": ")
-			scanner.Scan()
+			if !scanner.Scan() {
+				util.PrintErrorFatal(scanner.Err())
+			}
 
 			text := scanner.Text()
 			if len(text) != 0 {
@@ -484,6 +486,9 @@ var buildCmd = &cobra.Command{
 
 		if envFlag != nil {
 			buildConf.Environments, err = processEnv(envFlag, buildConf.Nodes)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
 		}
 		//fmt.Printf("%+v\n",buildConf)
 		build(buildConf)
