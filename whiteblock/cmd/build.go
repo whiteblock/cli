@@ -435,10 +435,11 @@ var buildCmd = &cobra.Command{
 				}
 			}
 		}
+		if buildConf.Params == nil {
+			buildConf.Params = map[string]interface{}{}
+		}
 		if validators > 0 {
-			if buildConf.Params == nil {
-				buildConf.Params = map[string]interface{}{}
-			}
+			
 			buildConf.Params["validators"] = validators
 		}
 
@@ -459,7 +460,6 @@ var buildCmd = &cobra.Command{
 					util.PrintErrorFatal(err)
 				}
 				buildConf.Files[name] = base64.StdEncoding.EncodeToString(data)
-
 			}
 		}
 
