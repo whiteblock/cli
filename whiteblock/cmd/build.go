@@ -74,6 +74,43 @@ func getPreviousBuild() (Config, error) {
 	return out, err
 }
 
+
+func hasParam(params [][]string,param string) bool {
+	for _,p := range params {
+		if p[0] == param {
+			return true
+		}
+	}
+	return false
+}
+
+func fetchParams(blockchain string) ([][]string,error) {
+	//Handle the ugly conversions, in a safe manner
+	rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
+	if err != nil {
+		return nil,err
+	}
+	optionsStep1, ok := rawOptions.([]interface{})
+	if !ok {
+		return nil,fmt.Errorf("Unexpected format for params")
+	}
+	out := make([][]string,len(optionsStep1))
+	for i,optionsStep1Segment := range optionsStep1 {
+		optionsStep2, ok := optionsStep1Segment.([]interface{})//[][]interface{}[i]
+		if !ok {
+			return nil,fmt.Errorf("Unexpected format for params")
+		}
+		out[i] = make([]string,len(optionsStep2))
+		for j,optionsStep2Segment := range optionsStep2 {
+			out[i][j],ok = optionsStep2Segment.(string)
+			if !ok {
+				return nil,fmt.Errorf("Unexpected format for params")
+			}
+		}
+	}
+	return out,nil
+}
+
 func buildAttach(buildId string) {
 	buildListener(buildId)
 	err := util.WriteStore(".previous_build_id", []byte(buildId))
@@ -187,6 +224,7 @@ func processOptions(givenOptions map[string]string, format []interface{}) (map[s
 	return out, nil
 }
 
+
 //-1 means for all
 func processEnvKey(in string) (int, string) {
 	node := -1
@@ -241,12 +279,10 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-
+		var err error
 		util.CheckArguments(cmd, args, 0, 0)
-		buildConf, err := getPreviousBuild()
-		if err != nil {
-			//util.PrintError(err)
-		}
+		buildConf, _ := getPreviousBuild()//Errors are ok with this.
+
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
@@ -257,11 +293,11 @@ var buildCmd = &cobra.Command{
 
 		if buildConf.Resources != nil && len(buildConf.Resources) > 0 {
 			defaultCpus = string(buildConf.Resources[0].Cpus)
-			defaultMemory = string(buildConf.Resources[0].Memory)
+			defaultMemory = ""//string(buildConf.Resources[0].Memory)
 		} else if buildConf.Resources == nil {
 			buildConf.Resources = []Resources{Resources{}}
 		}
-		
+
 		if buildConf.Params == nil {
 			buildConf.Params = map[string]interface{}{}
 		}
@@ -339,11 +375,20 @@ var buildCmd = &cobra.Command{
 		offset := 0
 
 		if blockchainEnabled {
-			buildConf.Blockchain = blockchainFlag
+			buildConf.Blockchain = strings.ToLower(blockchainFlag)
 		} else {
-			buildConf.Blockchain = buildArr[offset]
+			buildConf.Blockchain = strings.ToLower(buildArr[offset])
 			offset++
-		}
+		}//Final blockchain definition. Will need to start another round of prompting
+		optionsChannel := make(chan [][]string,1)
+		go func(){
+			opt,err := fetchParams(buildConf.Blockchain)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			optionsChannel <- opt
+		}()
+
 
 		if nodesEnabled {
 			buildConf.Nodes = nodesFlag
@@ -364,6 +409,18 @@ var buildCmd = &cobra.Command{
 		if !memoryEnabled {
 			buildConf.Resources[0].Memory = buildArr[offset]
 			offset++
+		}
+
+
+		options := <- optionsChannel//Currently has a negative impact but will be positive in the future
+		if validators < 0 && hasParam(options,"validators"){
+			fmt.Print("validators: ")
+			scanner.Scan()
+			text := scanner.Text()
+			validators,err = strconv.Atoi(text)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
 		}
 
 		if optionsFlag != nil {
@@ -393,27 +450,13 @@ var buildCmd = &cobra.Command{
 				util.PrintErrorFatal(err)
 			}
 		} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
-			rawOptions, err := jsonRpcCall("get_params", []string{buildConf.Blockchain})
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-			options, ok := rawOptions.([]interface{})
-			if !ok {
-				util.PrintStringError("Unexpected format for params")
-				os.Exit(1)
-			}
+			//PARAMS
 
-			scanner := bufio.NewScanner(os.Stdin)
+			//scanner := bufio.NewScanner(os.Stdin)
 
 			for i := 0; i < len(options); i++ {
-				opt := options[i].([]interface{})
-				if len(opt) != 2 {
-					util.PrintStringError("Unexpected format for params")
-					os.Exit(1)
-				}
-
-				key := opt[0].(string)
-				key_type := opt[1].(string)
+				key := options[i][0]
+				key_type := options[i][1]
 
 				fmt.Printf("%s (%s): ", key, key_type)
 				scanner.Scan()
@@ -439,20 +482,9 @@ var buildCmd = &cobra.Command{
 				}
 			}
 		}
-
-		if validators > 0 {
-			
+		if validators >= 0 {
 			buildConf.Params["validators"] = validators
 		}
-
-		if buildConf.Blockchain == "eos" {
-			if validators < 0 {
-				buildConf.Nodes += 21
-			} else {
-				buildConf.Nodes += validators
-			}
-		}
-		buildConf.Blockchain = strings.ToLower(buildConf.Blockchain)
 
 		if filesFlag != nil {
 			buildConf.Files = map[string]string{}
