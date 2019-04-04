@@ -134,6 +134,8 @@ Optional Parameters:
 		}
 
 		switch previousBuild.Blockchain {
+		case "pantheon":
+			fallthrough
 		case "geth":
 			fallthrough
 		case "parity":
