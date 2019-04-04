@@ -194,13 +194,12 @@ func removeSmartContracts() {
 	}
 }
 
-func processOptions(givenOptions map[string]string, format []interface{}) (map[string]interface{}, error) {
+func processOptions(givenOptions map[string]string, format [][]string) (map[string]interface{}, error) {
 	out := map[string]interface{}{}
 
 	for _, kv := range format {
-		_kv := kv.([]interface{})
-		name := _kv[0].(string)
-		key_type := _kv[1].(string)
+		name := kv[0]
+		key_type := kv[1]
 
 		val, ok := givenOptions[name]
 		if !ok {
@@ -424,16 +423,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		if optionsFlag != nil {
-			rawOptions, err := jsonRpcCall("get_params", []string{buildConf.Blockchain})
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-			processedOptions, ok := rawOptions.([]interface{})
-			if !ok {
-				util.PrintStringError("Unexpected format for params")
-				os.Exit(1)
-			}
-			buildConf.Params, err = processOptions(optionsFlag, processedOptions)
+			buildConf.Params, err = processOptions(optionsFlag, options)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
