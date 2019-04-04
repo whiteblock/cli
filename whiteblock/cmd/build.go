@@ -261,6 +261,10 @@ var buildCmd = &cobra.Command{
 		} else if buildConf.Resources == nil {
 			buildConf.Resources = []Resources{Resources{}}
 		}
+		
+		if buildConf.Params == nil {
+			buildConf.Params = map[string]interface{}{}
+		}
 
 		if cpusFlag == "0" {
 			cpusFlag = ""
@@ -435,9 +439,7 @@ var buildCmd = &cobra.Command{
 				}
 			}
 		}
-		if buildConf.Params == nil {
-			buildConf.Params = map[string]interface{}{}
-		}
+
 		if validators > 0 {
 			
 			buildConf.Params["validators"] = validators
