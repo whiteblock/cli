@@ -74,9 +74,8 @@ func getPreviousBuild() (Config, error) {
 	return out, err
 }
 
-
-func hasParam(params [][]string,param string) bool {
-	for _,p := range params {
+func hasParam(params [][]string, param string) bool {
+	for _, p := range params {
 		if p[0] == param {
 			return true
 		}
@@ -84,31 +83,31 @@ func hasParam(params [][]string,param string) bool {
 	return false
 }
 
-func fetchParams(blockchain string) ([][]string,error) {
+func fetchParams(blockchain string) ([][]string, error) {
 	//Handle the ugly conversions, in a safe manner
 	rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	optionsStep1, ok := rawOptions.([]interface{})
 	if !ok {
-		return nil,fmt.Errorf("Unexpected format for params")
+		return nil, fmt.Errorf("Unexpected format for params")
 	}
-	out := make([][]string,len(optionsStep1))
-	for i,optionsStep1Segment := range optionsStep1 {
-		optionsStep2, ok := optionsStep1Segment.([]interface{})//[][]interface{}[i]
+	out := make([][]string, len(optionsStep1))
+	for i, optionsStep1Segment := range optionsStep1 {
+		optionsStep2, ok := optionsStep1Segment.([]interface{}) //[][]interface{}[i]
 		if !ok {
-			return nil,fmt.Errorf("Unexpected format for params")
+			return nil, fmt.Errorf("Unexpected format for params")
 		}
-		out[i] = make([]string,len(optionsStep2))
-		for j,optionsStep2Segment := range optionsStep2 {
-			out[i][j],ok = optionsStep2Segment.(string)
+		out[i] = make([]string, len(optionsStep2))
+		for j, optionsStep2Segment := range optionsStep2 {
+			out[i][j], ok = optionsStep2Segment.(string)
 			if !ok {
-				return nil,fmt.Errorf("Unexpected format for params")
+				return nil, fmt.Errorf("Unexpected format for params")
 			}
 		}
 	}
-	return out,nil
+	return out, nil
 }
 
 func buildAttach(buildId string) {
@@ -223,7 +222,6 @@ func processOptions(givenOptions map[string]string, format [][]string) (map[stri
 	return out, nil
 }
 
-
 //-1 means for all
 func processEnvKey(in string) (int, string) {
 	node := -1
@@ -244,7 +242,7 @@ func processEnvKey(in string) (int, string) {
 	}
 
 	var err error
-	node, err = strconv.Atoi(in[0:index])
+	node, err = strconv.Atoi(in[:index])
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
@@ -280,7 +278,7 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		util.CheckArguments(cmd, args, 0, 0)
-		buildConf, _ := getPreviousBuild()//Errors are ok with this.
+		buildConf, _ := getPreviousBuild() //Errors are ok with this.
 
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
@@ -292,7 +290,7 @@ var buildCmd = &cobra.Command{
 
 		if buildConf.Resources != nil && len(buildConf.Resources) > 0 {
 			defaultCpus = string(buildConf.Resources[0].Cpus)
-			defaultMemory = ""//string(buildConf.Resources[0].Memory)
+			defaultMemory = "" //string(buildConf.Resources[0].Memory)
 		} else if buildConf.Resources == nil {
 			buildConf.Resources = []Resources{Resources{}}
 		}
@@ -357,37 +355,21 @@ var buildCmd = &cobra.Command{
 			}
 		}
 
-		if len(serversFlag) > 0 {
-			serversInter := strings.Split(serversFlag, ",")
-			buildConf.Servers = []int{}
-			for _, serverStr := range serversInter {
-				serverNum, err := strconv.Atoi(serverStr)
-				if err != nil {
-					util.InvalidInteger("servers", serverStr, true)
-				}
-				buildConf.Servers = append(buildConf.Servers, serverNum)
-			}
-		} else if len(buildConf.Servers) == 0 {
-			buildConf.Servers = getServer()
-		}
-
 		offset := 0
-
 		if blockchainEnabled {
 			buildConf.Blockchain = strings.ToLower(blockchainFlag)
 		} else {
 			buildConf.Blockchain = strings.ToLower(buildArr[offset])
 			offset++
-		}//Final blockchain definition. Will need to start another round of prompting
-		optionsChannel := make(chan [][]string,1)
-		go func(){
-			opt,err := fetchParams(buildConf.Blockchain)
+		} //Final blockchain definition. Will need to start another round of prompting
+		optionsChannel := make(chan [][]string, 1)
+		go func() {
+			opt, err := fetchParams(buildConf.Blockchain)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 			optionsChannel <- opt
 		}()
-
 
 		if nodesEnabled {
 			buildConf.Nodes = nodesFlag
@@ -410,13 +392,26 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
+		if len(serversFlag) > 0 {
+			serversInter := strings.Split(serversFlag, ",")
+			buildConf.Servers = []int{}
+			for _, serverStr := range serversInter {
+				serverNum, err := strconv.Atoi(serverStr)
+				if err != nil {
+					util.InvalidInteger("servers", serverStr, true)
+				}
+				buildConf.Servers = append(buildConf.Servers, serverNum)
+			}
+		} else if len(buildConf.Servers) == 0 {
+			buildConf.Servers = getServer()
+		}
 
-		options := <- optionsChannel//Currently has a negative impact but will be positive in the future
-		if validators < 0 && hasParam(options,"validators"){
+		options := <-optionsChannel //Currently has a negative impact but will be positive in the future
+		if validators < 0 && hasParam(options, "validators") {
 			fmt.Print("validators: ")
 			scanner.Scan()
 			text := scanner.Text()
-			validators,err = strconv.Atoi(text)
+			validators, err = strconv.Atoi(text)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}

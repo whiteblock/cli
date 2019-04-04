@@ -1,20 +1,19 @@
 package cmd
 
 import (
-	
+	util "../util"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/rpc/v2/json2"
+	"github.com/graarh/golang-socketio"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
 	"sync"
-	"os/signal"
 	"syscall"
-	"github.com/gorilla/rpc/v2/json2"
-	"github.com/graarh/golang-socketio"
-	util "../util"
 )
 
 type BuildStatus struct {
@@ -100,9 +99,9 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 
 func buildListener(testnetId string) {
 	sigChan := make(chan os.Signal, 1)
- 	
- 	signal.Notify(sigChan,syscall.SIGINT)
-	go func(){
+
+	signal.Notify(sigChan, syscall.SIGINT)
+	go func() {
 		<-sigChan
 		defer util.DeleteStore(".in_progress_build_id")
 		jsonRpcCallAndPrint("stop_build", []string{testnetId})

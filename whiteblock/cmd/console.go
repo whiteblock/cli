@@ -34,8 +34,8 @@ Response: stdout of client console`,
 			os.Exit(1)
 		}
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
-		"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y", "-t",
-		"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y", "-t",
+			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
 	},
 }
 
