@@ -13,11 +13,11 @@ import (
 
 var console = &cobra.Command{
 	Use:   "console <node>",
-	Short: "Logs into the geth console",
+	Short: "Logs into the client console",
 	Long: `
-Console will log into the geth console.
+Console will log into the client console.
 
-Response: stdout of geth console`,
+Response: stdout of client console`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
 		nodes, err := GetNodes()
