@@ -1,7 +1,7 @@
 # Whiteblock CLI
 
 ## ./whiteblock <COMMAND> [FLAGS]
-This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. Documentation, usages, and exmaples can be found at [www.whiteblock.io/docs/cli].
+This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. Documentation, usages, and exmaples can be found in our [documentation](www.whiteblock.io/docs/cli).
 
 * Available Commands:
     * build       Build a blockchain using image and deploy nodes
