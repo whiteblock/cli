@@ -497,7 +497,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		fbg,err := cmd.Flags().GetBool("freeze-before-genesis")
-		if err != nil && fbg {
+		if err == nil && fbg {
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
 		
@@ -591,6 +591,7 @@ var buildUnfreezeCmd = &cobra.Command {
 			os.Exit(1)
 		}
 		jsonRpcCallAndPrint("unfreeze_build", []string{string(buildId)})
+		buildAttach(string(buildId))
 	},
 }
 

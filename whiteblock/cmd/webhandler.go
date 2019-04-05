@@ -17,9 +17,10 @@ import (
 )
 
 type BuildStatus struct {
-	Error    map[string]string `json:"error"`
-	Progress float64           `json:"progress"`
-	Stage    string            `json:"stage"`
+	Error		map[string]string	`json:"error"`
+	Progress	float64				`json:"progress"`
+	Stage		string				`json:"stage"`
+    Frozen		bool				`json:"frozen"`
 }
 
 func jsonRpcCallAndPrint(method string, params interface{}) {
@@ -165,7 +166,9 @@ func buildListener(testnetId string) {
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
 		json.Unmarshal([]byte(args), &status)
-		if status.Progress == 0.0 {
+		if status.Frozen {
+			fmt.Printf("Build is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
+		}else if status.Progress == 0.0 {
 			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Error != nil {
 			what := status.Error["what"]
