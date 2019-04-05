@@ -70,7 +70,14 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 		return nil, err
 	}
 	body := strings.NewReader(string(jrpc))
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/rpc", serverAddr), body)
+	req, err := func() (*http.Request,error) {
+		if strings.HasSuffix(serverAddr,"5000"){//5000 is http
+			return http.NewRequest("POST", fmt.Sprintf("http://%s/rpc", serverAddr), body)
+		}else{//5001 is https
+			return http.NewRequest("POST", fmt.Sprintf("https://%s/rpc", serverAddr), body)
+		}
+		
+	}()
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -149,10 +156,17 @@ func buildListener(testnetId string) {
 
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
-	c, err := gosocketio.Dial(
-		"ws://"+serverAddr+"/socket.io/?EIO=3&transport=websocket",
-		GetDefaultWebsocketTransport(),
-	)
+	c,err := func()(*gosocketio.Client, error){
+		if strings.HasSuffix(serverAddr,"5000") {//5000 is http
+			return gosocketio.Dial(
+				"ws://"+serverAddr+"/socket.io/?EIO=3&transport=websocket",
+				GetDefaultWebsocketTransport())
+		}else{//5001 is https
+			return gosocketio.Dial(
+				"wss://"+serverAddr+"/socket.io/?EIO=3&transport=websocket",
+				GetDefaultWebsocketTransport())
+		}
+	}()
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}

@@ -12,34 +12,35 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"os/user"
 )
 
 var (
-	previousYesAll bool
-	serversFlag    string
-	blockchainFlag string
-	nodesFlag      int
-	cpusFlag       string
-	memoryFlag     string
-	paramsFile     string
-	validators     int
-	imageFlag      string
-	optionsFlag    map[string]string
-	envFlag        map[string]string
-	filesFlag      map[string]string
+	previousYesAll	bool
+	serversFlag		string
+	blockchainFlag	string
+	nodesFlag		int
+	cpusFlag		string
+	memoryFlag		string
+	paramsFile		string
+	validators		int
+	imageFlag		string
+	optionsFlag		map[string]string
+	envFlag			map[string]string
+	filesFlag		map[string]string
 )
 
 type Config struct {
-	Servers      []int                  `json:"servers"`
-	Blockchain   string                 `json:"blockchain"`
-	Nodes        int                    `json:"nodes"`
-	Image        string                 `json:"image"`
-	Resources    []Resources            `json:"resources"`
-	Params       map[string]interface{} `json:"params"`
-	Environments []map[string]string    `json:"environments"`
-	Files        map[string]string      `json:"files"`
-	Logs map[string]string 				`json:"logs"`
-	Extras map[string]interface{}		`json:"extras"`
+	Servers		[]int					`json:"servers"`
+	Blockchain	string					`json:"blockchain"`
+	Nodes		int						`json:"nodes"`
+	Image		string					`json:"image"`
+	Resources	[]Resources				`json:"resources"`
+	Params		map[string]interface{}	`json:"params"`
+	Environments []map[string]string	`json:"environments"`
+	Files		map[string]string		`json:"files"`
+	Logs 		map[string]string 		`json:"logs"`
+	Extras 		map[string]interface{}	`json:"extras"`
 }
 
 type Resources struct {
@@ -164,10 +165,10 @@ func tern(exp bool, res1 string, res2 string) string {
 }
 
 func getImage(blockchain string, imageType string, defaultImage string) string {
-	cwd := os.Getenv("HOME")
+	usr,err := user.Current()
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
-		b, err = ioutil.ReadFile(cwd + "/cli/etc/whiteblock.json")
+		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -388,7 +389,7 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		buildConf.Image = getImage(buildConf.Blockchain, "stable", buildConf.Blockchain)
+		buildConf.Image = getImage(buildConf.Blockchain, "stable", "")
 
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
