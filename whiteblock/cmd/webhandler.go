@@ -99,14 +99,53 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 
 func buildListener(testnetId string) {
 	sigChan := make(chan os.Signal, 1)
+	pauseChan := make(chan os.Signal,1)
+	quitChan := make(chan os.Signal,1)
 
-	signal.Notify(sigChan, syscall.SIGINT)
+	signal.Notify(sigChan, syscall.SIGINT)//Stop the build on SIGINT
 	go func() {
 		<-sigChan
 		defer util.DeleteStore(".in_progress_build_id")
-		jsonRpcCallAndPrint("stop_build", []string{testnetId})
+		res,err := jsonRpcCall("stop_build", []string{testnetId})
+		if err != nil{
+			util.PrintErrorFatal(err)
+		}
+		fmt.Printf("\r\n%v\r\n",res)
 		os.Exit(0)
 	}()
+
+	signal.Notify(quitChan,syscall.SIGQUIT)//^\ means exit without side effects
+	go func(){
+		<-quitChan
+		os.Exit(0)
+	}()
+
+	signal.Notify(pauseChan,syscall.SIGTSTP,syscall.SIGCONT)
+	paused := false
+	go func() {
+		for {
+			sigId := <-pauseChan
+			if sigId == syscall.SIGTSTP && !paused{
+				paused = true
+				res,err := jsonRpcCall("freeze_build",[]string{testnetId})
+				if err != nil{
+					util.PrintErrorFatal(err)
+				}
+				fmt.Printf("\r\n%v\r\n",res)
+				signal.Reset(syscall.SIGTSTP)
+				syscall.Kill(syscall.Getpid(),syscall.SIGSTOP)
+				signal.Notify(pauseChan,syscall.SIGTSTP)
+			}else if sigId == syscall.SIGCONT  && paused {
+				paused = false
+				res,err := jsonRpcCall("unfreeze_build",[]string{testnetId})
+				if err != nil{
+					util.PrintErrorFatal(err)
+				}
+				fmt.Printf("\r\n%v\r\n",res)
+			}
+		}
+	}()
+
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
 	c, err := gosocketio.Dial(

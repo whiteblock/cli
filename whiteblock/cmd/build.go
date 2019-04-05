@@ -38,6 +38,8 @@ type Config struct {
 	Params       map[string]interface{} `json:"params"`
 	Environments []map[string]string    `json:"environments"`
 	Files        map[string]string      `json:"files"`
+	Logs map[string]string 				`json:"logs"`
+	Extras map[string]interface{}		`json:"extras"`
 }
 
 type Resources struct {
@@ -298,6 +300,9 @@ var buildCmd = &cobra.Command{
 		if buildConf.Params == nil {
 			buildConf.Params = map[string]interface{}{}
 		}
+		if buildConf.Extras == nil {
+			buildConf.Extras = map[string]interface{}{}
+		}
 
 		if cpusFlag == "0" {
 			cpusFlag = ""
@@ -490,6 +495,12 @@ var buildCmd = &cobra.Command{
 				util.PrintErrorFatal(err)
 			}
 		}
+
+		fbg,err := cmd.Flags().GetBool("freeze-before-genesis")
+		if err != nil && fbg {
+			buildConf.Extras["freezeAfterInfrastructure"] = true
+		}
+		
 		//fmt.Printf("%+v\n",buildConf)
 		build(buildConf)
 		removeSmartContracts()
@@ -537,18 +548,49 @@ var previousCmd = &cobra.Command{
 
 var buildStopCmd = &cobra.Command{
 	Use:     "stop",
-	Aliases: []string{"halt", "cancel"},
+	Aliases: []string{"cancel"},
 	Short:   "Stops the current build",
 	Long:    "\nBuild stops the current building process.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		buildId, err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
-			fmt.Println("No inprogress build found. Use build command to deploy a blockchain.")
+			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
 		defer util.DeleteStore(".in_progress_build_id")
 		jsonRpcCallAndPrint("stop_build", []string{string(buildId)})
+	},
+}
+
+var buildFreezeCmd = &cobra.Command {
+	Use: "freeze",
+	Aliases:[]string{"pause"},
+	Short: "",
+	Long: "",
+	Run: func(cmd *cobra.Command, args []string){
+		buildId, err := util.ReadStore(".in_progress_build_id")
+		if err != nil || len(buildId) == 0 {
+			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
+			os.Exit(1)
+		}
+		jsonRpcCallAndPrint("freeze_build", []string{string(buildId)})
+	},
+
+}
+
+var buildUnfreezeCmd = &cobra.Command {
+	Use: "unfreeze",
+	Aliases : []string{"thaw","resume"},
+	Short: "",
+	Long: "",
+	Run : func(cmd *cobra.Command, args []string){
+		buildId, err := util.ReadStore(".in_progress_build_id")
+		if err != nil || len(buildId) == 0 {
+			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
+			os.Exit(1)
+		}
+		jsonRpcCallAndPrint("unfreeze_build", []string{string(buildId)})
 	},
 }
 
@@ -566,8 +608,10 @@ func init() {
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
 	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "file templates")
 
+	buildCmd.Flags().Bool("freeze-before-genesis",false,"indicate that the build should freeze before starting the genesis ceremony")
+
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
-	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd)
+	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd,buildFreezeCmd,buildUnfreezeCmd)
 	RootCmd.AddCommand(buildCmd)
 }
