@@ -10,37 +10,37 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"strconv"
 	"strings"
-	"os/user"
 )
 
 var (
-	previousYesAll	bool
-	serversFlag		string
-	blockchainFlag	string
-	nodesFlag		int
-	cpusFlag		string
-	memoryFlag		string
-	paramsFile		string
-	validators		int
-	imageFlag		string
-	optionsFlag		map[string]string
-	envFlag			map[string]string
-	filesFlag		map[string]string
+	previousYesAll bool
+	serversFlag    string
+	blockchainFlag string
+	nodesFlag      int
+	cpusFlag       string
+	memoryFlag     string
+	paramsFile     string
+	validators     int
+	imageFlag      string
+	optionsFlag    map[string]string
+	envFlag        map[string]string
+	filesFlag      map[string]string
 )
 
 type Config struct {
-	Servers		[]int					`json:"servers"`
-	Blockchain	string					`json:"blockchain"`
-	Nodes		int						`json:"nodes"`
-	Image		string					`json:"image"`
-	Resources	[]Resources				`json:"resources"`
-	Params		map[string]interface{}	`json:"params"`
-	Environments []map[string]string	`json:"environments"`
-	Files		map[string]string		`json:"files"`
-	Logs 		map[string]string 		`json:"logs"`
-	Extras 		map[string]interface{}	`json:"extras"`
+	Servers      []int                  `json:"servers"`
+	Blockchain   string                 `json:"blockchain"`
+	Nodes        int                    `json:"nodes"`
+	Image        string                 `json:"image"`
+	Resources    []Resources            `json:"resources"`
+	Params       map[string]interface{} `json:"params"`
+	Environments []map[string]string    `json:"environments"`
+	Files        map[string]string      `json:"files"`
+	Logs         map[string]string      `json:"logs"`
+	Extras       map[string]interface{} `json:"extras"`
 }
 
 type Resources struct {
@@ -165,7 +165,7 @@ func tern(exp bool, res1 string, res2 string) string {
 }
 
 func getImage(blockchain string, imageType string, defaultImage string) string {
-	usr,err := user.Current()
+	usr, err := user.Current()
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
 		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
@@ -497,11 +497,11 @@ var buildCmd = &cobra.Command{
 			}
 		}
 
-		fbg,err := cmd.Flags().GetBool("freeze-before-genesis")
+		fbg, err := cmd.Flags().GetBool("freeze-before-genesis")
 		if err == nil && fbg {
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
-		
+
 		//fmt.Printf("%+v\n",buildConf)
 		build(buildConf)
 		removeSmartContracts()
@@ -564,12 +564,12 @@ var buildStopCmd = &cobra.Command{
 	},
 }
 
-var buildFreezeCmd = &cobra.Command {
-	Use: "freeze",
-	Aliases:[]string{"pause"},
-	Short: "",
-	Long: "",
-	Run: func(cmd *cobra.Command, args []string){
+var buildFreezeCmd = &cobra.Command{
+	Use:     "freeze",
+	Aliases: []string{"pause"},
+	Short:   "",
+	Long:    "",
+	Run: func(cmd *cobra.Command, args []string) {
 		buildId, err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
 			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
@@ -577,15 +577,14 @@ var buildFreezeCmd = &cobra.Command {
 		}
 		jsonRpcCallAndPrint("freeze_build", []string{string(buildId)})
 	},
-
 }
 
-var buildUnfreezeCmd = &cobra.Command {
-	Use: "unfreeze",
-	Aliases : []string{"thaw","resume"},
-	Short: "",
-	Long: "",
-	Run : func(cmd *cobra.Command, args []string){
+var buildUnfreezeCmd = &cobra.Command{
+	Use:     "unfreeze",
+	Aliases: []string{"thaw", "resume"},
+	Short:   "",
+	Long:    "",
+	Run: func(cmd *cobra.Command, args []string) {
 		buildId, err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
 			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
@@ -610,10 +609,10 @@ func init() {
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
 	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "file templates")
 
-	buildCmd.Flags().Bool("freeze-before-genesis",false,"indicate that the build should freeze before starting the genesis ceremony")
+	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
-	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd,buildFreezeCmd,buildUnfreezeCmd)
+	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd, buildFreezeCmd, buildUnfreezeCmd)
 	RootCmd.AddCommand(buildCmd)
 }

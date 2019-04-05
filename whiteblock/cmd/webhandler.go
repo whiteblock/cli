@@ -17,10 +17,10 @@ import (
 )
 
 type BuildStatus struct {
-	Error		map[string]string	`json:"error"`
-	Progress	float64				`json:"progress"`
-	Stage		string				`json:"stage"`
-    Frozen		bool				`json:"frozen"`
+	Error    map[string]string `json:"error"`
+	Progress float64           `json:"progress"`
+	Stage    string            `json:"stage"`
+	Frozen   bool              `json:"frozen"`
 }
 
 func jsonRpcCallAndPrint(method string, params interface{}) {
@@ -70,13 +70,13 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 		return nil, err
 	}
 	body := strings.NewReader(string(jrpc))
-	req, err := func() (*http.Request,error) {
-		if strings.HasSuffix(serverAddr,"5000"){//5000 is http
+	req, err := func() (*http.Request, error) {
+		if strings.HasSuffix(serverAddr, "5000") { //5000 is http
 			return http.NewRequest("POST", fmt.Sprintf("http://%s/rpc", serverAddr), body)
-		}else{//5001 is https
+		} else { //5001 is https
 			return http.NewRequest("POST", fmt.Sprintf("https://%s/rpc", serverAddr), body)
 		}
-		
+
 	}()
 	if err != nil {
 		log.Println(err)
@@ -107,61 +107,61 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 
 func buildListener(testnetId string) {
 	sigChan := make(chan os.Signal, 1)
-	pauseChan := make(chan os.Signal,1)
-	quitChan := make(chan os.Signal,1)
+	pauseChan := make(chan os.Signal, 1)
+	quitChan := make(chan os.Signal, 1)
 
-	signal.Notify(sigChan, syscall.SIGINT)//Stop the build on SIGINT
+	signal.Notify(sigChan, syscall.SIGINT) //Stop the build on SIGINT
 	go func() {
 		<-sigChan
 		defer util.DeleteStore(".in_progress_build_id")
-		res,err := jsonRpcCall("stop_build", []string{testnetId})
-		if err != nil{
+		res, err := jsonRpcCall("stop_build", []string{testnetId})
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Printf("\r\n%v\r\n",res)
+		fmt.Printf("\r\n%v\r\n", res)
 		os.Exit(0)
 	}()
 
-	signal.Notify(quitChan,syscall.SIGQUIT)//^\ means exit without side effects
-	go func(){
+	signal.Notify(quitChan, syscall.SIGQUIT) //^\ means exit without side effects
+	go func() {
 		<-quitChan
 		os.Exit(0)
 	}()
 
-	signal.Notify(pauseChan,syscall.SIGTSTP,syscall.SIGCONT)
+	signal.Notify(pauseChan, syscall.SIGTSTP, syscall.SIGCONT)
 	paused := false
 	go func() {
 		for {
 			sigId := <-pauseChan
-			if sigId == syscall.SIGTSTP && !paused{
+			if sigId == syscall.SIGTSTP && !paused {
 				paused = true
-				res,err := jsonRpcCall("freeze_build",[]string{testnetId})
-				if err != nil{
+				res, err := jsonRpcCall("freeze_build", []string{testnetId})
+				if err != nil {
 					util.PrintErrorFatal(err)
 				}
-				fmt.Printf("\r\n%v\r\n",res)
+				fmt.Printf("\r\n%v\r\n", res)
 				signal.Reset(syscall.SIGTSTP)
-				syscall.Kill(syscall.Getpid(),syscall.SIGSTOP)
-				signal.Notify(pauseChan,syscall.SIGTSTP)
-			}else if sigId == syscall.SIGCONT  && paused {
+				syscall.Kill(syscall.Getpid(), syscall.SIGSTOP)
+				signal.Notify(pauseChan, syscall.SIGTSTP)
+			} else if sigId == syscall.SIGCONT && paused {
 				paused = false
-				res,err := jsonRpcCall("unfreeze_build",[]string{testnetId})
-				if err != nil{
+				res, err := jsonRpcCall("unfreeze_build", []string{testnetId})
+				if err != nil {
 					util.PrintErrorFatal(err)
 				}
-				fmt.Printf("\r\n%v\r\n",res)
+				fmt.Printf("\r\n%v\r\n", res)
 			}
 		}
 	}()
 
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
-	c,err := func()(*gosocketio.Client, error){
-		if strings.HasSuffix(serverAddr,"5000") {//5000 is http
+	c, err := func() (*gosocketio.Client, error) {
+		if strings.HasSuffix(serverAddr, "5000") { //5000 is http
 			return gosocketio.Dial(
 				"ws://"+serverAddr+"/socket.io/?EIO=3&transport=websocket",
 				GetDefaultWebsocketTransport())
-		}else{//5001 is https
+		} else { //5001 is https
 			return gosocketio.Dial(
 				"wss://"+serverAddr+"/socket.io/?EIO=3&transport=websocket",
 				GetDefaultWebsocketTransport())
@@ -182,7 +182,7 @@ func buildListener(testnetId string) {
 		json.Unmarshal([]byte(args), &status)
 		if status.Frozen {
 			fmt.Printf("Build is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
-		}else if status.Progress == 0.0 {
+		} else if status.Progress == 0.0 {
 			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Error != nil {
 			what := status.Error["what"]
