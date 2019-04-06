@@ -389,7 +389,7 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		buildConf.Image = getImage(buildConf.Blockchain, "stable", "")
+		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag)
 
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
