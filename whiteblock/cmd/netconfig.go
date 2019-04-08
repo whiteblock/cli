@@ -118,6 +118,7 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 0)
 		testnetId, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintStringError("No previous build found")
