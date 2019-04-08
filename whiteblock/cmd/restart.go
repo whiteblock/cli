@@ -7,7 +7,7 @@ import (
 
 var restartNodeCmd = &cobra.Command{
 	Use:   "restart [node number]",
-	Short: "restart",
+	Short: "Attempt to restart a node",
 	Long: `
 Kill a node by sending SIGINT and then re-run the original command used to run it`,
 	Run: func(cmd *cobra.Command, args []string) {
