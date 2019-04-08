@@ -78,7 +78,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
+		util.CheckArguments(cmd, args, 0, 0)
 		netInfo := make(map[string]interface{})
 		testnetId, err := getPreviousBuildId()
 		if err != nil {
