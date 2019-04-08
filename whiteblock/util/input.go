@@ -11,7 +11,7 @@ func YesNoPrompt(msg string) bool {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
-		fmt.Printf("%s ([y]es/no) ", msg)
+		fmt.Printf("%s ([y]es/[n]o) ", msg)
 		scanner.Scan()
 		ask := scanner.Text()
 		ask = strings.Trim(ask, "\n\t\r\v\f ")
