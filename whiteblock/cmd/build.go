@@ -164,7 +164,10 @@ func tern(exp bool, res1 string, res2 string) string {
 	return res2
 }
 
-func getImage(blockchain string, imageType string, defaultImage string) string {
+func getImage(blockchain string, imageType string, defaultImage string,override bool) string {
+	if override {
+		return defaultImage
+	}
 	usr, err := user.Current()
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
@@ -389,7 +392,7 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag)
+		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag,cmd.Flags().Changed("image"))
 
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
