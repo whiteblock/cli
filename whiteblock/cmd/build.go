@@ -173,7 +173,7 @@ func getImage(blockchain string, imageType string, defaultImage string,override 
 	if err != nil {
 		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
 		if err != nil {
-			b,err = util.HttpRequest("GET","https://whiteblock.io/releases/cli/v1.5.6/whiteblock","")
+			b,err = util.HttpRequest("GET","https://whiteblock.io/releases/cli/v1.5.6/whiteblock.json","")
 			if err != nil{
 				util.PrintErrorFatal(err)
 			}
