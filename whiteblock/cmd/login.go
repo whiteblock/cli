@@ -71,6 +71,7 @@ var loginCmd = &cobra.Command{
 		}
 
 		fmt.Println("Login Success")
+		fmt.Printf("Connected to endpoint: %s\n",serverAddr)
 	},
 }
 
