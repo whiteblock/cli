@@ -613,7 +613,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
 	buildCmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
-	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "file templates")
+	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "set a custom file template")
 
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 
