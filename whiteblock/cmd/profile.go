@@ -67,9 +67,6 @@ func LoadProfile() error {
 
 func LoadBiomeAddress() error {
 	var org Organization
-	if len(profile.Organizations) == 0 {
-		return fmt.Errorf("No availible organizations")
-	}
 	//Grab organization
 	if util.StoreExists("organization") {
 		rawOrgName, err := util.ReadStore("organization")
@@ -93,7 +90,7 @@ func LoadBiomeAddress() error {
 			return fmt.Errorf("Could not find organization")
 		}
 	} else {
-		org = profile.Organizations[0]
+		org = org
 	}
 
 	var biome map[string]interface{}
