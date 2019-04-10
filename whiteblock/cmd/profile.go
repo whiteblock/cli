@@ -23,8 +23,8 @@ type Organization struct {
 }
 
 type OrganizationApiKey struct {
-	Id            int                    `json:"id"`
-	Organization  Organization           `json:"organization"`
+	Id           int          `json:"id"`
+	Organization Organization `json:"organization"`
 }
 
 type Profile struct {
@@ -74,14 +74,14 @@ func LoadBiomeAddress() error {
 		if err != nil {
 			return err
 		}
-        err = json.Unmarshal(rawOrgKey, &org_key)
-        if err != nil {
-            return err
-        }
-        org = org_key.Organization
+		err = json.Unmarshal(rawOrgKey, &org_key)
+		if err != nil {
+			return err
+		}
+		org = org_key.Organization
 	} else {
 		return fmt.Errorf("no OrganizationApiKey data")
-    }
+	}
 
 	var biome map[string]interface{}
 	if len(org.Biomes) == 0 {

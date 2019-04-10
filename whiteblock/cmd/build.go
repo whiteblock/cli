@@ -164,7 +164,7 @@ func tern(exp bool, res1 string, res2 string) string {
 	return res2
 }
 
-func getImage(blockchain string, imageType string, defaultImage string,override bool) string {
+func getImage(blockchain string, imageType string, defaultImage string, override bool) string {
 	if override {
 		return defaultImage
 	}
@@ -392,7 +392,7 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag,cmd.Flags().Changed("image"))
+		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag, cmd.Flags().Changed("image"))
 
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
