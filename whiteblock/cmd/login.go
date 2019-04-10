@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	util "../util"
 	"bytes"
 	"fmt"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	util "../util"
+	"github.com/spf13/cobra"
 )
 
 func GetRawProfileFromJwt(jwt string) ([]byte, error) {
@@ -39,7 +40,7 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 
 var loginCmd = &cobra.Command{
 	Hidden: true,
-	Use:    "login <jwt> [organization] [biome]",
+	Use:    "login <jwt> [biome]",
 	Short:  "Authorize the cli using jwt ",
 	Long:   "\nGives the user the ability to specify a jwt, within a file, to be used for authentication\n Can be given a file path or a jwt\n",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -60,8 +61,6 @@ var loginCmd = &cobra.Command{
 		case 3:
 			util.WriteStore("biome", []byte(args[2]))
 			fallthrough
-		case 2:
-			util.WriteStore("organization", []byte(args[1]))
 		}
 		LoadProfile()
 		err = LoadBiomeAddress()
@@ -69,7 +68,6 @@ var loginCmd = &cobra.Command{
 			util.DeleteStore("jwt")
 			util.DeleteStore("profile")
 			util.DeleteStore("biome")
-			util.DeleteStore("organization")
 			util.PrintErrorFatal(err)
 		}
 
