@@ -278,7 +278,7 @@ func processEnv(envVars map[string]string, nodes int) ([]map[string]string, erro
 
 var buildCmd = &cobra.Command{
 	Use:     "build",
-	Aliases: []string{"init", "create"},
+	Aliases: []string{"init", "create", "buidl"},
 	Short:   "Build a blockchain using image and deploy nodes",
 	Long: "Build will create and deploy a blockchain and the specified number of nodes." +
 		" Each node will be instantiated in its own container and will interact" +

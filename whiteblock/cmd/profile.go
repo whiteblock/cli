@@ -10,9 +10,6 @@ import (
 var (
 	profile Profile
 )
-var (
-	org_key OrganizationApiKey
-)
 
 type Organization struct {
 	Id        int                      `json:"id"`
@@ -22,11 +19,12 @@ type Organization struct {
 	Biomes    []map[string]interface{} `json:"biomes"`
 }
 
-type OrganizationApiKey struct {
+type Profile struct {
 	Id           int          `json:"id"`
 	Organization Organization `json:"organization"`
 }
 
+/*
 type Profile struct {
 	Id            int                      `json:"id"`
 	Email         string                   `json:"email"`
@@ -38,8 +36,8 @@ type Profile struct {
 	SshKeys       []map[string]interface{} `json:"ssh_keys"`
 	Organizations []Organization           `json:"organizations"`
 }
-
-func LoadOrganizationApiKey() error {
+*/
+/*func LoadOrganizationApiKey() error {
 	rawKey, err := util.ReadStore("org_key")
 	if err != nil {
 		return err
@@ -50,7 +48,7 @@ func LoadOrganizationApiKey() error {
 	}
 
 	return nil
-}
+}*/
 
 func LoadProfile() error {
 	rawProfile, err := util.ReadStore("profile")
@@ -66,29 +64,29 @@ func LoadProfile() error {
 }
 
 func LoadBiomeAddress() error {
-	var org_key OrganizationApiKey
+	var profile Profile
 	var org Organization
 	//Grab organization
-	if util.StoreExists("org_key") {
-		rawOrgKey, err := util.ReadStore("org_key")
+	if util.StoreExists("profile") {
+		rawOrgKey, err := util.ReadStore("profile")
 		if err != nil {
 			return err
 		}
-		err = json.Unmarshal(rawOrgKey, &org_key)
+		err = json.Unmarshal(rawOrgKey, &profile)
 		if err != nil {
 			return err
 		}
-		org = org_key.Organization
+		org = profile.Organization
 	} else {
-		return fmt.Errorf("no OrganizationApiKey data")
+		return fmt.Errorf("no profile data")
 	}
 
 	var biome map[string]interface{}
 	if len(org.Biomes) == 0 {
 		return fmt.Errorf("No available biomes")
 	}
-	//Dont bother searching for biome if organization is not defined
-	if !util.StoreExists("organization") || !util.StoreExists("biome") {
+	//Dont bother searching for biome if biome is not defined
+	if !util.StoreExists("biome") {
 		biome = org.Biomes[0]
 	} else {
 		rawBiomeName, err := util.ReadStore("biome")

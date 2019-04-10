@@ -1,13 +1,13 @@
 package util
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
-	"net/http"
-	"bytes"
 )
 
 func PartialCommand(cmd *cobra.Command, args []string) {
@@ -39,7 +39,6 @@ func CheckAndConvertInt64(num string, name string) int64 {
 func Write(path string, data []byte) error {
 	return ioutil.WriteFile(path, data, 0664)
 }
-
 
 /*
 	Sends an http request and returns the body. Gives an error if the http request failed

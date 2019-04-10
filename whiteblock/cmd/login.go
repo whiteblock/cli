@@ -39,37 +39,32 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 
 var loginCmd = &cobra.Command{
 	Hidden: true,
-	Use:    "login <jwt> [organization] [biome]",
+	Use:    "login <jwt> [biome id]",
 	Short:  "Authorize the cli using jwt ",
 	Long:   "\nGives the user the ability to specify a jwt, within a file, to be used for authentication\n Can be given a file path or a jwt\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd, args, 1, 3)
+		util.CheckArguments(cmd, args, 1, 2)
 
 		jwt, err := ioutil.ReadFile(args[0])
 		if err != nil {
 			jwt = []byte(args[0])
 		}
-		rawOrgKey, err := GetRawProfileFromJwt(string(jwt))
+		rawProfile, err := GetRawProfileFromJwt(string(jwt))
 		if err != nil {
 			util.PrintStringError("Given jwt is invalid")
 			util.PrintErrorFatal(err)
 		}
 		util.WriteStore("jwt", jwt)
-		util.WriteStore("org_key", rawOrgKey)
-		switch len(args) {
-		case 3:
-			util.WriteStore("biome", []byte(args[2]))
-			fallthrough
-		case 2:
-		}
-		LoadOrganizationApiKey()
+		util.WriteStore("profile", rawProfile)
+
+		util.WriteStore("biome", []byte(args[1]))
+
+		LoadProfile()
 		err = LoadBiomeAddress()
 		if err != nil {
 			util.DeleteStore("jwt")
-			util.DeleteStore("org_key")
 			util.DeleteStore("profile")
 			util.DeleteStore("biome")
-			util.DeleteStore("organization")
 			util.PrintErrorFatal(err)
 		}
 
@@ -87,7 +82,6 @@ var logoutCmd = &cobra.Command{
 		util.DeleteStore("jwt")
 		util.DeleteStore("profile")
 		util.DeleteStore("biome")
-		util.DeleteStore("organization")
 		cmd.Println("You have been logged off successfully")
 	},
 }
