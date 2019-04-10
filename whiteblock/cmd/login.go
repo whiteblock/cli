@@ -57,7 +57,9 @@ var loginCmd = &cobra.Command{
 		util.WriteStore("jwt", jwt)
 		util.WriteStore("profile", rawProfile)
 
-		util.WriteStore("biome", []byte(args[1]))
+		if len(args) == 2 {
+			util.WriteStore("biome", []byte(args[1]))
+		}
 
 		LoadProfile()
 		err = LoadBiomeAddress()
