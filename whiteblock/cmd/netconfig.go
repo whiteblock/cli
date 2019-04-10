@@ -1,156 +1,145 @@
 package cmd
 
 import (
-	"strconv"
-	"strings"
-
+	util "../util"
 	"github.com/spf13/cobra"
+	"os"
+	"strconv"
 )
 
-var netropyCmd = &cobra.Command{
+var (
+	limitFlag int
+	lossFlag  float64
+	delayFlag int
+	rateFlag  int
+)
+
+var netconfigCmd = &cobra.Command{
 	Use:     "netconfig <command>",
 	Aliases: []string{"emulate"},
 	Short:   "Network conditions",
 	Long: `
 Netconfig will introduce persisting network conditions for testing.
-	
-	bandwidth <amount> <bandwidth type>	Specifies the bandwidth of the network [bps|Kbps|Mbps|Gbps];
-	delay <amount> 				Specifies the latency to add [ms];
-	loss <percent>				Specifies the amount of packet loss to add [%];
-	
-	`,
+`,
 
-	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "netconfig"
-
-		if len(args) < 3 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
-		msg := "engine 1 path 1 " + strings.Join(args[2:], " ")
-
-		wsEmitListen(serverAddr, command, msg)
-	},
+	Run: util.PartialCommand,
 }
 
-var emulationOnCmd = &cobra.Command{
-	Use:   "on",
-	Short: "Turn on emulation",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "netconfig"
-		msg := "engine 1 emulation on"
-
-		wsEmitListen(serverAddr, command, msg)
-	},
-}
-
-var emulationOffCmd = &cobra.Command{
-	Use:   "off",
-	Short: "Turn off emulation",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "netconfig"
-		msg := "engine 1 emulation off"
-
-		wsEmitListen(serverAddr, command, msg)
-	},
-}
-
-var latencyCmd = &cobra.Command{
-	Use:     "delay <amount>",
-	Aliases: []string{"lat"},
-	Short:   "Set latency",
+var netconfigSetCmd = &cobra.Command{
+	Use:     "set <node> [flags]",
+	Aliases: []string{"config", "configure"},
+	Short:   "Set network conditions",
 	Long: `
-Latency will introduce delay to the network. You will specify the amount of latency in ms.
-	`,
-
+Netconfig set will introduce persisting network conditions for testing to a specific node. Please indicate the proper flags with the amount to set.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "netconfig"
-
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-
-		delayInt, err := strconv.Atoi(args[0])
+		util.CheckArguments(cmd, args, 1, 1)
+		testnetId, err := getPreviousBuildId()
 		if err != nil {
-			panic(err)
+			util.PrintErrorFatal(err)
 		}
-		delayInt = delayInt / 2
-		delayStr := strconv.Itoa(delayInt)
 
-		msg1 := "engine 1 path 1 set delay constant " + delayStr + " port 1 to port 2"
-		msg2 := "engine 1 path 1 set delay constant " + delayStr + " port 2 to port 1"
+		netInfo := make(map[string]interface{})
+		node, err := strconv.Atoi(args[0])
+		if err != nil {
+			util.InvalidInteger("node", args[0], true)
+		}
 
-		wsEmitListen(serverAddr, command, msg1)
-		wsEmitListen(serverAddr, command, msg2)
+		netInfo["node"] = node
+		if limitFlag != 1000 {
+			netInfo["limit"] = limitFlag
+		}
+		if lossFlag > 0.0 {
+			netInfo["loss"] = lossFlag
+		}
+		if delayFlag > 0 {
+			netInfo["delay"] = delayFlag * 1000
+		}
+		if rateFlag > 0 {
+			rate := strconv.Itoa(rateFlag)
+			rate = rate + "mbps"
+			netInfo["rate"] = rate
+		}
+		networkConf := []interface{}{
+			testnetId,
+			netInfo,
+		}
+
+		jsonRpcCallAndPrint("netem", networkConf)
 	},
 }
 
-var packetLossCmd = &cobra.Command{
-	Use:     "loss <percent>",
-	Aliases: []string{"loss"},
-	Short:   "Set packetloss",
+var netconfigAllCmd = &cobra.Command{
+	Use:     "all [flags]",
+	Aliases: []string{"config", "configure"},
+	Short:   "Set network conditions",
 	Long: `
-Packetloss will drop packets in the network. You will specify the amount of packet loss in %.
+Netconfig all will introduce persisting network conditions for testing to all nodes. Please indicate the proper flags with the amount to set.
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "netconfig"
 
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 0)
+		netInfo := make(map[string]interface{})
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintErrorFatal(err)
 		}
 
-		msg1 := "engine 1 path 1 set loss random " + args[0] + " port 1 to port 2"
-		msg2 := "engine 1 path 1 set loss random " + args[0] + " port 2 to port 1"
+		if limitFlag != 1000 {
+			netInfo["limit"] = limitFlag
+		}
+		if lossFlag > 0.0 {
+			netInfo["loss"] = lossFlag
+		}
+		if delayFlag > 0 {
+			netInfo["delay"] = (delayFlag * 1000) / 2
+		}
+		if rateFlag > 0 {
+			rate := strconv.Itoa(rateFlag)
+			rate = rate + "mbps"
+			netInfo["rate"] = rate
+		}
 
-		wsEmitListen(serverAddr, command, msg1)
-		wsEmitListen(serverAddr, command, msg2)
+		networkConf := []interface{}{
+			testnetId,
+			netInfo,
+		}
+
+		jsonRpcCallAndPrint("netem_all", networkConf)
 	},
 }
 
-var bandwCmd = &cobra.Command{
-	Use:     "bandwidth <amount> <bandwidth type>",
-	Aliases: []string{"bw"},
-	Short:   "Set bandwidth",
+var netconfigClearCmd = &cobra.Command{
+	Use:     "clear",
+	Aliases: []string{"off", "flush", "reset"},
+	Short:   "Turn off network conditions",
 	Long: `
-Bandwidth will constrict the network to the specified bandwidth. You will specify the amount of bandwdth and the type.
-
-Fomat: 
-	bandwidth type: bps, Kbps, Mbps, Gbps
+Netconfig clear will reset all emulation and turn off all persisiting network conditions. 
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command := "netconfig"
-
-		if len(args) != 2 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
+		util.CheckArguments(cmd, args, 0, 0)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
 		}
-
-		msg1 := "engine 1 path 1 set bw fixed " + args[0] + args[1] + " port 1 out"
-		msg2 := "engine 1 path 1 set bw fixed " + args[0] + args[1] + " port 2 out"
-
-		wsEmitListen(serverAddr, command, msg1)
-		wsEmitListen(serverAddr, command, msg2)
+		jsonRpcCallAndPrint("netem_delete", []interface{}{testnetId})
 	},
 }
 
 func init() {
-	netropyCmd.AddCommand(emulationOnCmd, emulationOffCmd, latencyCmd, packetLossCmd, bandwCmd)
+	netconfigSetCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
+	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%]")
+	netconfigSetCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
+	netconfigSetCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
 
-	RootCmd.AddCommand(netropyCmd)
+	netconfigAllCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
+	netconfigAllCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%]")
+	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
+	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
+
+	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd)
+
+	RootCmd.AddCommand(netconfigCmd)
 }

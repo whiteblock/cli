@@ -1,60 +1,51 @@
 package cmd
 
 import (
-	"encoding/json"
+	util "../util"
 	"fmt"
+	"github.com/spf13/cobra"
+	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"strconv"
-	"github.com/spf13/cobra"
-	"golang.org/x/sys/unix"
 )
 
 var pingCmd = &cobra.Command{
 	Use:   "ping <sending node> <receiving node>",
 	Short: "Ping will send packets to a node.",
 	Long: `
-
 Ping will send packets to a node and will output information
-Format: <sending node> <receiving node>
+
 Params: sending node, receiving node
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) != 2 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
+		util.CheckArguments(cmd, args, 2, 2)
+		nodes, err := GetNodes()
+		if err != nil {
+			util.PrintErrorFatal(err)
 		}
-
-		serverAddr = "ws://" + serverAddr + "/socket.io/?EIO=3&transport=websocket"
-		command1 := "nodes"
-		out1 := []byte(wsEmitListen(serverAddr, command1, ""))
-		var node Node
-		json.Unmarshal(out1, &node)
 		sendingNodeNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			InvalidArgument(args[0])
-			cmd.Help()
-			return
+			util.InvalidInteger("sending node number", args[0], true)
 		}
 		receivingNodeNumber, err := strconv.Atoi(args[1])
 		if err != nil {
-			InvalidArgument(args[1])
-			cmd.Help()
-			return
+			util.InvalidInteger("receiving node number", args[1], true)
 		}
-		err = unix.Exec("/usr/bin/ssh", []string{"ssh","-i","/home/master-secrets/id.master",
-												"-o","UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking no", 
-												"root@" + fmt.Sprintf(node[sendingNodeNumber].IP), "ping", 
-												 fmt.Sprintf(node[receivingNodeNumber].IP)}, os.Environ())
+		util.CheckIntegerBounds(cmd, "sending node number", sendingNodeNumber, 0, len(nodes)-1)
+		util.CheckIntegerBounds(cmd, "receiving node number", receivingNodeNumber, 0, len(nodes)-1)
+
+		err = unix.Exec("/usr/bin/ssh", []string{
+			"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y",
+			"root@" + fmt.Sprintf(nodes[sendingNodeNumber].IP), "ping",
+			fmt.Sprintf(nodes[receivingNodeNumber].IP)}, os.Environ())
 		log.Fatal(err)
 	},
 }
 
 func init() {
-	pingCmd.Flags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
-
 	RootCmd.AddCommand(pingCmd)
 }

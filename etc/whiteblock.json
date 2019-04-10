@@ -1,0 +1,70 @@
+{
+    "blockchains": {
+        "eos": {
+            "images": {
+                "stable": "gcr.io/whiteblock/eos:33b8e099703571f032d152a72c1e7da888d277c0",
+                "latest": "gcr.io/whiteblock/eos:master"
+            }
+        },
+        "syscoin": {
+            "images": {
+                "stable": "gcr.io/whiteblock/syscoin:9c34b2a640dae986fbf8d09342edb2a167757cdb",
+                "latest": "gcr.io/whiteblock/syscoin:master"
+            }
+        },
+        "rchain": {
+            "images": {
+                "stable": "gcr.io/whiteblock/rchain:dbc0dbb9dafb72a24bf983192add15eff25653b2",
+                "latest": "gcr.io/whiteblock/rchain:master"
+            }
+        },
+        "beam": {
+            "images": {
+                "stable": "gcr.io/whiteblock/beam:d4ec4a50c767f2622a08d1f79b492018f36fae37",
+                "latest": "gcr.io/whiteblock/beam:master"
+            }
+        },
+        "ethereum": {
+            "images": {
+                "stable": "gcr.io/whiteblock/ethereum:9cd12011c47489df08c55b4fce8f3d5b1fd72542 ",
+                "latest": "gcr.io/whiteblock/ethereum:master"
+            }
+        },
+        "geth": {
+            "images": {
+                "stable": "gcr.io/whiteblock/geth:1836f48baea2ce49266a27cfcef1b317be869029 ",
+                "latest": "gcr.io/whiteblock/geth:master"
+            }
+        },
+        "tendermint":{
+            "images":{
+                "stable":"gcr.io/whiteblock/tendermint:d9a381944ef1fbd4cd1a10260b8a0415bb7fc72d",
+                "latest":"gcr.io/whiteblock/tendermint:dev"
+            }
+        },
+        "cosmos":{
+            "images":{
+                "stable":"gcr.io/whiteblock/cosmos:af7e9e8bd1f40396c87230c19df6a224b2c75633",
+                "latest":"gcr.io/whiteblock/cosmos:dev"
+            }
+        },
+        "parity":{
+            "images":{
+                "stable":"gcr.io/whiteblock/parity:dev",
+                "latest":"gcr.io/whiteblock/parity:dev"
+            }
+        },
+        "pantheon":{
+            "images":{
+                "stable":"gcr.io/whiteblock/pantheon:master",
+                "latest":"gcr.io/whiteblock/pantheon:dev"
+            }
+        },
+        "artemis":{
+            "images":{
+                "stable":"gcr.io/whiteblock/artemis:dev",
+                "latest":"gcr.io/whiteblock/artemis:dev"
+            }
+        }
+    }
+}

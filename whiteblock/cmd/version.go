@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
-var (
+const (
 	// VERSION is set during build
-	VERSION = "1.0.4"
+	VERSION = "1.5.7"
 )
 
 var versionCmd = &cobra.Command{

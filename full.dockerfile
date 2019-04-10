@@ -1,4 +1,4 @@
-FROM golang:1.11.5-stretch as built
+FROM golang:1.11.3-stretch as built
 
 ENV GOPATH ${HOME}
 ENV GOBIN ${GOPATH}/bin
@@ -17,17 +17,17 @@ COPY --from=built /cli/etc/ /cli/etc
 RUN  ln -s /cli/whiteblock/whiteblock /usr/local/bin/whiteblock
 # tells kernel to not expect any input from the frontend
 # this bypasses the need for tzdata nonsense
-#ENV DEBIAN_FRONTEND noninteractive
-#ENV GOPATH ${HOME}
-#ENV GOBIN ${GOPATH}/bin
+ENV DEBIAN_FRONTEND noninteractive
+ENV GOPATH ${HOME}
+ENV GOBIN ${GOPATH}/bin
 
 # installs dependencies
-#RUN apt-get update && \
-#    apt-get install -y vim iputils-ping expect git git-extras software-properties-common tmux \
-#    inetutils-tools wget ca-certificates curl build-essential libssl-dev 
+RUN apt-get update && \
+    apt-get install -y vim iputils-ping expect git git-extras software-properties-common tmux \
+    inetutils-tools wget ca-certificates curl build-essential libssl-dev 
 
 # installs solc package for solidity compiler
-#RUN add-apt-repository ppa:ethereum/ethereum && apt-get update && apt-get install -y solc
+RUN add-apt-repository ppa:ethereum/ethereum && apt-get update && apt-get install -y solc
 
 # sets default workdirectory to root and configures paths
 WORKDIR /
