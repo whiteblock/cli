@@ -181,10 +181,11 @@ func buildListener(testnetId string) {
 		var status BuildStatus
 		json.Unmarshal([]byte(args), &status)
 		if status.Frozen {
-			fmt.Printf("Build is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
+			fmt.Printf("\nBuild is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
 		} else if status.Progress == 0.0 {
 			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Error != nil {
+			fmt.Println()//move to the next line
 			what := status.Error["what"]
 			util.PrintStringError(what)
 			os.Exit(1)
