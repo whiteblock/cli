@@ -51,6 +51,7 @@ func init() {
 
 		err := LoadProfile() //Load the profile into the profile global
 		if err != nil {
+			util.DeleteStore("profile")
 			util.PrintErrorFatal(err)
 		}
 
