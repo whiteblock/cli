@@ -12,7 +12,7 @@ import (
 
 func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 	body := strings.NewReader("")
-	req, err := http.NewRequest("GET", "https://api.whiteblock.io/me", body)
+	req, err := http.NewRequest("GET", "https://api.whiteblock.io/agent", body)
 	if err != nil {
 		return nil, err
 	}
@@ -39,11 +39,11 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 
 var loginCmd = &cobra.Command{
 	Hidden: true,
-	Use:    "login <jwt> [organization] [biome]",
+	Use:    "login <jwt> [biome id]",
 	Short:  "Authorize the cli using jwt ",
 	Long:   "\nGives the user the ability to specify a jwt, within a file, to be used for authentication\n Can be given a file path or a jwt\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd, args, 1, 3)
+		util.CheckArguments(cmd, args, 1, 2)
 
 		jwt, err := ioutil.ReadFile(args[0])
 		if err != nil {
@@ -56,24 +56,22 @@ var loginCmd = &cobra.Command{
 		}
 		util.WriteStore("jwt", jwt)
 		util.WriteStore("profile", rawProfile)
-		switch len(args) {
-		case 3:
-			util.WriteStore("biome", []byte(args[2]))
-			fallthrough
-		case 2:
-			util.WriteStore("organization", []byte(args[1]))
+
+		if len(args) == 2 {
+			util.WriteStore("biome", []byte(args[1]))
 		}
+
 		LoadProfile()
 		err = LoadBiomeAddress()
 		if err != nil {
 			util.DeleteStore("jwt")
 			util.DeleteStore("profile")
 			util.DeleteStore("biome")
-			util.DeleteStore("organization")
 			util.PrintErrorFatal(err)
 		}
 
 		fmt.Println("Login Success")
+		fmt.Printf("Connected to endpoint: %s\n", serverAddr)
 	},
 }
 
@@ -87,7 +85,6 @@ var logoutCmd = &cobra.Command{
 		util.DeleteStore("jwt")
 		util.DeleteStore("profile")
 		util.DeleteStore("biome")
-		util.DeleteStore("organization")
 		cmd.Println("You have been logged off successfully")
 	},
 }

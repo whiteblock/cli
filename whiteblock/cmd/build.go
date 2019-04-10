@@ -164,7 +164,7 @@ func tern(exp bool, res1 string, res2 string) string {
 	return res2
 }
 
-func getImage(blockchain string, imageType string, defaultImage string,override bool) string {
+func getImage(blockchain string, imageType string, defaultImage string, override bool) string {
 	if override {
 		return defaultImage
 	}
@@ -173,8 +173,8 @@ func getImage(blockchain string, imageType string, defaultImage string,override 
 	if err != nil {
 		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
 		if err != nil {
-			b,err = util.HttpRequest("GET","https://whiteblock.io/releases/cli/v1.5.6/whiteblock.json","")
-			if err != nil{
+			b, err = util.HttpRequest("GET", "https://whiteblock.io/releases/cli/v1.5.7/whiteblock.json", "")
+			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 		}
@@ -278,7 +278,7 @@ func processEnv(envVars map[string]string, nodes int) ([]map[string]string, erro
 
 var buildCmd = &cobra.Command{
 	Use:     "build",
-	Aliases: []string{"init", "create"},
+	Aliases: []string{"init", "create", "buidl"},
 	Short:   "Build a blockchain using image and deploy nodes",
 	Long: "Build will create and deploy a blockchain and the specified number of nodes." +
 		" Each node will be instantiated in its own container and will interact" +
@@ -304,12 +304,8 @@ var buildCmd = &cobra.Command{
 			buildConf.Resources = []Resources{Resources{}}
 		}
 
-		if buildConf.Params == nil {
-			buildConf.Params = map[string]interface{}{}
-		}
-		if buildConf.Extras == nil {
-			buildConf.Extras = map[string]interface{}{}
-		}
+		buildConf.Params = map[string]interface{}{}
+		buildConf.Extras = map[string]interface{}{}
 
 		if cpusFlag == "0" {
 			cpusFlag = ""
@@ -395,7 +391,7 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag,cmd.Flags().Changed("image"))
+		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag, cmd.Flags().Changed("image"))
 
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
@@ -613,7 +609,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
 	buildCmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
-	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "file templates")
+	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "set a custom file template")
 
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 

@@ -20,6 +20,12 @@ type Organization struct {
 }
 
 type Profile struct {
+	Id           int          `json:"id"`
+	Organization Organization `json:"organization"`
+}
+
+/*
+type Profile struct {
 	Id            int                      `json:"id"`
 	Email         string                   `json:"email"`
 	EmailVerified interface{}              `json:"email_verified"`
@@ -30,6 +36,19 @@ type Profile struct {
 	SshKeys       []map[string]interface{} `json:"ssh_keys"`
 	Organizations []Organization           `json:"organizations"`
 }
+*/
+/*func LoadOrganizationApiKey() error {
+	rawKey, err := util.ReadStore("org_key")
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(rawKey, &org_key)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}*/
 
 func LoadProfile() error {
 	rawProfile, err := util.ReadStore("profile")
@@ -45,42 +64,29 @@ func LoadProfile() error {
 }
 
 func LoadBiomeAddress() error {
+	var profile Profile
 	var org Organization
-	if len(profile.Organizations) == 0 {
-		return fmt.Errorf("No availible organizations")
-	}
 	//Grab organization
-	if util.StoreExists("organization") {
-		rawOrgName, err := util.ReadStore("organization")
+	if util.StoreExists("profile") {
+		rawOrgKey, err := util.ReadStore("profile")
 		if err != nil {
 			return err
 		}
-		orgName := string(rawOrgName)
-		i := 0
-		//Allow for automatic detect of organization id
-		orgId, err := strconv.Atoi(orgName)
-		isOrgId := (err == nil)
-
-		for i = 0; i < len(profile.Organizations); i++ {
-			if (isOrgId && profile.Organizations[i].Id == orgId) ||
-				(!isOrgId && profile.Organizations[i].Name == orgName) {
-				org = profile.Organizations[i]
-				break
-			}
+		err = json.Unmarshal(rawOrgKey, &profile)
+		if err != nil {
+			return err
 		}
-		if i == len(profile.Organizations) {
-			return fmt.Errorf("Could not find organization")
-		}
+		org = profile.Organization
 	} else {
-		org = profile.Organizations[0]
+		return fmt.Errorf("no profile data")
 	}
 
 	var biome map[string]interface{}
 	if len(org.Biomes) == 0 {
-		return fmt.Errorf("No availible biomes")
+		return fmt.Errorf("No available biomes")
 	}
-	//Dont bother searching for biome if organization is not defined
-	if !util.StoreExists("organization") || !util.StoreExists("biome") {
+	//Dont bother searching for biome if biome is not defined
+	if !util.StoreExists("biome") {
 		biome = org.Biomes[0]
 	} else {
 		rawBiomeName, err := util.ReadStore("biome")

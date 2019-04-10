@@ -185,7 +185,7 @@ func buildListener(testnetId string) {
 		} else if status.Progress == 0.0 {
 			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Error != nil {
-			fmt.Println()//move to the next line
+			fmt.Println() //move to the next line
 			what := status.Error["what"]
 			util.PrintStringError(what)
 			os.Exit(1)
