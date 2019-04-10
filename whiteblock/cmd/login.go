@@ -49,13 +49,13 @@ var loginCmd = &cobra.Command{
 		if err != nil {
 			jwt = []byte(args[0])
 		}
-		rawProfile, err := GetRawProfileFromJwt(string(jwt))
+		rawOrgKey, err := GetRawProfileFromJwt(string(jwt))
 		if err != nil {
 			util.PrintStringError("Given jwt is invalid")
 			util.PrintErrorFatal(err)
 		}
 		util.WriteStore("jwt", jwt)
-		util.WriteStore("profile", rawProfile)
+		util.WriteStore("org_key", rawOrgKey)
 		switch len(args) {
 		case 3:
 			util.WriteStore("biome", []byte(args[2]))
@@ -63,10 +63,11 @@ var loginCmd = &cobra.Command{
 		case 2:
 			util.WriteStore("organization", []byte(args[1]))
 		}
-		LoadProfile()
+		LoadOrganizationApiKey()
 		err = LoadBiomeAddress()
 		if err != nil {
 			util.DeleteStore("jwt")
+			util.DeleteStore("org_key")
 			util.DeleteStore("profile")
 			util.DeleteStore("biome")
 			util.DeleteStore("organization")
