@@ -60,7 +60,6 @@ var loginCmd = &cobra.Command{
 		switch len(args) {
 		case 3:
 			util.WriteStore("biome", []byte(args[2]))
-			fallthrough
 		}
 		LoadProfile()
 		err = LoadBiomeAddress()

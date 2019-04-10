@@ -10,6 +10,9 @@ import (
 var (
 	profile Profile
 )
+var (
+	org_key OrganizationApiKey
+)
 
 type Organization struct {
 	Id        int                      `json:"id"`
@@ -17,6 +20,11 @@ type Organization struct {
 	CreatedAt string                   `json:"created_at"`
 	UpdatedAt string                   `json:"updated_at"`
 	Biomes    []map[string]interface{} `json:"biomes"`
+}
+
+type OrganizationApiKey struct {
+	Id            int                    `json:"id"`
+	Organization  Organization           `json:"organization"`
 }
 
 type Profile struct {
@@ -29,6 +37,19 @@ type Profile struct {
 	UpdatedAt     string                   `json:"updated_at"`
 	SshKeys       []map[string]interface{} `json:"ssh_keys"`
 	Organizations []Organization           `json:"organizations"`
+}
+
+func LoadOrganizationApiKey() error {
+	rawKey, err := util.ReadStore("org_key")
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(rawKey, &org_key)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func LoadProfile() error {
@@ -46,38 +67,24 @@ func LoadProfile() error {
 
 func LoadBiomeAddress() error {
 	var org Organization
-	if len(profile.Organizations) == 0 {
-		return fmt.Errorf("No availible organizations")
-	}
 	//Grab organization
 	if util.StoreExists("organization") {
-		rawOrgName, err := util.ReadStore("organization")
+        raw_org, err := util.ReadStore("organization")
 		if err != nil {
 			return err
 		}
-		orgName := string(rawOrgName)
-		i := 0
-		//Allow for automatic detect of organization id
-		orgId, err := strconv.Atoi(orgName)
-		isOrgId := (err == nil)
 
-		for i = 0; i < len(profile.Organizations); i++ {
-			if (isOrgId && profile.Organizations[i].Id == orgId) ||
-				(!isOrgId && profile.Organizations[i].Name == orgName) {
-				org = profile.Organizations[i]
-				break
-			}
-		}
-		if i == len(profile.Organizations) {
-			return fmt.Errorf("Could not find organization")
-		}
+        err = json.Unmarshal(raw_org, &org)
+        if err != nil {
+            return err
+        }
 	} else {
-		org = profile.Organizations[0]
+		org = org_key.Organization
 	}
 
 	var biome map[string]interface{}
 	if len(org.Biomes) == 0 {
-		return fmt.Errorf("No availible biomes")
+		return fmt.Errorf("No available biomes")
 	}
 	//Dont bother searching for biome if organization is not defined
 	if !util.StoreExists("organization") || !util.StoreExists("biome") {
