@@ -85,7 +85,6 @@ var logoutCmd = &cobra.Command{
 		util.DeleteStore("jwt")
 		util.DeleteStore("profile")
 		util.DeleteStore("biome")
-		util.DeleteStore("organization")
 		cmd.Println("You have been logged off successfully")
 	},
 }
