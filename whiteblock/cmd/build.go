@@ -304,12 +304,8 @@ var buildCmd = &cobra.Command{
 			buildConf.Resources = []Resources{Resources{}}
 		}
 
-		if buildConf.Params == nil {
-			buildConf.Params = map[string]interface{}{}
-		}
-		if buildConf.Extras == nil {
-			buildConf.Extras = map[string]interface{}{}
-		}
+		buildConf.Params = map[string]interface{}{}
+		buildConf.Extras = map[string]interface{}{}
 
 		if cpusFlag == "0" {
 			cpusFlag = ""
