@@ -61,7 +61,6 @@ var loginCmd = &cobra.Command{
 			util.WriteStore("biome", []byte(args[2]))
 			fallthrough
 		case 2:
-			util.WriteStore("organization", []byte(args[1]))
 		}
 		LoadOrganizationApiKey()
 		err = LoadBiomeAddress()

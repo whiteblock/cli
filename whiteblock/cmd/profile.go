@@ -66,36 +66,26 @@ func LoadProfile() error {
 }
 
 func LoadBiomeAddress() error {
+	var org_key OrganizationApiKey
 	var org Organization
 	//Grab organization
-	if util.StoreExists("organization") {
-		rawOrgName, err := util.ReadStore("organization")
+	if util.StoreExists("org_key") {
+		rawOrgKey, err := util.ReadStore("org_key")
 		if err != nil {
 			return err
 		}
-		orgName := string(rawOrgName)
-		i := 0
-		//Allow for automatic detect of organization id
-		orgId, err := strconv.Atoi(orgName)
-		isOrgId := (err == nil)
-
-		for i = 0; i < len(profile.Organizations); i++ {
-			if (isOrgId && profile.Organizations[i].Id == orgId) ||
-				(!isOrgId && profile.Organizations[i].Name == orgName) {
-				org = profile.Organizations[i]
-				break
-			}
-		}
-		if i == len(profile.Organizations) {
-			return fmt.Errorf("Could not find organization")
-		}
+        err = json.Unmarshal(rawOrgKey, &org_key)
+        if err != nil {
+            return err
+        }
+        org = org_key.Organization
 	} else {
-		org = org
-	}
+		return fmt.Errorf("no OrganizationApiKey data")
+    }
 
 	var biome map[string]interface{}
 	if len(org.Biomes) == 0 {
-		return fmt.Errorf("No availible biomes")
+		return fmt.Errorf("No available biomes")
 	}
 	//Dont bother searching for biome if organization is not defined
 	if !util.StoreExists("organization") || !util.StoreExists("biome") {
