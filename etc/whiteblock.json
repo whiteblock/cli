@@ -56,7 +56,7 @@
         },
         "pantheon":{
             "images":{
-                "stable":"gcr.io/whiteblock/pantheon:dev",
+                "stable":"gcr.io/whiteblock/pantheon:master",
                 "latest":"gcr.io/whiteblock/pantheon:dev"
             }
         },
