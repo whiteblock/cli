@@ -4,7 +4,7 @@ substitutions:
   _BINARY: whiteblock
   _BINARY_PATH: /cli/whiteblock/whiteblock
   _PROJECT: cli
-  _IMAGE: 'gcr.io/whiteblock/$_PROJECT'
+  _IMAGE: 'gcr.io/whiteblock/cli'
 timeout: '45m'
 steps:
 # allow these steps to fail, they try to pull cache first
