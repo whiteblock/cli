@@ -2,7 +2,7 @@
 # https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
 substitutions:
   _BINARY: whiteblock
-  _BINARY_PATH: /cli/whiteblock/whiteblock/whiteblock
+  _BINARY_PATH: /cli/whiteblock/whiteblock
   _PROJECT: cli
   _IMAGE: 'gcr.io/whiteblock/cli'
 timeout: '45m'
