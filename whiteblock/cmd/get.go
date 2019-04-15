@@ -416,6 +416,7 @@ Response: JSON representation of the contract information.
 		}
 		if len(contracts) == 0 {
 			util.PrintStringError("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
+			os.Exit(1)
 		} else {
 			fmt.Println(prettyp(string(contracts)))
 		}
