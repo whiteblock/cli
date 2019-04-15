@@ -34,4 +34,4 @@ steps:
 - name: 'gcr.io/cloud-builders/gsutil'
   args: [ 'cp', 'binary-output', 'gs://genesis-public/$_PROJECT/$COMMIT_SHA/bin/linux/amd64/$_BINARY' ]
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: [ 'cp', '$_BINARY', 'gs://genesis-public/$_PROJECT/$BRANCH_NAME/bin/linux/amd64/$_BINARY' ]
+  args: [ 'cp', 'binary-output', 'gs://genesis-public/$_PROJECT/$BRANCH_NAME/bin/linux/amd64/$_BINARY' ]
