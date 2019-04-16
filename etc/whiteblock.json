@@ -54,6 +54,12 @@
                 "latest":"gcr.io/whiteblock/parity:dev"
             }
         },
+        "parity-poa":{
+            "images":{
+                "stable":"gcr.io/whiteblock/parity:dev",
+                "latest":"gcr.io/whiteblock/parity:dev"
+            }
+        },
         "pantheon":{
             "images":{
                 "stable":"gcr.io/whiteblock/pantheon:master",

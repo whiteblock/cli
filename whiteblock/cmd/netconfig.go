@@ -21,7 +21,6 @@ var netconfigCmd = &cobra.Command{
 	Long: `
 Netconfig will introduce persisting network conditions for testing.
 `,
-
 	Run: util.PartialCommand,
 }
 
