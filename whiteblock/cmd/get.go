@@ -318,7 +318,7 @@ Response: JSON representation of the block
 
 var getTxCmd = &cobra.Command{
 	// Hidden: true,
-	Use:   "tx <command",
+	Use:   "tx <command>",
 	Short: "Get information regarding transactions",
 	Run:   util.PartialCommand,
 }
