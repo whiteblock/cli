@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"fmt"
-	"time"
-
 	util "../util"
+	"fmt"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 var minerCmd = &cobra.Command{

@@ -276,6 +276,17 @@ func processEnv(envVars map[string]string, nodes int) ([]map[string]string, erro
 	return out, nil
 }
 
+func handlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
+	_, ok := conf.Extras["prebuild"]
+	if !ok {
+		conf.Extras["prebuild"] = map[string]interface{}{}
+	}
+	fbg, err := cmd.Flags().GetBool("force-docker-pull")
+	if err == nil && fbg {
+		conf.Extras["prebuild"].(map[string]interface{})["pull"] = true
+	}
+}
+
 var buildCmd = &cobra.Command{
 	Use:     "build",
 	Aliases: []string{"init", "create", "buidl"},
@@ -503,7 +514,7 @@ var buildCmd = &cobra.Command{
 		if err == nil && fbg {
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
-
+		handlePullFlag(cmd, args, &buildConf)
 		//fmt.Printf("%+v\n",buildConf)
 		build(buildConf)
 		removeSmartContracts()
@@ -611,6 +622,7 @@ func init() {
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
 	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "set a custom file template")
 
+	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")

@@ -128,6 +128,25 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 	},
 }
 
+var netconfigGetCmd = &cobra.Command{
+	Use: "get",
+	Aliases: []string{"show"},
+	Short: "Get the network conditions",
+	Long: `
+Netconfig get will fetch the current network conditions
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 0)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		jsonRpcCallAndPrint("netem_get", []interface{}{testnetId})
+	},
+}
+
 func init() {
 	netconfigSetCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
 	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%]")
@@ -139,7 +158,7 @@ func init() {
 	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
 	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
 
-	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd)
+	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd)
 
 	RootCmd.AddCommand(netconfigCmd)
 }
