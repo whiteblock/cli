@@ -128,9 +128,9 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 }
 
 var netconfigGetCmd = &cobra.Command{
-	Use: "get",
+	Use:     "get",
 	Aliases: []string{"show"},
-	Short: "Get the network conditions",
+	Short:   "Get the network conditions",
 	Long: `
 Netconfig get will fetch the current network conditions
 	`,

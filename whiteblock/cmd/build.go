@@ -226,6 +226,18 @@ func processOptions(givenOptions map[string]string, format [][]string) (map[stri
 				return nil, err
 			}
 			out[name] = val
+
+		case "bool":
+			switch val {
+			case "true":
+				fallthrough
+			case "yes":
+				out[name] = true
+			case "false":
+				fallthrough
+			case "no":
+				out[name] = false
+			}
 		}
 	}
 	return out, nil
