@@ -71,3 +71,34 @@ func HttpRequest(method string, url string, bodyData string) ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
+
+func UnrollStringSliceToMapStringString(slices []string, delim string) (map[string]string, error) {
+	out := map[string]string{}
+	for _, slice := range slices {
+		pair := strings.SplitN(slice, delim, 2)
+		if len(pair) != 2 {
+			return nil, fmt.Errorf(`Missing "%s" delimiter in flag value.`, delim)
+		}
+		out[pair[0]] = pair[1]
+	}
+	return out, nil
+}
+
+func UnrollStringSliceToMapIntString(slices []string, delim string) (map[int]string, []string, error) {
+	out := map[int]string{}
+	noDelimRes := []string{}
+	for _, slice := range slices {
+		pair := strings.SplitN(slice, delim, 2)
+		if len(pair) != 2 {
+			noDelimRes = append(noDelimRes, slice)
+			continue
+		}
+		key, err := strconv.Atoi(pair[0])
+		if err != nil {
+			return nil, nil, err
+		}
+
+		out[key] = pair[1]
+	}
+	return out, noDelimRes, nil
+}
