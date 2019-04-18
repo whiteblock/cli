@@ -59,7 +59,8 @@ func CreateAuthNHeader() (string, error) {
 		return fmt.Sprintf("Bearer %s", string(res)), err
 	}
 	res, err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
-	return fmt.Sprintf("Bearer %s", string(res)), err
+    token := strings.TrimSpace(string(res))
+	return fmt.Sprintf("Bearer %s", token), err
 }
 
 func jsonRpcCall(method string, params interface{}) (interface{}, error) {
