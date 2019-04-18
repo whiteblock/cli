@@ -59,7 +59,7 @@ func CreateAuthNHeader() (string, error) {
 		return fmt.Sprintf("Bearer %s", string(res)), err
 	}
 	res, err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
-    token := strings.TrimSpace(string(res))
+	token := strings.TrimSpace(string(res))
 	return fmt.Sprintf("Bearer %s", token), err
 }
 
