@@ -394,7 +394,7 @@ func init() {
 	buildCmd.Flags().StringSliceP("image", "i", []string{"stable"}, "image tag")
 	buildCmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
-	buildCmd.Flags().StringToStringP("template", "t", nil, "set a custom file template")
+	buildCmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
 
 	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")

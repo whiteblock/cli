@@ -311,6 +311,7 @@ func handleFilesFlag(cmd *cobra.Command, args []string, conf *Config) {
 		if index < 0 || index >= conf.Nodes {
 			util.PrintErrorFatal(fmt.Errorf("Index is out of range for -t flag"))
 		}
+		conf.Files[index] = map[string]string{}
 		conf.Files[index][tuple[1]] = base64.StdEncoding.EncodeToString(data)
 	}
 
