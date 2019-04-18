@@ -77,6 +77,27 @@ func getPreviousBuild() (Config, error) {
 	return out, err
 }
 
+func fetchPreviousBuild() (Config, error) {
+	buildId, err := getPreviousBuildId()
+	if err != nil {
+		return Config{}, err
+	}
+
+	prevBuild, err := jsonRpcCall("get_last_build", []string{buildId})
+	if err != nil {
+		return Config{}, err
+	}
+
+	tmp, err := json.Marshal(prevBuild)
+	if err != nil {
+		return Config{}, err
+	}
+
+	var out Config
+	err = json.Unmarshal(tmp, &out)
+	return out, err
+}
+
 func hasParam(params [][]string, param string) bool {
 	for _, p := range params {
 		if p[0] == param {
