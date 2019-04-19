@@ -2,6 +2,7 @@ package cmd
 
 import (
 	util "../util"
+	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 	"strconv"
@@ -200,6 +201,53 @@ Prevent the given pair of nodes from connecting
 	},
 }
 
+var netconfigPartitionCmd = &cobra.Command{
+	Use: "partition <node1>...",
+	//Aliases: []string{"unblock"},
+	Short: "Partition the given nodes from the rest of the network",
+	Long: `
+Partition the given nodes from the rest of the network
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		nodes := []int{}
+		for i, arg := range args {
+			node, err := strconv.Atoi(arg)
+			if err != nil {
+				util.InvalidInteger(fmt.Sprintf("argument %d", i), args[0], true)
+			}
+			nodes = append(nodes, node)
+		}
+		jsonRpcCallAndPrint("partition_outage", []interface{}{testnetId, nodes})
+	},
+}
+
+var netconfigMarryCmd = &cobra.Command{
+	Use: "marry",
+	//Aliases: []string{"unblock"},
+	Short: "Remove any outages",
+	Long: `
+Remove any outages and allow connections between all nodes
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 0)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+
+		jsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetId})
+	},
+}
+
 func init() {
 	netconfigSetCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
 	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%]")
@@ -211,7 +259,8 @@ func init() {
 	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
 	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
 
-	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd, netconfigUncutCmd, netconfigCutCmd)
+	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd, netconfigUncutCmd,
+		netconfigCutCmd, netconfigPartitionCmd, netconfigMarryCmd)
 
 	RootCmd.AddCommand(netconfigCmd)
 }
