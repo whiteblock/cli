@@ -284,7 +284,7 @@ var buildCmd = &cobra.Command{
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
 		handlePullFlag(cmd, args, &buildConf)
-		fmt.Printf("%+v\n", buildConf)
+		//fmt.Printf("%+v\n", buildConf)
 		build(buildConf)
 		removeSmartContracts()
 	},
