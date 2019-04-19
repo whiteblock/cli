@@ -3,14 +3,10 @@ package cmd
 import (
 	util "../util"
 	"bufio"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"os"
-	"os/user"
 	"strconv"
 	"strings"
 )
@@ -24,114 +20,26 @@ var (
 	memoryFlag     string
 	paramsFile     string
 	validators     int
-	imageFlag      string
 	optionsFlag    map[string]string
 	envFlag        map[string]string
-	filesFlag      map[string]string
 )
 
 type Config struct {
 	Servers      []int                  `json:"servers"`
 	Blockchain   string                 `json:"blockchain"`
 	Nodes        int                    `json:"nodes"`
-	Image        string                 `json:"image"`
+	Images       []string               `json:"images"`
 	Resources    []Resources            `json:"resources"`
 	Params       map[string]interface{} `json:"params"`
 	Environments []map[string]string    `json:"environments"`
-	Files        map[string]string      `json:"files"`
-	Logs         map[string]string      `json:"logs"`
+	Files        []map[string]string    `json:"files"`
+	Logs         []map[string]string    `json:"logs"`
 	Extras       map[string]interface{} `json:"extras"`
 }
 
 type Resources struct {
 	Cpus   string `json:"cpus"`
 	Memory string `json:"memory"`
-}
-
-func getPreviousBuildId() (string, error) {
-	buildId, err := util.ReadStore(".previous_build_id")
-	if err != nil || len(buildId) == 0 {
-		return "", errors.New("No previous build. Use build command to deploy a blockchain.")
-	}
-	return string(buildId), nil
-}
-
-func getPreviousBuild() (Config, error) {
-	buildId, err := getPreviousBuildId()
-	if err != nil {
-		return Config{}, err
-	}
-
-	prevBuild, err := jsonRpcCall("get_build", []string{buildId})
-	if err != nil {
-		return Config{}, err
-	}
-
-	tmp, err := json.Marshal(prevBuild)
-	if err != nil {
-		return Config{}, err
-	}
-
-	var out Config
-	err = json.Unmarshal(tmp, &out)
-	return out, err
-}
-
-func fetchPreviousBuild() (Config, error) {
-	buildId, err := getPreviousBuildId()
-	if err != nil {
-		return Config{}, err
-	}
-
-	prevBuild, err := jsonRpcCall("get_last_build", []string{buildId})
-	if err != nil {
-		return Config{}, err
-	}
-
-	tmp, err := json.Marshal(prevBuild)
-	if err != nil {
-		return Config{}, err
-	}
-
-	var out Config
-	err = json.Unmarshal(tmp, &out)
-	return out, err
-}
-
-func hasParam(params [][]string, param string) bool {
-	for _, p := range params {
-		if p[0] == param {
-			return true
-		}
-	}
-	return false
-}
-
-func fetchParams(blockchain string) ([][]string, error) {
-	//Handle the ugly conversions, in a safe manner
-	rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
-	if err != nil {
-		return nil, err
-	}
-	optionsStep1, ok := rawOptions.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("Unexpected format for params")
-	}
-	out := make([][]string, len(optionsStep1))
-	for i, optionsStep1Segment := range optionsStep1 {
-		optionsStep2, ok := optionsStep1Segment.([]interface{}) //[][]interface{}[i]
-		if !ok {
-			return nil, fmt.Errorf("Unexpected format for params")
-		}
-		out[i] = make([]string, len(optionsStep2))
-		for j, optionsStep2Segment := range optionsStep2 {
-			out[i][j], ok = optionsStep2Segment.(string)
-			if !ok {
-				return nil, fmt.Errorf("Unexpected format for params")
-			}
-		}
-	}
-	return out, nil
 }
 
 func buildAttach(buildId string) {
@@ -158,166 +66,6 @@ func build(buildConfig interface{}) {
 	}
 
 	buildAttach(buildReply.(string))
-}
-
-func getServer() []int {
-	idList := make([]int, 0)
-	res, err := jsonRpcCall("get_servers", []string{})
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-	servers := res.(map[string]interface{})
-	serverID := 0
-	for _, v := range servers {
-		serverID = int(v.(map[string]interface{})["id"].(float64))
-		//move this and take out break statement if instance has multiple servers
-		idList = append(idList, serverID)
-		break
-	}
-
-	return idList
-}
-
-func tern(exp bool, res1 string, res2 string) string {
-	if exp {
-		return res1
-	}
-	return res2
-}
-
-func getImage(blockchain string, imageType string, defaultImage string, override bool) string {
-	if override {
-		return defaultImage
-	}
-	usr, err := user.Current()
-	b, err := ioutil.ReadFile("/etc/whiteblock.json")
-	if err != nil {
-		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
-		if err != nil {
-			b, err = util.HttpRequest("GET", "https://whiteblock.io/releases/cli/v1.5.7/whiteblock.json", "")
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-		}
-	}
-	var cont map[string]map[string]map[string]map[string]string
-	err = json.Unmarshal(b, &cont)
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
-	if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
-		return cont["blockchains"][blockchain]["images"][imageType]
-	} else if len(defaultImage) > 0 {
-		return defaultImage
-	} else {
-		return "gcr.io/whiteblock/" + blockchain + ":master"
-	}
-}
-
-func removeSmartContracts() {
-	cwd := os.Getenv("HOME")
-	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/contracts.json")
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-}
-
-func processOptions(givenOptions map[string]string, format [][]string) (map[string]interface{}, error) {
-	out := map[string]interface{}{}
-
-	for _, kv := range format {
-		name := kv[0]
-		key_type := kv[1]
-
-		val, ok := givenOptions[name]
-		if !ok {
-			continue
-		}
-		switch key_type {
-		case "string":
-			//needs to have filtering
-			out[name] = val
-		case "[]string":
-			preprocessed := strings.Replace(val, " ", ",", -1)
-			out[name] = strings.Split(preprocessed, ",")
-		case "int":
-			val, err := strconv.ParseInt(val, 0, 64)
-			if err != nil {
-				return nil, err
-			}
-			out[name] = val
-
-		case "bool":
-			switch val {
-			case "true":
-				fallthrough
-			case "yes":
-				out[name] = true
-			case "false":
-				fallthrough
-			case "no":
-				out[name] = false
-			}
-		}
-	}
-	return out, nil
-}
-
-//-1 means for all
-func processEnvKey(in string) (int, string) {
-	node := -1
-	index := 0
-	for i, char := range in {
-		if char < '0' || char > '9' {
-			index = i
-			break
-		}
-	}
-	if index == 0 {
-		return node, in
-	}
-
-	if index == len(in) {
-		util.PrintStringError("Cannot have a numerical environment variable")
-		os.Exit(1)
-	}
-
-	var err error
-	node, err = strconv.Atoi(in[:index])
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-	return node, in[index:len(in)]
-}
-
-func processEnv(envVars map[string]string, nodes int) ([]map[string]string, error) {
-	out := make([]map[string]string, nodes)
-	for i, _ := range out {
-		out[i] = make(map[string]string)
-	}
-	for k, v := range envVars {
-		node, key := processEnvKey(k)
-		if node == -1 {
-			for i, _ := range out {
-				out[i][key] = v
-			}
-			continue
-		}
-		out[node][key] = v
-	}
-	return out, nil
-}
-
-func handlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
-	_, ok := conf.Extras["prebuild"]
-	if !ok {
-		conf.Extras["prebuild"] = map[string]interface{}{}
-	}
-	fbg, err := cmd.Flags().GetBool("force-docker-pull")
-	if err == nil && fbg {
-		conf.Extras["prebuild"].(map[string]interface{})["pull"] = true
-	}
 }
 
 var buildCmd = &cobra.Command{
@@ -435,8 +183,6 @@ var buildCmd = &cobra.Command{
 			offset++
 		}
 
-		buildConf.Image = getImage(buildConf.Blockchain, "stable", imageFlag, cmd.Flags().Changed("image"))
-
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
 			offset++
@@ -470,7 +216,7 @@ var buildCmd = &cobra.Command{
 				util.PrintErrorFatal(err)
 			}
 		}
-
+		handleImageFlag(cmd, args, &buildConf)
 		if optionsFlag != nil {
 			buildConf.Params, err = processOptions(optionsFlag, options)
 			if err != nil {
@@ -524,17 +270,7 @@ var buildCmd = &cobra.Command{
 		if validators >= 0 {
 			buildConf.Params["validators"] = validators
 		}
-
-		if filesFlag != nil {
-			buildConf.Files = map[string]string{}
-			for name, file := range filesFlag {
-				data, err := ioutil.ReadFile(file)
-				if err != nil {
-					util.PrintErrorFatal(err)
-				}
-				buildConf.Files[name] = base64.StdEncoding.EncodeToString(data)
-			}
-		}
+		handleFilesFlag(cmd, args, &buildConf)
 
 		if envFlag != nil {
 			buildConf.Environments, err = processEnv(envFlag, buildConf.Nodes)
@@ -548,7 +284,7 @@ var buildCmd = &cobra.Command{
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
 		handlePullFlag(cmd, args, &buildConf)
-		//fmt.Printf("%+v\n",buildConf)
+		//fmt.Printf("%+v\n", buildConf)
 		build(buildConf)
 		removeSmartContracts()
 	},
@@ -650,10 +386,10 @@ func init() {
 	buildCmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
-	buildCmd.Flags().StringVarP(&imageFlag, "image", "i", "stable", "image tag")
+	buildCmd.Flags().StringSliceP("image", "i", []string{}, "image tag")
 	buildCmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
-	buildCmd.Flags().StringToStringVarP(&filesFlag, "template", "t", nil, "set a custom file template")
+	buildCmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
 
 	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
