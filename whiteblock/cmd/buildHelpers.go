@@ -229,10 +229,7 @@ func handlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
 	}
 }
 
-func getImage(blockchain string, imageType string, defaultImage string, override bool) string {
-	if override {
-		return defaultImage
-	}
+func getImage(blockchain string, imageType string, defaultImage string) string {
 	usr, err := user.Current()
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
@@ -249,28 +246,47 @@ func getImage(blockchain string, imageType string, defaultImage string, override
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	// fmt.Println(cont["blockchains"][blockchain]["images"][image])
-	if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
-		return cont["blockchains"][blockchain]["images"][imageType]
-	} else if len(defaultImage) > 0 {
+	//fmt.Printf("%#v\n",cont["blockchains"])
+	if len(defaultImage) > 0 {
 		return defaultImage
+	} else if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
+		return cont["blockchains"][blockchain]["images"][imageType]
 	} else {
 		return "gcr.io/whiteblock/" + blockchain + ":master"
 	}
 }
 
-/*func handleImageFlag(cmd *cobra.Command,args []string,conf *Config) (bool,error) {
+func handleImageFlag(cmd *cobra.Command, args []string, conf *Config) {
 
-	imageFlag,err := cmd.Flags().GetStringSlice("image")
+	imageFlag, err := cmd.Flags().GetStringSlice("image")
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	buildConf.Image = []string{getImage(buildConf.Blockchain, "stable", imageFlag[0], cmd.Flags().Changed("image"))}
 
+	conf.Images = make([]string, conf.Nodes)
+	images, potentialImage, err := util.UnrollStringSliceToMapIntString(imageFlag, "=")
+	//fmt.Printf("IMAGES=%#v\n",images)
+	if len(potentialImage) > 1 {
+		util.PrintErrorFatal(fmt.Errorf("Too many default images"))
+	}
+	imgDefault := ""
+	if len(potentialImage) == 1 {
+		fmt.Println("given default image")
+		imgDefault = potentialImage[0]
+	}
+	baseImage := getImage(conf.Blockchain, "stable", imgDefault)
 
-	images,potentialImage,err := util.UnrollStringSliceToMapIntString(slice,"=")
+	for i := 0; i < conf.Nodes; i++ {
 
-}*/
+		conf.Images[i] = baseImage
+		image, exists := images[i]
+		if exists {
+			fmt.Println("exists")
+			conf.Images[i] = image
+		}
+		//fmt.Println(conf.Images[i])
+	}
+}
 
 func handleFilesFlag(cmd *cobra.Command, args []string, conf *Config) {
 	filesFlag, err := cmd.Flags().GetStringSlice("template")

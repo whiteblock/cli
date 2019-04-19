@@ -28,7 +28,7 @@ type Config struct {
 	Servers      []int                  `json:"servers"`
 	Blockchain   string                 `json:"blockchain"`
 	Nodes        int                    `json:"nodes"`
-	Image        []string               `json:"image"`
+	Images       []string               `json:"images"`
 	Resources    []Resources            `json:"resources"`
 	Params       map[string]interface{} `json:"params"`
 	Environments []map[string]string    `json:"environments"`
@@ -182,11 +182,6 @@ var buildCmd = &cobra.Command{
 			}
 			offset++
 		}
-		imageFlag, err := cmd.Flags().GetStringSlice("image")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		buildConf.Image = []string{getImage(buildConf.Blockchain, "stable", imageFlag[0], cmd.Flags().Changed("image"))}
 
 		if !cpusEnabled {
 			buildConf.Resources[0].Cpus = buildArr[offset]
@@ -221,7 +216,7 @@ var buildCmd = &cobra.Command{
 				util.PrintErrorFatal(err)
 			}
 		}
-
+		handleImageFlag(cmd, args, &buildConf)
 		if optionsFlag != nil {
 			buildConf.Params, err = processOptions(optionsFlag, options)
 			if err != nil {
@@ -289,7 +284,7 @@ var buildCmd = &cobra.Command{
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
 		handlePullFlag(cmd, args, &buildConf)
-		//fmt.Printf("%+v\n",buildConf)
+		fmt.Printf("%+v\n", buildConf)
 		build(buildConf)
 		removeSmartContracts()
 	},
