@@ -146,6 +146,60 @@ Netconfig get will fetch the current network conditions
 	},
 }
 
+var netconfigUncutCmd = &cobra.Command{
+	Use:     "uncut <node1> <node2>",
+	Aliases: []string{"unblock"},
+	Short:   "Allow the given pair of nodes to connect",
+	Long: `
+Allow the given pair of nodes to connect
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 2, 2)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		node1, err := strconv.Atoi(args[0])
+		if err != nil {
+			util.InvalidInteger("node1", args[0], true)
+		}
+		node2, err := strconv.Atoi(args[1])
+		if err != nil {
+			util.InvalidInteger("node2", args[1], true)
+		}
+		jsonRpcCallAndPrint("remove_outage", []interface{}{testnetId, node1, node2})
+	},
+}
+
+var netconfigCutCmd = &cobra.Command{
+	Use:     "cut <node1> <node2>",
+	Aliases: []string{"block"},
+	Short:   "Prevent the given pair of nodes from connecting",
+	Long: `
+Prevent the given pair of nodes from connecting
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 2, 2)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		node1, err := strconv.Atoi(args[0])
+		if err != nil {
+			util.InvalidInteger("node1", args[0], true)
+		}
+		node2, err := strconv.Atoi(args[1])
+		if err != nil {
+			util.InvalidInteger("node2", args[1], true)
+		}
+		jsonRpcCallAndPrint("make_outage", []interface{}{testnetId, node1, node2})
+	},
+}
+
 func init() {
 	netconfigSetCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
 	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%]")
@@ -157,7 +211,7 @@ func init() {
 	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
 	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
 
-	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd)
+	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd, netconfigUncutCmd, netconfigCutCmd)
 
 	RootCmd.AddCommand(netconfigCmd)
 }
