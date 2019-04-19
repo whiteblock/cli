@@ -386,7 +386,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
 	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
-	buildCmd.Flags().StringSliceP("image", "i", []string{"stable"}, "image tag")
+	buildCmd.Flags().StringSliceP("image", "i", []string{}, "image tag")
 	buildCmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
 	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
 	buildCmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
