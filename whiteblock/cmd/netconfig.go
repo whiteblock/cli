@@ -170,6 +170,23 @@ Get a json array of the connections which are blocked.
 	},
 }
 
+var netconfigGetPartitionsCmd = &cobra.Command{
+	Use: "partitions",
+	//Aliases: []string{"blocked", "disconnected"},
+	Short: "Get the network partitions",
+	Long:  "\nGets the current network partitions\n",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 1)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		jsonRpcCallAndPrint("get_partitions", []interface{}{testnetId})
+	},
+}
+
 var netconfigUncutCmd = &cobra.Command{
 	Use:     "uncut <node1> <node2>",
 	Aliases: []string{"unblock"},
@@ -282,7 +299,7 @@ func init() {
 	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
 	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
 
-	netconfigGetCmd.AddCommand(netconfigGetDisconnectsCmd)
+	netconfigGetCmd.AddCommand(netconfigGetDisconnectsCmd, netconfigGetPartitionsCmd)
 
 	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd, netconfigUncutCmd,
 		netconfigCutCmd, netconfigPartitionCmd, netconfigMarryCmd)
