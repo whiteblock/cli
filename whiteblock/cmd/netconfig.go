@@ -147,6 +147,29 @@ Netconfig get will fetch the current network conditions
 	},
 }
 
+var netconfigGetDisconnectsCmd = &cobra.Command{
+	Use:     "disconnects [node]",
+	Aliases: []string{"blocked", "disconnected"},
+	Short:   "Get the blocked connections",
+	Long: `
+Get a json array of the connections which are blocked. 
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 1)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		outArgs := []interface{}{testnetId}
+		if len(args) == 1 {
+			outArgs = append(outArgs, args[0])
+		}
+		jsonRpcCallAndPrint("get_outages", outArgs)
+	},
+}
+
 var netconfigUncutCmd = &cobra.Command{
 	Use:     "uncut <node1> <node2>",
 	Aliases: []string{"unblock"},
@@ -258,6 +281,8 @@ func init() {
 	netconfigAllCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%]")
 	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
 	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
+
+	netconfigGetCmd.AddCommand(netconfigGetDisconnectsCmd)
 
 	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd, netconfigUncutCmd,
 		netconfigCutCmd, netconfigPartitionCmd, netconfigMarryCmd)
