@@ -183,6 +183,10 @@ var netconfigGetPartitionsCmd = &cobra.Command{
 			util.PrintStringError("No previous build found")
 			os.Exit(1)
 		}
+		/*spinner := Spinner{}
+		spinner.SetText("Fetching the network partitions")
+		spinner.Run(100)
+		defer spinner.Kill()*/
 		jsonRpcCallAndPrint("get_partitions", []interface{}{testnetId})
 	},
 }
@@ -264,6 +268,10 @@ Partition the given nodes from the rest of the network
 			}
 			nodes = append(nodes, node)
 		}
+		/*spinner := Spinner{}
+		spinner.SetText("Partition the network")
+		spinner.Run(100)
+		defer spinner.Kill()*/
 		jsonRpcCallAndPrint("partition_outage", []interface{}{testnetId, nodes})
 	},
 }
@@ -283,7 +291,10 @@ Remove any outages and allow connections between all nodes
 			util.PrintStringError("No previous build found")
 			os.Exit(1)
 		}
-
+		/*spinner := Spinner{}
+		spinner.SetText("Putting the network back together")
+		spinner.Run(100)
+		defer spinner.Kill()*/
 		jsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetId})
 	},
 }
