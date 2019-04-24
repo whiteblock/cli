@@ -89,7 +89,9 @@ var buildAppendCmd = &cobra.Command{
 				util.PrintErrorFatal(err)
 			}
 		}
-
+		if validators >= 0 {
+			buildConf.Params["validators"] = validators
+		}
 		fbg, err := cmd.Flags().GetBool("freeze-before-genesis")
 		if err == nil && fbg {
 			buildConf.Extras["freezeAfterInfrastructure"] = true

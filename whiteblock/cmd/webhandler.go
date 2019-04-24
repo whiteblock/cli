@@ -180,17 +180,21 @@ func buildListener(testnetId string) {
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
-		json.Unmarshal([]byte(args), &status)
+		err := json.Unmarshal([]byte(args), &status)
+		if err != nil {
+			util.PrintStringError(args)
+			os.Exit(1)
+		}
 		if status.Frozen {
 			fmt.Printf("\nBuild is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
-		} else if status.Progress == 0.0 {
-			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Error != nil {
 			fmt.Println() //move to the next line
 			what := status.Error["what"]
 			util.PrintStringError(what)
 			os.Exit(1)
 			mutex.Unlock()
+		} else if status.Progress == 0.0 {
+			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Progress == 100.0 {
 			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", "Build", status.Progress)
 			fmt.Println("\a")
