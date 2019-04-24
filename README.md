@@ -1,10 +1,12 @@
 # Whiteblock CLI
 [![Maintainability](https://api.codeclimate.com/v1/badges/19632596f75488519c67/maintainability)](https://codeclimate.com/github/Whiteblock/cli/maintainability)
 
-* Latest Master (Stable) Build
+* Latest Stable Build (Linux AMD64)
+
   https://storage.cloud.google.com/genesis-public/cli/master/bin/linux/amd64/whiteblock
 
-* Latest Dev Build
+* Latest Dev Build (Linux AMD64)
+
   https://storage.cloud.google.com/genesis-public/cli/dev/bin/linux/amd64/whiteblock
 
 ## ./whiteblock <COMMAND> [FLAGS]
