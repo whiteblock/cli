@@ -218,6 +218,38 @@ func processEnv(envVars map[string]string, nodes int) ([]map[string]string, erro
 	return out, nil
 }
 
+func handleDockerAuthFlags(cmd *cobra.Command, args []string, conf *Config) {
+	if cmd.Flags().Changed("docker-password") != cmd.Flags().Changed("docker-username") {
+		if cmd.Flags().Changed("docker-password") {
+			util.PrintStringError("You must also provide --docker-password with --docker-username")
+		} else {
+			util.PrintStringError("You must also provide --docker-username with --docker-password")
+		}
+		os.Exit(1)
+	}
+	if !cmd.Flags().Changed("docker-password") {
+		return //The auth flags have not been set
+	}
+
+	_, ok := conf.Extras["prebuild"]
+	if !ok {
+		conf.Extras["prebuild"] = map[string]interface{}{}
+	}
+	username, err := cmd.Flags().GetString("docker-username")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	password, err := cmd.Flags().GetString("docker-password")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	conf.Extras["prebuild"].(map[string]interface{})["auth"] = map[string]string{
+		"username": username,
+		"password": password,
+	}
+
+}
+
 func handlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
 	_, ok := conf.Extras["prebuild"]
 	if !ok {

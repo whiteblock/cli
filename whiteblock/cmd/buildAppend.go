@@ -96,6 +96,7 @@ var buildAppendCmd = &cobra.Command{
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
 		handlePullFlag(cmd, args, &buildConf)
+		handleDockerAuthFlags(cmd, args, &buildConf)
 		//fmt.Printf("%+v\n", buildConf)
 		testnetID, err := getPreviousBuildId()
 		if err != nil {
@@ -133,6 +134,8 @@ func init() {
 	buildAppendCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
 	buildAppendCmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
 
+	buildAppendCmd.Flags().String("docker-username", "", "docker auth username")
+	buildAppendCmd.Flags().String("docker-password", "", "docker auth password. Note: this will be stored unencrypted while the build is in progress")
 	buildAppendCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
 	buildAppendCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 	buildCmd.AddCommand(buildAppendCmd)
