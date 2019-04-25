@@ -91,41 +91,6 @@ Response: true or false, on whether or not a test is running; The name of the te
 	},
 }
 
-var getLogCmd = &cobra.Command{
-	Use:     "log <node>",
-	Aliases: []string{"logs"},
-	Short:   "Log will dump data pertaining to the node.",
-	Long: `
-Get stdout and stderr from a node.
-
-Params: node number
-
-Response: stdout and stderr of the blockchain process
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd, args, 1, 1)
-		testNetId, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		n, err := strconv.Atoi(args[0])
-
-		if err != nil {
-			util.InvalidInteger("node", args[0], true)
-		}
-		tailval, err := cmd.Flags().GetInt("tail")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		jsonRpcCallAndPrint("log", map[string]interface{}{
-			"testnetId": testNetId,
-			"node":      n,
-			"lines":     tailval,
-		})
-	},
-}
-
 var getDefaultsCmd = &cobra.Command{
 	Use:     "default <blockchain>",
 	Aliases: []string{"defaults"},
@@ -425,9 +390,7 @@ Response: JSON representation of the contract information.
 
 func init() {
 
-	getLogCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
-
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd, getConfigsCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getConfigsCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented
