@@ -62,7 +62,7 @@
         },
         "artemis":{
             "images":{
-                "stable":"gcr.io/whiteblock/artemis:dev",
+                "stable":"gcr.io/whiteblock/artemis:419e14c88ebd989ce0aea5b5130180ff09477f13",
                 "latest":"gcr.io/whiteblock/artemis:dev"
             }
         }
