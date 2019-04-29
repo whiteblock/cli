@@ -285,6 +285,7 @@ var buildCmd = &cobra.Command{
 		}
 		handlePullFlag(cmd, args, &buildConf)
 		handleDockerAuthFlags(cmd, args, &buildConf)
+		handleSSHOptions(cmd, args, &buildConf)
 		//fmt.Printf("%+v\n", buildConf)
 		build(buildConf)
 		removeSmartContracts()
@@ -394,6 +395,9 @@ func init() {
 
 	buildCmd.Flags().String("docker-username", "", "docker auth username")
 	buildCmd.Flags().String("docker-password", "", "docker auth password. Note: this will be stored unencrypted while the build is in progress")
+	buildCmd.Flags().StringSlice("user-ssh-key", []string{}, "add an additional ssh key as authorized for the nodes."+
+		" Takes a file containing an ssh public key")
+
 	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 

@@ -6,7 +6,7 @@ import (
 )
 
 var doneCmd = &cobra.Command{
-	Aliases: []string{"die", "stop", "teardown","purge"},
+	Aliases: []string{"die", "stop", "teardown", "purge"},
 	Use:     "done",
 	Short:   "Tears down the testnet",
 	Long: `

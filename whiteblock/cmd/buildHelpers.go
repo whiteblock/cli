@@ -371,3 +371,34 @@ func handleFilesFlag(cmd *cobra.Command, args []string, conf *Config) {
 	}
 	conf.Extras["defaults"].(map[string]interface{})["files"] = defaults
 }
+
+func handleSSHOptions(cmd *cobra.Command, args []string, conf *Config) {
+	if !cmd.Flags().Changed("user-ssh-key") { //Don't bother if not specified
+		return
+	}
+
+	sshPubKeys, err := cmd.Flags().GetStringSlice("user-ssh-key")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	if conf.Extras == nil {
+		conf.Extras = map[string]interface{}{}
+	}
+	if _, ok := conf.Extras["postbuild"]; !ok {
+		conf.Extras["postbuild"] = map[string]interface{}{}
+	}
+	if _, ok := conf.Extras["postbuild"].(map[string]interface{})["ssh"]; !ok {
+		conf.Extras["postbuild"].(map[string]interface{})["ssh"] = map[string]interface{}{}
+	}
+	pubKeys := []string{}
+	for _, pubKeyFile := range sshPubKeys {
+		data, err := ioutil.ReadFile(pubKeyFile)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		pubKeys = append(pubKeys, string(data))
+	}
+
+	conf.Extras["postbuild"].(map[string]interface{})["ssh"].(map[string]interface{})["pubKeys"] = pubKeys
+}
