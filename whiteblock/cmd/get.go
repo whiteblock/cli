@@ -60,6 +60,16 @@ var getServerCmd = &cobra.Command{
 	},
 }
 
+var getSupportedCmd = &cobra.Command{
+	Use:     "supported",
+	Aliases: []string{"blockchains"},
+	Short:   "Get the currently supported blockchains",
+	Long:    "Fetches the blockchains which whiteblock is currently able build by default",
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("get_supported_blockchains", []string{})
+	},
+}
+
 var getNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
@@ -390,7 +400,7 @@ Response: JSON representation of the contract information.
 
 func init() {
 
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getConfigsCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented
