@@ -29,7 +29,7 @@ func GetNodes() ([]Node, error) {
 		out = append(out, Node{
 			LocalID:   int(node["localId"].(float64)),
 			Server:    int(node["server"].(float64)),
-			TestNetID: node["testNetId"].(string),
+			TestNetID: node["testnetId"].(string),
 			ID:        node["id"].(string),
 			IP:        node["ip"].(string),
 			Label:     node["label"].(string),
