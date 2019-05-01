@@ -13,7 +13,7 @@ import (
 
 type Node struct {
 	ID        string `json:"id"`
-	TestNetID string `json:"testNetId"`
+	TestNetID string `json:"testnetId"`
 	Server    int    `json:"server"`
 	LocalID   int    `json:"localId"`
 	IP        string `json:"ip"`
@@ -47,8 +47,16 @@ SSH will allow the user to go into the contianer where the specified node exists
 			os.Exit(1)
 		}
 		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
-			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10",
-			"root@" + fmt.Sprintf(nodes[nodeNumber].IP)}
+			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10"}
+		verbose, err := cmd.Flags().GetBool("verbose")
+
+		if err == nil && verbose {
+			sshArgs = append(sshArgs, "-v")
+		} else {
+			sshArgs = append(sshArgs, "-y")
+		}
+
+		sshArgs = append(sshArgs, "root@"+nodes[nodeNumber].IP)
 
 		sshArgs = append(sshArgs, args[1:]...)
 		//fmt.Println(strings.Join(sshArgs," "))
@@ -57,6 +65,6 @@ SSH will allow the user to go into the contianer where the specified node exists
 }
 
 func init() {
-
+	sshCmd.Flags().BoolP("verbose", "v", false, "run ssh in verbose mode")
 	RootCmd.AddCommand(sshCmd)
 }
