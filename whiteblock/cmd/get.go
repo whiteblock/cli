@@ -60,6 +60,20 @@ var getServerCmd = &cobra.Command{
 	},
 }
 
+var getTestnetIDCmd = &cobra.Command{
+	Use:     "testnetid",
+	Aliases: []string{"id"},
+	Short:   "Get the last stored testnet id",
+	Long:    "\nGet the last stored testnet id.\n",
+	Run: func(cmd *cobra.Command, args []string) {
+		testnetID, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		fmt.Println(testnetID)
+	},
+}
+
 var getSupportedCmd = &cobra.Command{
 	Use:     "supported",
 	Aliases: []string{"blockchains"},
@@ -400,7 +414,7 @@ Response: JSON representation of the contract information.
 
 func init() {
 
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented
