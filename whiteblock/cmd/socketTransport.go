@@ -25,6 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 import (
+	"../util"
 	"errors"
 	"github.com/gorilla/websocket"
 	"github.com/graarh/golang-socketio/transport"
@@ -111,7 +112,7 @@ type WebsocketTransport struct {
 func (wst *WebsocketTransport) Connect(url string) (conn transport.Connection, err error) {
 	dialer := websocket.Dialer{}
 
-	auth, err := CreateAuthNHeader()
+	auth, err := util.CreateAuthNHeader()
 	if err != nil {
 		log.Println(err)
 		return nil, err

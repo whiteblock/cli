@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -53,16 +52,6 @@ func jsonRpcCallAndPrint(method string, params interface{}) {
 	fmt.Println(prettypi(reply))
 }
 
-func CreateAuthNHeader() (string, error) {
-	if util.StoreExists("jwt") {
-		res, err := util.ReadStore("jwt")
-		return fmt.Sprintf("Bearer %s", string(res)), err
-	}
-	res, err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
-	token := strings.TrimSpace(string(res))
-	return fmt.Sprintf("Bearer %s", token), err
-}
-
 func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 	//log.Println("URL IS "+url)
 	jrpc, err := json2.EncodeClientRequest(method, params)
@@ -84,7 +73,7 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	auth, err := CreateAuthNHeader()
+	auth, err := util.CreateAuthNHeader()
 	if err != nil {
 		log.Println(err)
 	} else {
