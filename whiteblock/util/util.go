@@ -52,7 +52,7 @@ func HttpRequest(method string, url string, bodyData string) ([]byte, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Host","api.whiteblock.io")
+	req.Header.Set("Host", "api.whiteblock.io")
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -72,7 +72,6 @@ func HttpRequest(method string, url string, bodyData string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-
 func CreateAuthNHeader() (string, error) {
 	if StoreExists("jwt") {
 		res, err := ReadStore("jwt")
@@ -87,19 +86,19 @@ func CreateAuthNHeader() (string, error) {
 // put the given jwt in the auth header
 func JwtHTTPRequest(method string, url string, bodyData string) (string, error) {
 	if bodyData == "test" {
-		return "{}",nil
+		return "{}", nil
 	}
 	body := strings.NewReader(bodyData)
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return "", err
 	}
-	auth,err := CreateAuthNHeader()
+	auth, err := CreateAuthNHeader()
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization",auth )
+	req.Header.Set("Authorization", auth)
 	//req.Header.Set("Host","api.whiteblock.io")
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)
