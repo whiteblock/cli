@@ -112,10 +112,42 @@ Response: stdout and stderr of the blockchain process
 	},
 }
 
+var getLogAllCmd = &cobra.Command{
+	Use:   "all",
+	Short: "Get all of the logs",
+	Long: `Gets all of the logs
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		nodes, err := GetNodes()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		testNetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		tailval, err := cmd.Flags().GetInt("tail")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		for i := range nodes {
+			jsonRpcCallAndPrint("log", map[string]interface{}{
+				"testnetId": testNetId,
+				"node":      i,
+				"lines":     tailval,
+			})
+		}
+
+	},
+}
+
 func init() {
 
 	getLogCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
 	getLogCmd.Flags().BoolP("follow", "f", false, "output appended data as the file grows")
 
+	getLogAllCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
 	getCmd.AddCommand(getLogCmd)
+
+	getLogCmd.AddCommand(getLogAllCmd)
 }
