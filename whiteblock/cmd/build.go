@@ -57,7 +57,8 @@ func build(buildConfig interface{}) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	fmt.Printf("Build Started successfully: %v\n", buildReply)
+	fmt.Println("Build Started Successfully.")
+	fmt.Printf("Testnet ID : %v\n", buildReply)
 
 	//Store the in progress builds temporary id until the build finishes
 	err = util.WriteStore(".in_progress_build_id", []byte(buildReply.(string)))
