@@ -351,8 +351,8 @@ var buildStopCmd = &cobra.Command{
 var buildFreezeCmd = &cobra.Command{
 	Use:     "freeze",
 	Aliases: []string{"pause"},
-	Short:   "",
-	Long:    "",
+	Short:   "Pause a build",
+	Long:    "Pause a build",
 	Run: func(cmd *cobra.Command, args []string) {
 		buildId, err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
@@ -366,8 +366,8 @@ var buildFreezeCmd = &cobra.Command{
 var buildUnfreezeCmd = &cobra.Command{
 	Use:     "unfreeze",
 	Aliases: []string{"thaw", "resume"},
-	Short:   "",
-	Long:    "",
+	Short:   "Unpause a build",
+	Long:    "Unpause a build",
 	Run: func(cmd *cobra.Command, args []string) {
 		buildId, err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
