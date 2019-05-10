@@ -320,8 +320,7 @@ var previousCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
-		fmt.Println(prevBuild)
+		fmt.Println(prettypi(prevBuild))
 		if previousYesAll || util.YesNoPrompt("Build from previous?") {
 			fmt.Println("building from previous configuration")
 			build(prevBuild)
