@@ -210,13 +210,14 @@ var exportCmd = &cobra.Command{
 		} else {
 			testnetID = args[0]
 		}
-
+		nodes := []Node{}
 		sem := semaphore.NewWeighted(200)
-		nodes, err := GetNodes()
+		ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes", testnetID)
+		res, err := util.JwtHTTPRequest("GET", ep, "")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
+		err = json.Unmarshal([]byte(res),&nodes)
 		for _, node := range nodes {
 			os.RemoveAll(fmt.Sprintf("./%s", node.ID))
 			os.MkdirAll(fmt.Sprintf("./%s", node.ID), 0755)
@@ -244,6 +245,7 @@ var exportCmd = &cobra.Command{
 					if err != nil {
 						util.PrintErrorFatal(err)
 					}
+					fmt.Println(res)
 					nextToken, files = handleExportLogs(testnetID, node, res, sem)
 					mergeDown(node, files)
 					if nextToken == nil {
