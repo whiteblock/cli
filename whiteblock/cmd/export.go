@@ -196,14 +196,21 @@ func appendBlocks(items []string, finish bool, f *os.File) {
 
 var exportCmd = &cobra.Command{
 	Hidden: true,
-	Use:    "export",
+	Use:    "export [testnet id]",
 	Short:  "Export stuff",
 	Long:   "Export stuff",
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
+		var testnetID string
+		var err error
+		if len(args) == 0 {
+			testnetID, err = getPreviousBuildId()
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+		} else {
+			testnetID = args[0]
 		}
+
 		sem := semaphore.NewWeighted(200)
 		nodes, err := GetNodes()
 		if err != nil {
