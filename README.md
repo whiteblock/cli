@@ -1,6 +1,14 @@
 # Whiteblock CLI
 [![Maintainability](https://api.codeclimate.com/v1/badges/19632596f75488519c67/maintainability)](https://codeclimate.com/github/Whiteblock/cli/maintainability)
 
+* Latest Stable Build (Linux AMD64)
+
+  https://storage.cloud.google.com/genesis-public/cli/master/bin/linux/amd64/whiteblock
+
+* Latest Dev Build (Linux AMD64)
+
+  https://storage.cloud.google.com/genesis-public/cli/dev/bin/linux/amd64/whiteblock
+
 ## ./whiteblock <COMMAND> [FLAGS]
 This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. Documentation, usages, and exmaples can be found in our [documentation](www.whiteblock.io/docs/cli).
 

@@ -29,7 +29,7 @@ func GetNodes() ([]Node, error) {
 		out = append(out, Node{
 			LocalID:   int(node["localId"].(float64)),
 			Server:    int(node["server"].(float64)),
-			TestNetID: node["testNetId"].(string),
+			TestNetID: node["testnetId"].(string),
 			ID:        node["id"].(string),
 			IP:        node["ip"].(string),
 			Label:     node["label"].(string),
@@ -57,6 +57,30 @@ var getServerCmd = &cobra.Command{
 	Long:    "\nServer will ouput server information.\n",
 	Run: func(cmd *cobra.Command, args []string) {
 		jsonRpcCallAndPrint("get_servers", []string{})
+	},
+}
+
+var getTestnetIDCmd = &cobra.Command{
+	Use:     "testnetid",
+	Aliases: []string{"id"},
+	Short:   "Get the last stored testnet id",
+	Long:    "\nGet the last stored testnet id.\n",
+	Run: func(cmd *cobra.Command, args []string) {
+		testnetID, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		fmt.Println(testnetID)
+	},
+}
+
+var getSupportedCmd = &cobra.Command{
+	Use:     "supported",
+	Aliases: []string{"blockchains"},
+	Short:   "Get the currently supported blockchains",
+	Long:    "Fetches the blockchains which whiteblock is currently able build by default",
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("get_supported_blockchains", []string{})
 	},
 }
 
@@ -88,41 +112,6 @@ Response: true or false, on whether or not a test is running; The name of the te
 		util.CheckArguments(cmd, args, 0, 0)
 		jsonRpcCallAndPrint("state::is_running", []string{})
 		jsonRpcCallAndPrint("state::what_is_running", []string{})
-	},
-}
-
-var getLogCmd = &cobra.Command{
-	Use:     "log <node>",
-	Aliases: []string{"logs"},
-	Short:   "Log will dump data pertaining to the node.",
-	Long: `
-Get stdout and stderr from a node.
-
-Params: node number
-
-Response: stdout and stderr of the blockchain process
-	`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd, args, 1, 1)
-		testNetId, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		n, err := strconv.Atoi(args[0])
-
-		if err != nil {
-			util.InvalidInteger("node", args[0], true)
-		}
-		tailval, err := cmd.Flags().GetInt("tail")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		jsonRpcCallAndPrint("log", map[string]interface{}{
-			"testnetId": testNetId,
-			"node":      n,
-			"lines":     tailval,
-		})
 	},
 }
 
@@ -425,9 +414,7 @@ Response: JSON representation of the contract information.
 
 func init() {
 
-	getLogCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
-
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getRunningCmd, getLogCmd, getConfigsCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd)
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented

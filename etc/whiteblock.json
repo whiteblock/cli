@@ -62,9 +62,15 @@
         },
         "artemis":{
             "images":{
-                "stable":"gcr.io/whiteblock/artemis:dev",
+                "stable":"pegasyseng/artemis:master",
                 "latest":"gcr.io/whiteblock/artemis:dev"
             }
+	},
+	"orion":{
+	    "images":{
+		"stable":"gcr.io/whiteblock/orion:dev",
+		"latest":"gcr.io/whiteblock/orion:dev"
+	    }
         }
     }
 }

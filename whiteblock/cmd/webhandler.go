@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -53,16 +52,6 @@ func jsonRpcCallAndPrint(method string, params interface{}) {
 	fmt.Println(prettypi(reply))
 }
 
-func CreateAuthNHeader() (string, error) {
-	if util.StoreExists("jwt") {
-		res, err := util.ReadStore("jwt")
-		return fmt.Sprintf("Bearer %s", string(res)), err
-	}
-	res, err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
-	token := strings.TrimSpace(string(res))
-	return fmt.Sprintf("Bearer %s", token), err
-}
-
 func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 	//log.Println("URL IS "+url)
 	jrpc, err := json2.EncodeClientRequest(method, params)
@@ -84,7 +73,7 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	auth, err := CreateAuthNHeader()
+	auth, err := util.CreateAuthNHeader()
 	if err != nil {
 		log.Println(err)
 	} else {
@@ -180,17 +169,21 @@ func buildListener(testnetId string) {
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
-		json.Unmarshal([]byte(args), &status)
+		err := json.Unmarshal([]byte(args), &status)
+		if err != nil {
+			util.PrintStringError(args)
+			os.Exit(1)
+		}
 		if status.Frozen {
 			fmt.Printf("\nBuild is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
-		} else if status.Progress == 0.0 {
-			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Error != nil {
 			fmt.Println() //move to the next line
 			what := status.Error["what"]
 			util.PrintStringError(what)
 			os.Exit(1)
 			mutex.Unlock()
+		} else if status.Progress == 0.0 {
+			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Progress == 100.0 {
 			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", "Build", status.Progress)
 			fmt.Println("\a")

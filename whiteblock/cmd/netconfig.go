@@ -2,6 +2,7 @@ package cmd
 
 import (
 	util "../util"
+	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 	"strconv"
@@ -146,6 +147,158 @@ Netconfig get will fetch the current network conditions
 	},
 }
 
+var netconfigGetDisconnectsCmd = &cobra.Command{
+	Use:     "disconnects [node]",
+	Aliases: []string{"blocked", "disconnected"},
+	Short:   "Get the blocked connections",
+	Long: `
+Get a json array of the connections which are blocked. 
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 1)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		outArgs := []interface{}{testnetId}
+		if len(args) == 1 {
+			outArgs = append(outArgs, args[0])
+		}
+		jsonRpcCallAndPrint("get_outages", outArgs)
+	},
+}
+
+var netconfigGetPartitionsCmd = &cobra.Command{
+	Use: "partitions",
+	//Aliases: []string{"blocked", "disconnected"},
+	Short: "Get the network partitions",
+	Long:  "\nGets the current network partitions\n",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 1)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		/*spinner := Spinner{}
+		spinner.SetText("Fetching the network partitions")
+		spinner.Run(100)
+		defer spinner.Kill()*/
+		jsonRpcCallAndPrint("get_partitions", []interface{}{testnetId})
+	},
+}
+
+var netconfigUncutCmd = &cobra.Command{
+	Use:     "uncut <node1> <node2>",
+	Aliases: []string{"unblock"},
+	Short:   "Allow the given pair of nodes to connect",
+	Long: `
+Allow the given pair of nodes to connect
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 2, 2)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		node1, err := strconv.Atoi(args[0])
+		if err != nil {
+			util.InvalidInteger("node1", args[0], true)
+		}
+		node2, err := strconv.Atoi(args[1])
+		if err != nil {
+			util.InvalidInteger("node2", args[1], true)
+		}
+		jsonRpcCallAndPrint("remove_outage", []interface{}{testnetId, node1, node2})
+	},
+}
+
+var netconfigCutCmd = &cobra.Command{
+	Use:     "cut <node1> <node2>",
+	Aliases: []string{"block"},
+	Short:   "Prevent the given pair of nodes from connecting",
+	Long: `
+Prevent the given pair of nodes from connecting
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 2, 2)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		node1, err := strconv.Atoi(args[0])
+		if err != nil {
+			util.InvalidInteger("node1", args[0], true)
+		}
+		node2, err := strconv.Atoi(args[1])
+		if err != nil {
+			util.InvalidInteger("node2", args[1], true)
+		}
+		jsonRpcCallAndPrint("make_outage", []interface{}{testnetId, node1, node2})
+	},
+}
+
+var netconfigPartitionCmd = &cobra.Command{
+	Use: "partition <node1>...",
+	//Aliases: []string{"unblock"},
+	Short: "Partition the given nodes from the rest of the network",
+	Long: `
+Partition the given nodes from the rest of the network
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		nodes := []int{}
+		for i, arg := range args {
+			node, err := strconv.Atoi(arg)
+			if err != nil {
+				util.InvalidInteger(fmt.Sprintf("argument %d", i), args[0], true)
+			}
+			nodes = append(nodes, node)
+		}
+		/*spinner := Spinner{}
+		spinner.SetText("Partition the network")
+		spinner.Run(100)
+		defer spinner.Kill()*/
+		jsonRpcCallAndPrint("partition_outage", []interface{}{testnetId, nodes})
+	},
+}
+
+var netconfigMarryCmd = &cobra.Command{
+	Use: "marry",
+	//Aliases: []string{"unblock"},
+	Short: "Remove any outages",
+	Long: `
+Remove any outages and allow connections between all nodes
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 0)
+		testnetId, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintStringError("No previous build found")
+			os.Exit(1)
+		}
+		/*spinner := Spinner{}
+		spinner.SetText("Putting the network back together")
+		spinner.Run(100)
+		defer spinner.Kill()*/
+		jsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetId})
+	},
+}
+
 func init() {
 	netconfigSetCmd.Flags().IntVarP(&limitFlag, "limit", "m", 1000, "sets packet limit")
 	netconfigSetCmd.Flags().Float64VarP(&lossFlag, "loss", "l", 0.0, "Specifies the amount of packet loss to add [%]")
@@ -157,7 +310,10 @@ func init() {
 	netconfigAllCmd.Flags().IntVarP(&delayFlag, "delay", "d", 0, "Specifies the latency to add [ms]")
 	netconfigAllCmd.Flags().IntVarP(&rateFlag, "bandwidth", "b", 0, "Specifies the bandwidth of the network in mbps")
 
-	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd)
+	netconfigGetCmd.AddCommand(netconfigGetDisconnectsCmd, netconfigGetPartitionsCmd)
+
+	netconfigCmd.AddCommand(netconfigSetCmd, netconfigAllCmd, netconfigClearCmd, netconfigGetCmd, netconfigUncutCmd,
+		netconfigCutCmd, netconfigPartitionCmd, netconfigMarryCmd)
 
 	RootCmd.AddCommand(netconfigCmd)
 }

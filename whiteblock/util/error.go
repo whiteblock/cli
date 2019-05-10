@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"runtime"
 )
+
+const debug = false
 
 /**
  * Unify error messages through function calls
@@ -67,6 +70,15 @@ func ClientNotSupported(client string) {
 }
 
 func PrintErrorFatal(err error) {
+	if debug {
+		_, file, line, ok := runtime.Caller(1)
+		if !ok {
+			file = "???"
+			line = 0
+		}
+		fmt.Printf("\033[31mError: %v:%v\033[0m %s\n", file, line, err)
+		os.Exit(1)
+	}
 	PrintError(err)
 	os.Exit(1)
 }
@@ -76,5 +88,15 @@ func PrintError(err error) {
 }
 
 func PrintStringError(err string) {
-	fmt.Printf("\033[31mError:\033[0m %s\n", err)
+	if debug {
+		_, file, line, ok := runtime.Caller(1)
+		if !ok {
+			file = "???"
+			line = 0
+		}
+		fmt.Printf("\033[31mError: %v:%v\033[0m %s\n", file, line, err)
+	} else {
+		fmt.Printf("\033[31mError:\033[0m %s\n", err)
+	}
+
 }
