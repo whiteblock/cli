@@ -217,7 +217,7 @@ var exportCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		err = json.Unmarshal([]byte(res),&nodes)
+		err = json.Unmarshal([]byte(res), &nodes)
 		for _, node := range nodes {
 			os.RemoveAll(fmt.Sprintf("./%s", node.ID))
 			os.MkdirAll(fmt.Sprintf("./%s", node.ID), 0755)

@@ -84,6 +84,16 @@ var getSupportedCmd = &cobra.Command{
 	},
 }
 
+var getAutoCmd = &cobra.Command{
+	Use:     "auto",
+	Aliases: []string{"routines"},
+	Short:   "Check auto QPS",
+	Long:    "Get the QPS of the currently running automated queries",
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("state::sub_routines", []string{})
+	},
+}
+
 var getNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
@@ -418,7 +428,7 @@ func init() {
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented
-	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
+	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd, getAutoCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
 	getTxCmd.AddCommand(getTxInfoCmd)
 	getAccountCmd.AddCommand(getAccountInfoCmd)
