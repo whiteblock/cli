@@ -11,7 +11,7 @@ var autoCmd = &cobra.Command{
 	Aliases: []string{},
 	Use:     "auto <node> <command>",
 	Short:   "send queries",
-	Long: `Automatically send queries to a node in the background.
+	Long: `Automatically send queries to a node in the background. <command> is the name of the json rpc call to be made
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
