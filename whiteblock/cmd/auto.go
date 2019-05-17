@@ -12,7 +12,17 @@ var autoCmd = &cobra.Command{
 	Aliases: []string{},
 	Use:     "auto <node> <command> [params]",
 	Short:   "send queries",
-	Long: `Automatically send queries to a node in the background. <command> is the name of the json rpc call to be made
+	Long: `Automatically send json_rpc queries to a node in the background. <command> is the name of the json rpc call to be made. 
+	You can use +account,+tx_hash,+number,+hex,+block_hash,+block_number as magic string parameters to be filled in with randomized appropiate values.
+	+tx_hash random tx hash; only works after you call wb tx start stream
+	+account random account
+	+number random base 10 number
+	+hex random hex number
+	+block_hash random block hash
+	+block_number random block number
+	Examples:
+	wb auto 0 eth_sendTransaction -i 1000000 '{"from":"+account","to":"+account","gas":"0x76c0","gasPrice":"0x9184e72a000","value":"+hex","data":"0x00"}'
+	wb auto 0 eth_getBalance -i 100000 +account latest
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {

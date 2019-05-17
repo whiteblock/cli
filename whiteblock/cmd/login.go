@@ -12,7 +12,7 @@ import (
 
 func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 	body := strings.NewReader("")
-	req, err := http.NewRequest("GET", util.ApiBaseURL + "/agent", body)
+	req, err := http.NewRequest("GET", util.ApiBaseURL+"/agent", body)
 	if err != nil {
 		return nil, err
 	}
