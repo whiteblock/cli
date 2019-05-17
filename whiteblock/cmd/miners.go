@@ -34,6 +34,13 @@ Response: The number of nodes which successfully received the signal to start mi
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		noCheck, err := cmd.Flags().GetBool("no-hang")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		if noCheck {
+			fmt.Println("Miner is starting")
+		}
 		DagReady := false
 		for !DagReady {
 			//fmt.Printf("\rDAG is being generated...")
@@ -69,6 +76,7 @@ Response: The number of nodes which successfully received the signal to stop min
 }
 
 func init() {
+	minerStartCmd.Flags().Bool("no-hang", false, "Do not wait for the blocks to start mining before returning")
 	minerCmd.AddCommand(minerStartCmd, minerStopCmd)
 	RootCmd.AddCommand(minerCmd)
 }
