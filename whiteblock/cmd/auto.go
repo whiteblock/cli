@@ -63,18 +63,40 @@ var autoCmd = &cobra.Command{
 
 var autoKillCmd = &cobra.Command{
 	Use:   "kill",
-	Short: "Kill an auto routine",
+	Aliases: []string{"stop"},
+	Short: "stop an auto routine",
 	Long: `
 Kill an auto routine.
 `,
+	Run: func(cmd *cobra.Command, args []string) {		
+		forced, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		if(forced){
+			util.CheckArguments(cmd, args, 1, 1)
+			jsonRpcCallAndPrint("state::force_stop_sub_routine", args[0])
+		}else{
+			jsonRpcCallAndPrint("state::kill_sub_routines", args)
+		}
+	},
+}
+
+var autoCleanCmd = &cobra.Command{
+	Use:   "clean",
+	Short: "clean a stoped auto routine",
+	Long: `
+clean a stoped auto routine
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("state::kill_sub_routines", args)
+		jsonRpcCallAndPrint("state::clean_sub_routines", args)
 	},
 }
 
 func init() {
 	autoCmd.Flags().IntP("interval", "i", 50000, "Send interval in microseconds")
 	autoCmd.Flags().IntP("send-per-interval", "b", 1, "Send of requests to send per interval tick (default 1)")
-	autoCmd.AddCommand(autoKillCmd)
+	autoKillCmd.Flags().BoolP("force","f",false,"force kill/stop the routine (this may cause a crash)")
+	autoCmd.AddCommand(autoKillCmd,autoCleanCmd)
 	RootCmd.AddCommand(autoCmd)
 }
