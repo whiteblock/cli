@@ -75,7 +75,7 @@ Kill an auto routine.
 		}
 		if(forced){
 			util.CheckArguments(cmd, args, 1, 1)
-			jsonRpcCallAndPrint("state::force_stop_sub_routine", args[0])
+			jsonRpcCallAndPrint("state::force_stop_sub_routine", []interface{}{args[0]})
 		}else{
 			jsonRpcCallAndPrint("state::kill_sub_routines", args)
 		}
