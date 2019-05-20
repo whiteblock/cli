@@ -39,6 +39,10 @@ var autoCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		errorChecking, err := cmd.Flags().GetBool("full-error-checking")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 		params := []interface{}{}
 		if len(args) > 2 {
 			for _, arg := range args[2:] {
@@ -57,26 +61,27 @@ var autoCmd = &cobra.Command{
 			"sendPerInterval": sendPerInterval,
 			"call":            args[1],
 			"arguments":       params,
+			"errorCheck":      errorChecking,
 		}})
 	},
 }
 
 var autoKillCmd = &cobra.Command{
-	Use:   "kill",
+	Use:     "kill",
 	Aliases: []string{"stop"},
-	Short: "stop an auto routine",
+	Short:   "stop an auto routine",
 	Long: `
 Kill an auto routine.
 `,
-	Run: func(cmd *cobra.Command, args []string) {		
+	Run: func(cmd *cobra.Command, args []string) {
 		forced, err := cmd.Flags().GetBool("force")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		if(forced){
+		if forced {
 			util.CheckArguments(cmd, args, 1, 1)
 			jsonRpcCallAndPrint("state::force_stop_sub_routine", []interface{}{args[0]})
-		}else{
+		} else {
 			jsonRpcCallAndPrint("state::kill_sub_routines", args)
 		}
 	},
@@ -94,9 +99,10 @@ clean a stoped auto routine
 }
 
 func init() {
+	autoCmd.Flags().Bool("full-error-checking", false, "Check for errors other than just connectivity errors (default false)")
 	autoCmd.Flags().IntP("interval", "i", 50000, "Send interval in microseconds")
 	autoCmd.Flags().IntP("send-per-interval", "b", 1, "Send of requests to send per interval tick (default 1)")
-	autoKillCmd.Flags().BoolP("force","f",false,"force kill/stop the routine (this may cause a crash)")
-	autoCmd.AddCommand(autoKillCmd,autoCleanCmd)
+	autoKillCmd.Flags().BoolP("force", "f", false, "force kill/stop the routine (this may cause a crash)")
+	autoCmd.AddCommand(autoKillCmd, autoCleanCmd)
 	RootCmd.AddCommand(autoCmd)
 }
