@@ -289,6 +289,7 @@ var buildCmd = &cobra.Command{
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
 		handlePullFlag(cmd, args, &buildConf)
+		handleForceUnlockFlag(cmd, args, &buildConf)
 		handleDockerAuthFlags(cmd, args, &buildConf)
 		handleSSHOptions(cmd, args, &buildConf)
 		//fmt.Printf("%+v\n", buildConf)
@@ -403,6 +404,7 @@ func init() {
 		" Takes a file containing an ssh public key")
 
 	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
+	buildCmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")

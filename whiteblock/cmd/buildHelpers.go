@@ -261,6 +261,14 @@ func handlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
 	}
 }
 
+func handleForceUnlockFlag(cmd *cobra.Command, args []string, conf *Config) {
+
+	fbg, err := cmd.Flags().GetBool("force-unlock")
+	if err == nil && fbg {
+		conf.Extras["forceUnlock"] = true
+	}
+}
+
 func getImage(blockchain string, imageType string, defaultImage string) string {
 	usr, err := user.Current()
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
