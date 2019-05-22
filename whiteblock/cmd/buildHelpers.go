@@ -74,25 +74,26 @@ func hasParam(params [][]string, param string) bool {
 
 func fetchParams(blockchain string) ([][]string, error) {
 	//Handle the ugly conversions, in a safe manner
+	badFmtErr := fmt.Errorf("unexpected format for params")
 	rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
 	if err != nil {
 		return nil, err
 	}
 	optionsStep1, ok := rawOptions.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Unexpected format for params")
+		return nil, badFmtErr
 	}
 	out := make([][]string, len(optionsStep1))
 	for i, optionsStep1Segment := range optionsStep1 {
 		optionsStep2, ok := optionsStep1Segment.([]interface{}) //[][]interface{}[i]
 		if !ok {
-			return nil, fmt.Errorf("Unexpected format for params")
+			return nil, badFmtErr
 		}
 		out[i] = make([]string, len(optionsStep2))
 		for j, optionsStep2Segment := range optionsStep2 {
 			out[i][j], ok = optionsStep2Segment.(string)
 			if !ok {
-				return nil, fmt.Errorf("Unexpected format for params")
+				return nil, badFmtErr
 			}
 		}
 	}
@@ -221,9 +222,9 @@ func processEnv(envVars map[string]string, nodes int) ([]map[string]string, erro
 func handleDockerAuthFlags(cmd *cobra.Command, args []string, conf *Config) {
 	if cmd.Flags().Changed("docker-password") != cmd.Flags().Changed("docker-username") {
 		if cmd.Flags().Changed("docker-password") {
-			util.PrintStringError("You must also provide --docker-password with --docker-username")
+			util.PrintStringError("you must also provide --docker-password with --docker-username")
 		} else {
-			util.PrintStringError("You must also provide --docker-username with --docker-password")
+			util.PrintStringError("you must also provide --docker-username with --docker-password")
 		}
 		os.Exit(1)
 	}
