@@ -111,11 +111,31 @@ var getNodesCmd = &cobra.Command{
 	Long:    "\nNodes will output all of the nodes in the current network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		jsonRpcCallAndPrint("status_nodes", []string{testnetId})
+		all, err := cmd.Flags().GetBool("all")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		if all {
+			jsonRpcCallAndPrint("status_nodes", []string{testnetID})
+			return
+		}
+		res,err := jsonRpcCall("status_nodes", []string{testnetID})
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		rawNodes := res.([]interface{})
+		out := []interface{}{}
+		for _,rawNode := range rawNodes {
+			if rawNode.(map[string]interface{})["up"].(bool) {
+				out = append(out,rawNode)
+			}
+
+		}
+		prettypi(out)
 	},
 }
 
@@ -433,8 +453,10 @@ Response: JSON representation of the contract information.
 }
 
 func init() {
-
+	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd)
+	
+
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 	getAutoCmd.AddCommand(getAutoDetailedCmd)
 	// dev commands that are currently being implemented
