@@ -271,6 +271,9 @@ func handleForceUnlockFlag(cmd *cobra.Command, args []string, conf *Config) {
 
 func getImage(blockchain string, imageType string, defaultImage string) string {
 	usr, err := user.Current()
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
 		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
@@ -305,6 +308,9 @@ func handleImageFlag(cmd *cobra.Command, args []string, conf *Config) {
 
 	conf.Images = make([]string, conf.Nodes)
 	images, potentialImage, err := util.UnrollStringSliceToMapIntString(imageFlag, "=")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
 	//fmt.Printf("IMAGES=%#v\n",images)
 	if len(potentialImage) > 1 {
 		util.PrintErrorFatal(fmt.Errorf("Too many default images"))

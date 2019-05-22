@@ -30,7 +30,7 @@ Response: The number of nodes which successfully received the signal to start mi
 		spinner := &Spinner{txt: "Starting the miner", die: false}
 		spinner.Run(100)
 
-		res, err := jsonRpcCall("start_mining", args)
+		_, err := jsonRpcCall("start_mining", args)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -44,7 +44,7 @@ Response: The number of nodes which successfully received the signal to start mi
 		DagReady := false
 		for !DagReady {
 			//fmt.Printf("\rDAG is being generated...")
-			res, err = jsonRpcCall("get_block_number", []string{})
+			res, err := jsonRpcCall("get_block_number", []string{})
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}

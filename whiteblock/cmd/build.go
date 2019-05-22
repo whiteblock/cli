@@ -194,7 +194,7 @@ var buildCmd = &cobra.Command{
 		}
 		if !memoryEnabled {
 			buildConf.Resources[0].Memory = buildArr[offset]
-			offset++
+			//offset++
 		}
 
 		if len(serversFlag) > 0 {

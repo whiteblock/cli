@@ -192,7 +192,9 @@ func buildListener(testnetId string) {
 			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", status.Stage, status.Progress)
 		}
 	})
-
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
 	c.Emit("build_status", testnetId)
 	mutex.Lock()
 }
