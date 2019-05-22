@@ -282,9 +282,9 @@ var exportCmd = &cobra.Command{
 			for _, node := range nodes {
 				var ep string
 				if nextToken == nil {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks", node.ID,testnetID)
+					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks", node.ID, testnetID)
 				} else {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks?next=%v",node.ID,
+					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks?next=%v", node.ID,
 						testnetID, url.QueryEscape(nextToken.(string)))
 				}
 

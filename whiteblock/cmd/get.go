@@ -123,19 +123,19 @@ var getNodesCmd = &cobra.Command{
 			jsonRpcCallAndPrint("status_nodes", []string{testnetID})
 			return
 		}
-		res,err := jsonRpcCall("status_nodes", []string{testnetID})
+		res, err := jsonRpcCall("status_nodes", []string{testnetID})
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+
 		rawNodes := res.([]interface{})
 		out := []interface{}{}
-		for _,rawNode := range rawNodes {
+		for _, rawNode := range rawNodes {
 			if rawNode.(map[string]interface{})["up"].(bool) {
-				out = append(out,rawNode)
+				out = append(out, rawNode)
 			}
-
 		}
-		prettypi(out)
+		fmt.Println(prettypi(out))
 	},
 }
 
@@ -455,7 +455,6 @@ Response: JSON representation of the contract information.
 func init() {
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd)
-	
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 	getAutoCmd.AddCommand(getAutoDetailedCmd)
