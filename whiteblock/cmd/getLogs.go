@@ -108,7 +108,6 @@ Response: stdout and stderr of the blockchain process
 			scanner.Scan()
 			fmt.Println(scanner.Text())
 		}
-		session.Wait()
 	},
 }
 

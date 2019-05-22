@@ -27,7 +27,7 @@ var txCmd = &cobra.Command{
 	Short: "Run transaction commands.",
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
-Tx will run commands relavent to sending transactions.
+Tx will run commands relevant to sending transactions.
 
 Please use the help commands to make sure you provide the correct flags. If the blockchain is not listed in the help command, the transaction command is not supported for that blockchain. 
 	`,

@@ -204,7 +204,7 @@ func deployContract(fileName, IP string) string {
 var gethCmd = &cobra.Command{
 	Use:   "geth <command>",
 	Short: "Run geth commands",
-	Long:  "\nGeth will allow the user to get infromation and run geth commands.\n",
+	Long:  "\nGeth will allow the user to get information and run geth commands.\n",
 	Run:   util.PartialCommand,
 }
 

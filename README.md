@@ -1,6 +1,6 @@
 # Whiteblock CLI
 [![Maintainability](https://api.codeclimate.com/v1/badges/19632596f75488519c67/maintainability)](https://codeclimate.com/github/Whiteblock/cli/maintainability)
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/whiteblock/cli)](https://goreportcard.com/report/github.com/whiteblock/cli)
 * Latest Stable Build (Linux AMD64)
 
   https://storage.cloud.google.com/genesis-public/cli/master/bin/linux/amd64/whiteblock

@@ -46,7 +46,7 @@ func readContractsFile() ([]byte, error) {
 var getCmd = &cobra.Command{
 	Use:   "get <command>",
 	Short: "Get server and network information.",
-	Long:  "\nGet will ouput server and network information and statstics.\n",
+	Long:  "\nGet will output server and network information and statistics.\n",
 	Run:   util.PartialCommand,
 }
 
@@ -54,7 +54,7 @@ var getServerCmd = &cobra.Command{
 	Use:     "server",
 	Aliases: []string{"servers"},
 	Short:   "Get server information.",
-	Long:    "\nServer will ouput server information.\n",
+	Long:    "\nServer will output server information.\n",
 	Run: func(cmd *cobra.Command, args []string) {
 		jsonRpcCallAndPrint("get_servers", []string{})
 	},
@@ -157,7 +157,7 @@ var getConfigsCmd = &cobra.Command{
 	Aliases: []string{"config"},
 	Short:   "Get the resources for a blockchain",
 	Long: `
-Get the resources for a blockchain. With one argument, lists what is availible. With two
+Get the resources for a blockchain. With one argument, lists what is available. With two
 	arguments, get the contents of the file
 
 Params: The blockchain to get the resources of, the resource/file name 

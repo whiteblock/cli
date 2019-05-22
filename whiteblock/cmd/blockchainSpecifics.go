@@ -17,7 +17,7 @@ var sysCMD = &cobra.Command{
 var sysTestCMD = &cobra.Command{
 	Use:   "test <command>",
 	Short: "SYS test commands.",
-	Long:  "\nSys test will allow the user to get infromation and run SYS tests.\n",
+	Long:  "\nSys test will allow the user to get information and run SYS tests.\n",
 	Run:   util.PartialCommand,
 }
 
@@ -82,7 +82,7 @@ Params: Test number
 		rc := result["results"].([]interface{})[0]
 		s := rc.(map[string]interface{})["series"]
 		if s == nil {
-			fmt.Println("No results availible")
+			fmt.Println("No results available")
 			os.Exit(1)
 		}
 		sc := s.([]interface{})[0].(map[string]interface{})
