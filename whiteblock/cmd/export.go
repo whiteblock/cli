@@ -279,12 +279,12 @@ var exportCmd = &cobra.Command{
 				}
 			}()
 
-			for {
+			for _, node := range nodes {
 				var ep string
 				if nextToken == nil {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/00000000-0000-0000-0000-000000000000/blocks", testnetID)
+					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks", node.ID,testnetID)
 				} else {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/00000000-0000-0000-0000-000000000000/blocks?next=%v",
+					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks?next=%v",node.ID,
 						testnetID, url.QueryEscape(nextToken.(string)))
 				}
 
@@ -293,7 +293,7 @@ var exportCmd = &cobra.Command{
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
-				nextToken, blocks = handleExportBlocks(testnetID, "00000000-0000-0000-0000-000000000000", res, sem)
+				nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, sem)
 				for _, file := range files {
 					appendBlocks(blocks, nextToken == nil, file)
 				}
