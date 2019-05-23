@@ -15,7 +15,7 @@ import (
 )
 
 func handleFetchChunk(testnetID string, node Node, log string, chunk string) (string, error) {
-	ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs/%s/chunks/%s", testnetID, node.ID, log, chunk)
+	ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%s/chunks/%s", util.ApiBaseURL, testnetID, node.ID, log, chunk)
 	fmt.Println(ep)
 	return util.JwtHTTPRequest("GET", ep, "")
 }
@@ -85,7 +85,7 @@ func handleExportLogs(testnetID string, node Node, rawRes string, sem *semaphore
 	for _, log := range logs {
 		go func(log string) {
 			defer wg.Done()
-			ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs/%v/chunks", testnetID, node.ID, log)
+			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%v/chunks", util.ApiBaseURL, testnetID, node.ID, log)
 			fmt.Println(ep)
 			res, err := util.JwtHTTPRequest("GET", ep, "")
 			if err != nil {
@@ -120,7 +120,7 @@ func handleExportBlocks(testnetID string, node string, rawRes string, sem *semap
 		go func(blockNumber interface{}, i int) {
 			defer wg.Done()
 			defer sem.Release(1)
-			ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks/%v", testnetID, node, blockNumber)
+			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks/%v", util.ApiBaseURL, testnetID, node, blockNumber)
 			fmt.Println(ep)
 			var res string
 			var err error
@@ -212,7 +212,7 @@ var exportCmd = &cobra.Command{
 		}
 		nodes := []Node{}
 		sem := semaphore.NewWeighted(200)
-		ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes", testnetID)
+		ep := fmt.Sprintf("%s/testnets/%s/nodes", util.ApiBaseURL, testnetID)
 		res, err := util.JwtHTTPRequest("GET", ep, "")
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -237,9 +237,9 @@ var exportCmd = &cobra.Command{
 				for {
 					var ep string
 					if nextToken == nil {
-						ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs", testnetID, node.ID)
+						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs", util.ApiBaseURL, testnetID, node.ID)
 					} else {
-						ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs?next=%v",
+						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs?next=%v", util.ApiBaseURL,
 							testnetID, node.ID, url.QueryEscape(nextToken.(string)))
 					}
 
@@ -282,10 +282,10 @@ var exportCmd = &cobra.Command{
 			for _, node := range nodes {
 				var ep string
 				if nextToken == nil {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks", node.ID, testnetID)
+					ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", util.ApiBaseURL, testnetID, node.ID)
 				} else {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks?next=%v", node.ID,
-						testnetID, url.QueryEscape(nextToken.(string)))
+					ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", util.ApiBaseURL, testnetID, node.ID,
+						url.QueryEscape(nextToken.(string)))
 				}
 
 				fmt.Println(ep)
