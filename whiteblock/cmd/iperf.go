@@ -174,7 +174,7 @@ Params: sending node, receiving node
 			}
 			defer client.Close()
 
-			client.Run("pkill -9 iperf3") //Kill iperf if it is running
+			//client.Run("pkill -9 iperf3") //Kill iperf if it is running
 
 			session, err := client.GetSession()
 			if err != nil {
@@ -238,7 +238,7 @@ Params: sending node, receiving node
 			}
 			defer client.Close()
 
-			client.Run("pkill -9 iperf3")
+			//client.Run("pkill -9 iperf3")
 			spinner.Kill()
 			session, err := client.GetSession()
 			if err != nil {
