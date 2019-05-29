@@ -81,7 +81,6 @@ var buildCmd = &cobra.Command{
 		var err error
 		util.CheckArguments(cmd, args, 0, 0)
 		buildConf, _ := getPreviousBuild() //Errors are ok with this.
-
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
