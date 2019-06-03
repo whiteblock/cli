@@ -19,8 +19,8 @@ var RootCmd = &cobra.Command{
 	Use:     "whiteblock",
 	Version: VERSION,
 	Short:   "Create and test blockchains",
-	Long: `This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. 
-	Documentation, usages, and examples can be found at www.whiteblock.io/docs/cli.
+	Long: `This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network.
+	Documentation, usages, and exmaples can be found at https://docs.whiteblock.io/.
 	`,
 }
 
