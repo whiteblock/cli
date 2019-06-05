@@ -188,12 +188,11 @@ func createAutoGraph() ([]ui.Drawable, error) {
 			[]string{"successes", fmt.Sprintf("%v", int64(data["successes"].(float64)))},
 			[]string{"errors", fmt.Sprintf("%v", int64(data["errors"].(float64)))},
 			[]string{"success rate", fmt.Sprintf("%v", data["successRate"])},
-			[]string{"requests per second", fmt.Sprintf("%v", data["requestsPerSecond"])},
 		}
 		table.TextStyle = ui.NewStyle(ui.ColorWhite)
 		table.RowSeparator = true
 		table.BorderStyle = ui.NewStyle(ui.ColorWhite)
-		table.SetRect(int(width*2)+1, y, int(width*2)+1+int(width), increment+y)
+		table.SetRect(int(width*2)+1, y, int(width*2)+1+int(width), 7+y)
 		table.FillRow = true
 		/*table3.RowStyles[0] = ui.NewStyle(ui.ColorWhite, ui.ColorBlack, ui.ModifierBold)
 		table3.RowStyles[2] = ui.NewStyle(ui.ColorWhite, ui.ColorRed, ui.ModifierBold)
