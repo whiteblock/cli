@@ -121,7 +121,7 @@ func createAutoGraph() ([]ui.Drawable, error) {
 
 		return nil, fmt.Errorf("nothing to show")
 	}
-	plots := make([]ui.Drawable, len(res.(map[string]interface{})))
+
 	//fmt.Printf("LENGTH=%d\n",len(res.(map[string]interface{})))
 	width, _ := getTermSize()
 	y := 0
@@ -137,11 +137,12 @@ func createAutoGraph() ([]ui.Drawable, error) {
 	tmpKeys.Sort()
 	sortedKeys := []string(tmpKeys)
 
-	for index, routine := range sortedKeys {
-		data := res.(map[string]interface{})[routine]
+	objects := []ui.Drawable{}
+	for _, routine := range sortedKeys {
+		data := res.(map[string]interface{})[routine].(map[string]interface{})
 		//render the data
 		var points []map[string]float64
-		stats := data.(map[string]interface{})["stats"]
+		stats := data["stats"]
 		//current := stats.(map[string]interface{})["current"]
 		//fmt.Printf("%#v\n",current)
 		historical := stats.(map[string]interface{})["historical"]
@@ -153,9 +154,13 @@ func createAutoGraph() ([]ui.Drawable, error) {
 		if err != nil {
 			return nil, err
 		}
-
+		/*Create the graph*/
 		plot := widgets.NewPlot()
 		plot.Title = routine
+		plot.LineColors[0] = ui.ColorRed
+		plot.LineColors[1] = ui.ColorYellow
+		plot.LineColors[2] = ui.ColorGreen
+		//plot.LineColors = []ui.Color{,ui.ColorYellow,ui.ColorRed}
 		plot.AxesColor = ui.ColorWhite
 		plot.DataLabels = []string{"eps", "qps", "sps"}
 		//plot.LineColors[0] = ui.ColorGreen
@@ -174,10 +179,29 @@ func createAutoGraph() ([]ui.Drawable, error) {
 		plot.DrawDirection = widgets.DrawLeft
 
 		plot.SetRect(0, y, int(width*2), increment+y)
+
+		objects = append(objects, plot)
+
+		/*Create the overall table*/
+		table := widgets.NewTable()
+		table.Rows = [][]string{
+			[]string{"successes", fmt.Sprintf("%v", int64(data["successes"].(float64)))},
+			[]string{"errors", fmt.Sprintf("%v", int64(data["errors"].(float64)))},
+			[]string{"success rate", fmt.Sprintf("%v", data["successRate"])},
+			[]string{"requests per second", fmt.Sprintf("%v", data["requestsPerSecond"])},
+		}
+		table.TextStyle = ui.NewStyle(ui.ColorWhite)
+		table.RowSeparator = true
+		table.BorderStyle = ui.NewStyle(ui.ColorWhite)
+		table.SetRect(int(width*2)+1, y, int(width*2)+1+int(width), increment+y)
+		table.FillRow = true
+		/*table3.RowStyles[0] = ui.NewStyle(ui.ColorWhite, ui.ColorBlack, ui.ModifierBold)
+		table3.RowStyles[2] = ui.NewStyle(ui.ColorWhite, ui.ColorRed, ui.ModifierBold)
+		table3.RowStyles[3] = ui.NewStyle(ui.ColorYellow)*/
+		objects = append(objects, table)
 		y += increment
-		plots[index] = plot
 	}
-	return plots, nil
+	return objects, nil
 }
 
 var getAutoDetailedCmd = &cobra.Command{
