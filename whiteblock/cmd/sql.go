@@ -43,10 +43,14 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 
 var sqlCmd = &cobra.Command{
 	Use:   "sql",
-	Short: "[Description]",
+	Short: "Runs SQL command to retrieve structured log data",
 	Long: `
-	[In depth description]
-`,
+This command will run a SQL query to the database to retrieve structured log data
+	
+Params:
+	
+Format: 
+	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		testnetID, err := getPreviousBuildId()
@@ -60,5 +64,5 @@ var sqlCmd = &cobra.Command{
 
 func init() {
 	//UNCOMMENT TO ADD THE COMMAND
-	//RootCmd.AddCommand(sqlCmd)
+	RootCmd.AddCommand(sqlCmd)
 }
