@@ -1,11 +1,15 @@
 package cmd
 
 import (
-	util "../util"
+	"../util"
 	"encoding/json"
 	"fmt"
+	ui "github.com/gizak/termui"
+	"github.com/gizak/termui/widgets"
 	"github.com/spf13/cobra"
+	"sort"
 	"strconv"
+	"time"
 )
 
 var autoCmd = &cobra.Command{
@@ -98,11 +102,139 @@ clean a stoped auto routine
 	},
 }
 
+var getAutoCmd = &cobra.Command{
+	Use:     "auto",
+	Aliases: []string{"routines"},
+	Short:   "Check auto QPS",
+	Long:    "Get the QPS of the currently running automated queries",
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("state::sub_routines", []string{})
+	},
+}
+
+func createAutoGraph() ([]ui.Drawable, error) {
+	res, err := jsonRpcCall("state::sub_routines_stats", []string{})
+	if err != nil {
+		return nil, err
+	}
+	if len(res.(map[string]interface{})) == 0 {
+
+		return nil, fmt.Errorf("nothing to show")
+	}
+	plots := make([]ui.Drawable, len(res.(map[string]interface{})))
+	//fmt.Printf("LENGTH=%d\n",len(res.(map[string]interface{})))
+	width, _ := getTermSize()
+	y := 0
+
+	increment := 10
+
+	/**sorting mechanics**/
+	keys := []string{}
+	for routine, _ := range res.(map[string]interface{}) {
+		keys = append(keys, routine)
+	}
+	tmpKeys := sort.StringSlice(keys)
+	tmpKeys.Sort()
+	sortedKeys := []string(tmpKeys)
+
+	for index, routine := range sortedKeys {
+		data := res.(map[string]interface{})[routine]
+		//render the data
+		var points []map[string]float64
+		stats := data.(map[string]interface{})["stats"]
+		//current := stats.(map[string]interface{})["current"]
+		//fmt.Printf("%#v\n",current)
+		historical := stats.(map[string]interface{})["historical"]
+		tmp, err := json.Marshal(historical)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(tmp, &points)
+		if err != nil {
+			return nil, err
+		}
+
+		plot := widgets.NewPlot()
+		plot.Title = routine
+		plot.AxesColor = ui.ColorWhite
+		plot.DataLabels = []string{"eps", "qps", "sps"}
+		//plot.LineColors[0] = ui.ColorGreen
+		//plot.HorizontalScale = (50/len(points)) + 1
+		plot.Data = make([][]float64, 3)
+		for _, sample := range points {
+			secs := sample["time_microseconds"] / 1000000.0
+			eps := sample["errors"] / secs
+			qps := sample["queries"] / secs
+			sps := sample["successes"] / secs
+			plot.Data[0] = append(plot.Data[0], eps)
+			plot.Data[1] = append(plot.Data[1], qps)
+			plot.Data[2] = append(plot.Data[2], sps)
+		}
+		//plot.Data = [][]float64{[]float64{1,2},[]float64{3,4},[]float64{5,6}}
+		plot.DrawDirection = widgets.DrawLeft
+
+		plot.SetRect(0, y, int(width*2), increment+y)
+		y += increment
+		plots[index] = plot
+	}
+	return plots, nil
+}
+
+var getAutoDetailedCmd = &cobra.Command{
+	Use:     "detail",
+	Aliases: []string{"details", "detailed"},
+	Short:   "Check the progress of auto queries in detail",
+	Long:    "Check the progress of auto queries in detail",
+	Run: func(cmd *cobra.Command, args []string) {
+		graphIt, err := cmd.Flags().GetBool("graph")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		if !graphIt {
+			jsonRpcCallAndPrint("state::sub_routines_stats", []string{})
+			return
+		}
+		if err = ui.Init(); err != nil {
+			util.PrintErrorFatal(err)
+		}
+		defer ui.Close()
+
+		go func() {
+			for {
+
+				plots, err := createAutoGraph()
+				if err != nil {
+					util.PrintErrorFatal(err)
+				}
+				ui.Render(plots...)
+				time.Sleep(time.Second)
+			}
+
+		}()
+
+		uiEvents := ui.PollEvents()
+		for {
+			e := <-uiEvents
+			switch e.ID {
+			case "q", "<C-c>":
+				return
+			}
+		}
+
+	},
+}
+
 func init() {
 	autoCmd.Flags().Bool("full-error-checking", false, "Check for errors other than just connectivity errors (default false)")
 	autoCmd.Flags().IntP("interval", "i", 50000, "Send interval in microseconds")
 	autoCmd.Flags().IntP("send-per-interval", "b", 1, "Send of requests to send per interval tick (default 1)")
 	autoKillCmd.Flags().BoolP("force", "f", false, "force kill/stop the routine (this may cause a crash)")
+
+	getAutoDetailedCmd.Flags().Bool("graph", false, "show an interactive graph of the results")
 	autoCmd.AddCommand(autoKillCmd, autoCleanCmd)
+
+	getAutoCmd.AddCommand(getAutoDetailedCmd)
+	getCmd.AddCommand(getAutoCmd)
 	RootCmd.AddCommand(autoCmd)
+
 }

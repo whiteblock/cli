@@ -34,6 +34,32 @@ func getWidth() uint {
 	return uint(ws.Col)
 }
 
+func getTermSize() (uint, uint) {
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
+
+	if int(retCode) == -1 {
+		panic(errno)
+	}
+	return uint(ws.Row), uint(ws.Col)
+}
+
+func getTermPixSize() (uint, uint) {
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
+
+	if int(retCode) == -1 {
+		panic(errno)
+	}
+	return uint(ws.Xpixel), uint(ws.Ypixel)
+}
+
 var (
 	bw          string
 	testTime    string

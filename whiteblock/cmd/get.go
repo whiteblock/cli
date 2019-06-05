@@ -84,26 +84,6 @@ var getSupportedCmd = &cobra.Command{
 	},
 }
 
-var getAutoCmd = &cobra.Command{
-	Use:     "auto",
-	Aliases: []string{"routines"},
-	Short:   "Check auto QPS",
-	Long:    "Get the QPS of the currently running automated queries",
-	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("state::sub_routines", []string{})
-	},
-}
-
-var getAutoDetailedCmd = &cobra.Command{
-	Use:     "detail",
-	Aliases: []string{"details", "detailed"},
-	Short:   "Check the progress of auto queries in detail",
-	Long:    "Check the progress of auto queries in detail",
-	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("state::sub_routines_stats", []string{})
-	},
-}
-
 var getNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
@@ -457,9 +437,9 @@ func init() {
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd)
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
-	getAutoCmd.AddCommand(getAutoDetailedCmd)
+
 	// dev commands that are currently being implemented
-	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd, getAutoCmd)
+	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
 	getTxCmd.AddCommand(getTxInfoCmd)
 	getAccountCmd.AddCommand(getAccountInfoCmd)
