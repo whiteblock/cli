@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-/*EXAMPLE OF QUERYING MATTS API
-
+// Query from the userdata API 
+/*
 func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 	body := strings.NewReader("")
 	req, err := http.NewRequest("GET", util.ApiBaseURL+"/agent", body)
@@ -41,15 +41,33 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 }
 */
 
-var sqlCmd = &cobra.Command{
-	Use:   "sql",
+
+var sqlTableListCmd = &cobra.Command{
+	Use:   "sql list",
+	Short: "Gets a list of current tables in the database",
+	Long: `
+sql list will return a list of current tables in the database	
+
+Response: JSON representation of the table list in the database
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		testnetID, err := getPreviousBuildId()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		//CODE GOES HERE
+		fmt.Println(testnetID) //Remove this line
+	},
+}
+
+var sqlQueryCmd = &cobra.Command{
+	Use:   "sql <query>",
 	Short: "Runs SQL command to retrieve structured log data",
 	Long: `
 This command will run a SQL query to the database to retrieve structured log data
 	
-Params:
-	
-Format: 
+Format: whiteblock sql <SQL query>
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -63,6 +81,6 @@ Format:
 }
 
 func init() {
-	//UNCOMMENT TO ADD THE COMMAND
-	RootCmd.AddCommand(sqlCmd)
+	RootCmd.AddCommand(sqlTableListCmd)
+	RootCmd.AddCommand(sqlQueryCmd)
 }
