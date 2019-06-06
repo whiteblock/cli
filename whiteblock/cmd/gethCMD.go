@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	util "../util"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	util "../util"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/rpc/v2/json2"

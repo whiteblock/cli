@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	util "../util"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"bufio"
 	"fmt"
 	"github.com/spf13/cobra"

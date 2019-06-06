@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"../util"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"encoding/json"
 	"fmt"
 	ui "github.com/gizak/termui"

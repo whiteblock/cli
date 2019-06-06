@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	util "../util"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"github.com/spf13/cobra"
 )
 
