@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	util "github.com/whiteblock/cli/whiteblock/util"
+	"github.com/whiteblock/cli/whiteblock/util"
 
 	"github.com/spf13/cobra"
 )
@@ -45,17 +45,17 @@ Response: JSON representation of the table list in the database
 		}
 
 		var response struct {
-			Kind string
-			Etag string
+			Kind   string `json:"kind"`
+			Etag   string `json:"etag"`
 			Tables []struct {
-				Kind string
-				Id string
+				Kind           string `json:"kind"`
+				Id             string `json:"id"`
 				TableReference struct {
-					ProjectId string
-					DatasetId string
-					TableId string
-				}
-			}
+					ProjectId string `json:"projectId"`
+					DatasetId string `json:"datasetId"`
+					TableId   string `json:"tableId"`
+				} `json:"tableReference"`
+			} `json:"tables"`
 		}
 
 		err = json.Unmarshal(data, &response)
@@ -87,7 +87,6 @@ Format: whiteblock sql query <SQL query>
 			util.PrintErrorFatal(err)
 		}
 
-
 		id, err := cmd.Flags().GetInt("organization-id")
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -99,15 +98,14 @@ Format: whiteblock sql query <SQL query>
 		}
 
 		var metrics struct {
-			Schema interface{} `json:"schema"`
+			Schema       interface{} `json:"schema"`
 			JobReference struct {
 				JobID string `json:"jobId"`
 			} `json:"jobReference"`
-			TotalRows int `json:"totalRows"`
-			PageToken string `json:"pageToken"`
-			Rows [][]interface{} `json:"rows"`
-			Error interface{} `json:"error"`
-
+			TotalRows int             `json:"totalRows"`
+			PageToken string          `json:"pageToken"`
+			Rows      [][]interface{} `json:"rows"`
+			Error     interface{}     `json:"error"`
 		}
 
 		fmt.Println(data)
@@ -134,7 +132,7 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 		util.PrintErrorFatal(err)
 	}
 
-	auth, err := util.CreateAuthNHeader()//get the jwt
+	auth, err := util.CreateAuthNHeader() //get the jwt
 	if err != nil {
 		util.PrintErrorFatal(err)
 	} else {
