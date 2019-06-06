@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"log"
 
 	"fmt"
 	"io/ioutil"
@@ -103,61 +104,55 @@ Response: JSON representation of the table list in the database
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-
 		id, err := cmd.Flags().GetInt("organization-id")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id))
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		var response tableResponse
+		var response interface{}
 
 		err = json.Unmarshal(data, &response)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		for _, table := range response.tables {
-			fmt.Println(table.id)
-		}
+		log.Println(prettypi(response))
 	},
 }
 
 var sqlQueryCmd = &cobra.Command{
-	Use:   "sql <query>",
+	Use:   "sql query <query>",
 	Short: "Runs SQL command to retrieve structured log data",
 	Long: `
 This command will run a SQL query to the database to retrieve structured log data
 
-Format: whiteblock sql <SQL query>
+Format: whiteblock sql query <SQL query>
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-
 		id, err := cmd.Flags().GetInt("organization-id")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id))
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 
 		var metrics metricsResponse
 
 		err = json.Unmarshal(data, &metrics)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 
-		fmt.Println(metrics)
+		log.Println(prettypi(metrics))
 	},
 }
 
@@ -168,10 +163,10 @@ func init() {
 	RootCmd.AddCommand(sqlQueryCmd)
 }
 
-func apiRequest(path string) ([]byte, error) {
+func apiRequest(path string, method string) ([]byte, error) {
 
 	body := strings.NewReader("")
-	request, err := http.NewRequest("POST", fmt.Sprintf("%s%s", util.ApiBaseURL, path), body)
+	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", util.ApiBaseURL, path), body)
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
