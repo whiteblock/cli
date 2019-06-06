@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	util "github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sync/semaphore"
@@ -15,13 +16,13 @@ import (
 	"syscall"
 )
 
-func handleFetchChunk(testnetID string, node Node, log string, chunk string) (string, error) {
-	ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%s/chunks/%s", util.ApiBaseURL, testnetID, node.ID, log, chunk)
-	fmt.Println(ep)
+func handleFetchChunk(testnetID string, node Node, logName string, chunk string) (string, error) {
+	ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%s/chunks/%s", conf.APIURL, testnetID, node.ID, logName, chunk)
+	log.WithFields(log.Fields{"ep": ep, "chunk": chunk}).Trace("fetching the log chunk")
 	return util.JwtHTTPRequest("GET", ep, "")
 }
 
-func handleChunks(testnetID string, node Node, log string, rawChunks string, sem *semaphore.Weighted) []string {
+func handleChunks(testnetID string, node Node, logName string, rawChunks string, sem *semaphore.Weighted) []string {
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(rawChunks), &res)
 	if err != nil {
@@ -43,7 +44,7 @@ func handleChunks(testnetID string, node Node, log string, rawChunks string, sem
 			var err error
 			var res string
 			for j := 0; j < 10; j++ {
-				res, err = handleFetchChunk(testnetID, node, log, chunk)
+				res, err = handleFetchChunk(testnetID, node, logName, chunk)
 				if err == nil {
 					break
 				}
@@ -51,8 +52,8 @@ func handleChunks(testnetID string, node Node, log string, rawChunks string, sem
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			fmt.Printf("%d is done\n", i)
-			err = ioutil.WriteFile(fmt.Sprintf("./%s/%s/%s", node.ID, log, chunk), []byte(res), 0664)
+			log.WithFields(log.Fields{"chunk":chunk,"num":i}).Debug("fetched a chunk")
+			err = ioutil.WriteFile(fmt.Sprintf("./%s/%s/%s", node.ID, logName, chunk), []byte(res), 0664)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
@@ -74,28 +75,28 @@ func handleExportLogs(testnetID string, node Node, rawRes string, sem *semaphore
 	logs := res["items"].([]interface{})
 	out := map[string][]string{}
 
-	for _, log := range logs {
-		os.RemoveAll(fmt.Sprintf("./%s/%v", node.ID, log))
-		os.MkdirAll(fmt.Sprintf("./%s/%v", node.ID, log), 0755)
+	for _, logName := range logs {
+		os.RemoveAll(fmt.Sprintf("./%s/%v", node.ID, logName))
+		os.MkdirAll(fmt.Sprintf("./%s/%v", node.ID, logName), 0755)
 	}
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(logs))
 	mux := sync.Mutex{}
 
-	for _, log := range logs {
-		go func(log string) {
+	for _, logName := range logs {
+		go func(logName string) {
 			defer wg.Done()
-			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%v/chunks", util.ApiBaseURL, testnetID, node.ID, log)
-			fmt.Println(ep)
+			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%v/chunks", conf.APIURL, testnetID, node.ID, logName)
+			log.WithFields(log.Fields{"ep": ep}).Debug("fetching the log chunks")
 			res, err := util.JwtHTTPRequest("GET", ep, "")
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 			mux.Lock()
-			out[log] = handleChunks(testnetID, node, log, res, sem)
+			out[logName] = handleChunks(testnetID, node, logName, res, sem)
 			mux.Unlock()
-		}(log.(string))
+		}(logName.(string))
 
 	}
 	wg.Wait()
@@ -145,8 +146,8 @@ func handleExportBlocks(testnetID string, node string, rawRes string, coveredBlo
 		go func(blockNumber interface{}, i int) {
 			defer wg.Done()
 			defer sem.Release(1)
-			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks/%v", util.ApiBaseURL, testnetID, node, blockNumber)
-			fmt.Println(ep)
+			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks/%v", conf.APIURL, testnetID, node, blockNumber)
+			log.WithFields(log.Fields{"ep": ep}).Debug("fetching the block data")
 			var res string
 			var err error
 			for it := 0; it < 10; it++ {
@@ -160,7 +161,7 @@ func handleExportBlocks(testnetID string, node string, rawRes string, coveredBlo
 			}
 			mux.Lock()
 			out[i] = res
-			fmt.Printf("%d is done\n", i)
+			log.WithFields(log.Fields{"num": i, "blockNumber": blockNumber}).Trace("fetched a block")
 			mux.Unlock()
 		}(blockNumber, i)
 
@@ -234,6 +235,11 @@ var exportCmd = &cobra.Command{
 	Short:  "Export stuff",
 	Long:   "Export stuff",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		spinner := Spinner{txt:"fetching the block and log data"}
+		spinner.Run(100)
+		defer spinner.Kill()
+
 		var testnetID string
 		var err error
 		if len(args) == 0 {
@@ -246,7 +252,7 @@ var exportCmd = &cobra.Command{
 		}
 		nodes := []Node{}
 		sem := semaphore.NewWeighted(200)
-		ep := fmt.Sprintf("%s/testnets/%s/nodes", util.ApiBaseURL, testnetID)
+		ep := fmt.Sprintf("%s/testnets/%s/nodes", conf.APIURL, testnetID)
 		res, err := util.JwtHTTPRequest("GET", ep, "")
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -259,7 +265,7 @@ var exportCmd = &cobra.Command{
 			os.RemoveAll(fmt.Sprintf("./%s", node.ID))
 			os.MkdirAll(fmt.Sprintf("./%s", node.ID), 0755)
 		}
-		fmt.Println("removed the files")
+		log.Trace("removed the files")
 		wg := sync.WaitGroup{}
 		wg.Add(len(nodes))
 
@@ -271,18 +277,16 @@ var exportCmd = &cobra.Command{
 				for {
 					var ep string
 					if nextToken == nil {
-						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs", util.ApiBaseURL, testnetID, node.ID)
+						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs", conf.APIURL, testnetID, node.ID)
 					} else {
-						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs?next=%v", util.ApiBaseURL,
+						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs?next=%v", conf.APIURL,
 							testnetID, node.ID, url.QueryEscape(nextToken.(string)))
 					}
-
-					fmt.Println(ep)
 					res, err := util.JwtHTTPRequest("GET", ep, "")
 					if err != nil {
 						util.PrintErrorFatal(err)
 					}
-					fmt.Println(res)
+					log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetching the logs")
 					nextToken, files = handleExportLogs(testnetID, node, res, sem)
 					mergeDown(node, files)
 					if nextToken == nil {
@@ -317,18 +321,17 @@ var exportCmd = &cobra.Command{
 					for {
 						var ep string
 						if nextToken == nil {
-							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", util.ApiBaseURL, testnetID, node.ID)
+							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", conf.APIURL, testnetID, node.ID)
 						} else {
-							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", util.ApiBaseURL, testnetID, node.ID,
+							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", conf.APIURL, testnetID, node.ID,
 								url.QueryEscape(nextToken.(string)))
 						}
-
-						fmt.Println(ep)
+						log.WithFields(log.Fields{"ep": ep}).Debug("fetching the log chunks")
 						res, err := util.JwtHTTPRequest("GET", ep, "")
 						if err != nil {
 							util.PrintErrorFatal(err)
 						}
-						fmt.Printf("%#v\n", res)
+						log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetched the blocks")
 
 						nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, &coveredBlockNumbers, sem)
 						appendBlocks(blocks, nextToken == nil, first, files[i])

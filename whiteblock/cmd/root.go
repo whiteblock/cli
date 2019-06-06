@@ -13,6 +13,7 @@ import (
 
 var (
 	serverAddr string
+	conf       = util.GetConfig()
 )
 
 var RootCmd = &cobra.Command{
