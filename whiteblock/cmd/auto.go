@@ -43,10 +43,6 @@ var autoCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		adjustmentInterval, err := cmd.Flags().GetInt("adjustment-interval")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
 		errorChecking, err := cmd.Flags().GetBool("full-error-checking")
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -67,7 +63,6 @@ var autoCmd = &cobra.Command{
 			"node": node,
 			"name": fmt.Sprintf("node%d:%s", node, args[1]),
 			"settings": map[string]interface{}{
-				"updateInverval": adjustmentInterval,
 				"targetDelay":    interval,
 				"sampleSize":     sampleSize,
 			},
@@ -259,7 +254,6 @@ func init() {
 	autoCmd.Flags().Bool("full-error-checking", false, "Check for errors other than just connectivity errors (default false)")
 	autoCmd.Flags().IntP("interval", "i", 50000, "Send interval in microseconds")
 	autoCmd.Flags().IntP("sample-size", "s", 200, "auto stats sample size")
-	autoCmd.Flags().Int("adjustment-interval", 100, "interval on which to attempt to correct tps rate (default 100)")
 	autoKillCmd.Flags().BoolP("force", "f", false, "force kill/stop the routine (this may cause a crash)")
 
 	getAutoDetailedCmd.Flags().Bool("graph", false, "show an interactive graph of the results")
