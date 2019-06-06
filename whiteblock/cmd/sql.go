@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	util "../util"
 	"encoding/json"
+
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"strconv"
 	"strings"
+
+	util "github.com/whiteblock/cli/whiteblock/util"
 
 	"github.com/spf13/cobra"
 )

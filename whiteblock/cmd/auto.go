@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"../util"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"encoding/json"
 	"fmt"
 	ui "github.com/gizak/termui"
@@ -39,7 +39,11 @@ var autoCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		sendPerInterval, err := cmd.Flags().GetInt("send-per-interval")
+		sampleSize, err := cmd.Flags().GetInt("sample-size")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		adjustmentInterval, err := cmd.Flags().GetInt("adjustment-interval")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -58,14 +62,18 @@ var autoCmd = &cobra.Command{
 				params = append(params, param)
 			}
 		}
+
 		jsonRpcCallAndPrint("setup_load", []interface{}{map[string]interface{}{
-			"node":            node,
-			"name":            fmt.Sprintf("node%d:%s", node, args[1]),
-			"interval":        interval,
-			"sendPerInterval": sendPerInterval,
-			"call":            args[1],
-			"arguments":       params,
-			"errorCheck":      errorChecking,
+			"node": node,
+			"name": fmt.Sprintf("node%d:%s", node, args[1]),
+			"settings": map[string]interface{}{
+				"updateInverval": adjustmentInterval,
+				"targetDelay":    interval,
+				"sampleSize":     sampleSize,
+			},
+			"call":       args[1],
+			"arguments":  params,
+			"errorCheck": errorChecking,
 		}})
 	},
 }
@@ -250,7 +258,8 @@ var getAutoDetailedCmd = &cobra.Command{
 func init() {
 	autoCmd.Flags().Bool("full-error-checking", false, "Check for errors other than just connectivity errors (default false)")
 	autoCmd.Flags().IntP("interval", "i", 50000, "Send interval in microseconds")
-	autoCmd.Flags().IntP("send-per-interval", "b", 1, "Send of requests to send per interval tick (default 1)")
+	autoCmd.Flags().IntP("sample-size", "s", 200, "auto stats sample size")
+	autoCmd.Flags().Int("adjustment-interval", 100, "interval on which to attempt to correct tps rate (default 100)")
 	autoKillCmd.Flags().BoolP("force", "f", false, "force kill/stop the routine (this may cause a crash)")
 
 	getAutoDetailedCmd.Flags().Bool("graph", false, "show an interactive graph of the results")
