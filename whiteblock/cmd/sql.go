@@ -2,7 +2,14 @@ package cmd
 
 import (
 	util "../util"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -41,6 +48,50 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 }
 */
 
+type tableResponse struct {
+	kind string
+	etag string
+	tables []table
+
+}
+
+type table struct {
+	kind string
+	id string
+	tableReference tableReference
+}
+
+type tableReference struct {
+	projectId string
+	datasetId string
+	tableId string
+}
+
+type metricsResponse struct {
+	schema schema
+	jobReference jobReference
+	totalRows int
+	pageToken string
+	rows rows
+	error errr
+
+}
+
+type schema struct {
+}
+
+type jobReference struct {
+	jobId string
+}
+
+type rows struct {
+}
+
+type errr struct {
+}
+
+
+
 
 var sqlTableListCmd = &cobra.Command{
 	Use:   "sql list",
@@ -52,12 +103,31 @@ Response: JSON representation of the table list in the database
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetID, err := getPreviousBuildId()
+		_, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		//CODE GOES HERE
-		fmt.Println(testnetID) //Remove this line
+
+		id, err := cmd.Flags().GetInt("organization-id")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		var response tableResponse
+
+		err = json.Unmarshal(data, &response)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		for _, table := range response.tables {
+			fmt.Println(table.id)
+		}
 	},
 }
 
@@ -66,21 +136,60 @@ var sqlQueryCmd = &cobra.Command{
 	Short: "Runs SQL command to retrieve structured log data",
 	Long: `
 This command will run a SQL query to the database to retrieve structured log data
-	
+
 Format: whiteblock sql <SQL query>
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetID, err := getPreviousBuildId()
+		_, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		//CODE GOES HERE
-		fmt.Println(testnetID) //Remove this line
+
+		id, err := cmd.Flags().GetInt("organization-id")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id))
+
+		var metrics metricsResponse
+
+		err = json.Unmarshal(data, &metrics)
+
+		fmt.Println(metrics)
 	},
 }
 
 func init() {
+	sqlTableListCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
+	sqlQueryCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
 	RootCmd.AddCommand(sqlTableListCmd)
 	RootCmd.AddCommand(sqlQueryCmd)
+}
+
+func apiRequest(path string) ([]byte, error) {
+
+	body := strings.NewReader("")
+	request, err := http.NewRequest("POST", fmt.Sprintf("%s%s", util.ApiBaseURL, path), body)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	auth, err := util.CreateAuthNHeader()//get the jwt
+	if err != nil {
+		util.PrintErrorFatal(err)
+	} else {
+		request.Header.Set("Authorization", auth) //If there is an error, dont send this header for now
+	}
+	request.Close = true
+
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	defer resp.Body.Close()
+
+
+	return ioutil.ReadAll(resp.Body)
 }
