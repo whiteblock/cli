@@ -1,14 +1,12 @@
-FROM golang:1.11.5-stretch as built
-
-ENV GOPATH ${HOME}
-ENV GOBIN ${GOPATH}/bin
+FROM golang:1.12.5-stretch as built
 
 
 # copies directory with CLI source code from host machine to container
-ADD . /cli
+ADD . /go/src/github.com/whiteblock/cli
 # sets PWD to appropriate directory and compiles go binaries for CLI application
-WORKDIR /cli/whiteblock
-RUN go get && go build
+WORKDIR /go/src/github.com/whiteblock/cli/whiteblock
+RUN go get
+RUN go build
 
 FROM ubuntu:latest as final
 
