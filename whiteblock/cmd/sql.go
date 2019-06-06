@@ -14,77 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Query from the userdata API 
-/*
-func GetRawProfileFromJwt(jwt string) ([]byte, error) {
-	body := strings.NewReader("")
-	req, err := http.NewRequest("GET", util.ApiBaseURL+"/agent", body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	auth, err := util.CreateAuthNHeader()//get the jwt
-	if err != nil {
-		log.Println(err)
-	} else {
-		req.Header.Set("Authorization", auth) //If there is an error, dont send this header for now
-	}
-	req.Close = true
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-	buf := new(bytes.Buffer)
-
-	_, err = buf.ReadFrom(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf(buf.String())
-	}
-	return []byte(buf.String()), nil
-}
-*/
-
-type tableResponse struct {
-	Kind string
-	Etag string
-	Tables []table
-
-}
-
-type table struct {
-	Kind string
-	Id string
-	TableReference struct {
-		ProjectId string
-		DatasetId string
-		TableId string
-	}
-}
-
-type metricsResponse struct {
-	Schema schema `json:"schema"`
-	JobReference struct {
-		JobID string `json:"jobId"`
-	} `json:"jobReference"`
-	TotalRows int `json:"totalRows"`
-	PageToken string `json:"pageToken"`
-	Rows [][]interface{} `json:"rows"`
-	Error errr `json:"error"`
-
-}
-
-type schema struct {
-}
-
-type errr struct {
-}
-
-
 var sqlCmd = &cobra.Command{
 	Use:   "sql <command>",
 	Short: "",
@@ -115,14 +44,24 @@ Response: JSON representation of the table list in the database
 			util.PrintErrorFatal(err)
 		}
 
-		var response interface{}
+		var response struct {
+			Kind string
+			Etag string
+			Tables []struct {
+				Kind string
+				Id string
+				TableReference struct {
+					ProjectId string
+					DatasetId string
+					TableId string
+				}
+			}
+		}
 
 		err = json.Unmarshal(data, &response)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
-		fmt.Println("    TABLES     ")
 
 		log.Println(prettypi(response))
 	},
@@ -159,7 +98,17 @@ Format: whiteblock sql query <SQL query>
 			util.PrintErrorFatal(err)
 		}
 
-		var metrics metricsResponse
+		var metrics struct {
+			Schema interface{} `json:"schema"`
+			JobReference struct {
+				JobID string `json:"jobId"`
+			} `json:"jobReference"`
+			TotalRows int `json:"totalRows"`
+			PageToken string `json:"pageToken"`
+			Rows [][]interface{} `json:"rows"`
+			Error interface{} `json:"error"`
+
+		}
 
 		fmt.Println(data)
 
@@ -167,8 +116,6 @@ Format: whiteblock sql query <SQL query>
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
-		fmt.Println("    METRICS     ")
 
 		log.Println(prettypi(metrics))
 	},
