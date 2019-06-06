@@ -52,7 +52,7 @@ func handleChunks(testnetID string, node Node, logName string, rawChunks string,
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			log.WithFields(log.Fields{"chunk":chunk,"num":i}).Debug("fetched a chunk")
+			log.WithFields(log.Fields{"chunk": chunk, "num": i}).Debug("fetched a chunk")
 			err = ioutil.WriteFile(fmt.Sprintf("./%s/%s/%s", node.ID, logName, chunk), []byte(res), 0664)
 			if err != nil {
 				util.PrintErrorFatal(err)
@@ -236,7 +236,7 @@ var exportCmd = &cobra.Command{
 	Long:   "Export stuff",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		spinner := Spinner{txt:"fetching the block and log data"}
+		spinner := Spinner{txt: "fetching the block and log data"}
 		spinner.Run(100)
 		defer spinner.Kill()
 
