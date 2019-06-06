@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 )
@@ -108,6 +109,7 @@ func convertBlockNumber(blockNumber interface{}) int64 {
 	case float64:
 		return int64(num)
 	case string:
+		num = strings.TrimLeft(num, "0")
 		res, err := strconv.ParseInt(num, 0, 64)
 		if err != nil {
 			util.PrintErrorFatal(err)
