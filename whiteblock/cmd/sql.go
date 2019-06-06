@@ -1,13 +1,13 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
 
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	util "github.com/whiteblock/cli/whiteblock/util"
 
@@ -50,52 +50,51 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 */
 
 type tableResponse struct {
-	kind string
-	etag string
-	tables []table
+	Kind string
+	Etag string
+	Tables []table
 
 }
 
 type table struct {
-	kind string
-	id string
-	tableReference tableReference
-}
-
-type tableReference struct {
-	projectId string
-	datasetId string
-	tableId string
+	Kind string
+	Id string
+	TableReference struct {
+		ProjectId string
+		DatasetId string
+		TableId string
+	}
 }
 
 type metricsResponse struct {
-	schema schema
-	jobReference jobReference
-	totalRows int
-	pageToken string
-	rows rows
-	error errr
+	Schema schema `json:"schema"`
+	JobReference struct {
+		JobID string `json:"jobId"`
+	} `json:"jobReference"`
+	TotalRows int `json:"totalRows"`
+	PageToken string `json:"pageToken"`
+	Rows [][]interface{} `json:"rows"`
+	Error errr `json:"error"`
 
 }
 
 type schema struct {
 }
 
-type jobReference struct {
-	jobId string
-}
-
-type rows struct {
-}
-
 type errr struct {
 }
 
 
-
+var sqlCmd = &cobra.Command{
+	Use:   "sql <command>",
+	Short: "",
+	Long: `
+    `,
+	Run: util.PartialCommand,
+}
 
 var sqlTableListCmd = &cobra.Command{
-	Use:   "sql list",
+	Use:   "list",
 	Short: "Gets a list of current tables in the database",
 	Long: `
 sql list will return a list of current tables in the database	
@@ -104,12 +103,14 @@ Response: JSON representation of the table list in the database
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		payload := []byte{}
+
 		id, err := cmd.Flags().GetInt("organization-id")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET")
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET", payload)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -121,12 +122,18 @@ Response: JSON representation of the table list in the database
 			util.PrintErrorFatal(err)
 		}
 
+		fmt.Println("    TABLES     ")
+
 		log.Println(prettypi(response))
 	},
 }
 
+type SqlQueryRequestPayload struct {
+	Q string `json:"q"`
+}
+
 var sqlQueryCmd = &cobra.Command{
-	Use:   "sql query <query>",
+	Use:   "query <query>",
 	Short: "Runs SQL command to retrieve structured log data",
 	Long: `
 This command will run a SQL query to the database to retrieve structured log data
@@ -135,22 +142,33 @@ Format: whiteblock sql query <SQL query>
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		query := SqlQueryRequestPayload{Q: args[0]}
+		payload, err := json.Marshal(query)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+
 		id, err := cmd.Flags().GetInt("organization-id")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST")
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
 		var metrics metricsResponse
 
+		fmt.Println(data)
+
 		err = json.Unmarshal(data, &metrics)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+
+		fmt.Println("    METRICS     ")
 
 		log.Println(prettypi(metrics))
 	},
@@ -159,14 +177,12 @@ Format: whiteblock sql query <SQL query>
 func init() {
 	sqlTableListCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
 	sqlQueryCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
-	RootCmd.AddCommand(sqlTableListCmd)
-	RootCmd.AddCommand(sqlQueryCmd)
+	sqlCmd.AddCommand(sqlTableListCmd, sqlQueryCmd)
+	RootCmd.AddCommand(sqlCmd)
 }
 
-func apiRequest(path string, method string) ([]byte, error) {
-
-	body := strings.NewReader("")
-	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", util.ApiBaseURL, path), body)
+func apiRequest(path string, method string, body []byte) ([]byte, error) {
+	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", util.ApiBaseURL, path), bytes.NewReader(body))
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
@@ -184,7 +200,6 @@ func apiRequest(path string, method string) ([]byte, error) {
 		util.PrintErrorFatal(err)
 	}
 	defer resp.Body.Close()
-
 
 	return ioutil.ReadAll(resp.Body)
 }
