@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"strconv"
 	"sync"
 	"syscall"
 )
@@ -101,13 +102,30 @@ func handleExportLogs(testnetID string, node Node, rawRes string, sem *semaphore
 	return res["nextPageToken"], out
 }
 
-func handleExportBlocks(testnetID string, node string, rawRes string, sem *semaphore.Weighted) (interface{}, []string) {
+func convertBlockNumber(blockNumber interface{}) int64 {
+	switch num := blockNumber.(type) {
+	case float64:
+		return int64(num)
+	case string:
+		res, err := strconv.ParseInt(num, 0, 64)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		return res
+	default:
+		util.PrintErrorFatal(fmt.Errorf("blocknumber is of unknown type"))
+	}
+	panic("shouldn't reach")
+}
+
+func handleExportBlocks(testnetID string, node string, rawRes string, coveredBlockNumbers *map[int64]struct{}, sem *semaphore.Weighted) (interface{}, []string) {
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(rawRes), &res)
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
 	blockNumbers := res["items"].([]interface{})
+
 	out := make([]string, len(blockNumbers))
 
 	wg := sync.WaitGroup{}
@@ -116,6 +134,13 @@ func handleExportBlocks(testnetID string, node string, rawRes string, sem *semap
 
 	ctx := context.TODO()
 	for i, blockNumber := range blockNumbers {
+
+		num := convertBlockNumber(blockNumber)
+		if _, ok := (*coveredBlockNumbers)[num]; ok {
+			wg.Done()
+			continue
+		}
+		(*coveredBlockNumbers)[num] = struct{}{}
 		sem.Acquire(ctx, 1)
 		go func(blockNumber interface{}, i int) {
 			defer wg.Done()
@@ -124,7 +149,7 @@ func handleExportBlocks(testnetID string, node string, rawRes string, sem *semap
 			fmt.Println(ep)
 			var res string
 			var err error
-			for i := 0; i < 10; i++ {
+			for it := 0; it < 10; it++ {
 				res, err = util.JwtHTTPRequest("GET", ep, "")
 				if err == nil {
 					break
@@ -169,7 +194,7 @@ func mergeDown(node Node, files map[string][]string) {
 
 }
 
-func appendBlocks(items []string, finish bool, f *os.File) {
+func appendBlocks(items []string, finish bool, firstCall bool, f *os.File) {
 
 	fInfo, err := f.Stat()
 	if err != nil {
@@ -178,11 +203,20 @@ func appendBlocks(items []string, finish bool, f *os.File) {
 	if fInfo.Size() == 0 {
 		f.Write([]byte("[")) //TODO check err
 	}
-
-	for i, item := range items {
-		if fInfo.Size() > 1 || i != 0 {
-			f.Write([]byte(",")) //TODO check err
+	first := true
+	for _, item := range items {
+		if len(item) == 0 {
+			continue
 		}
+		if first && firstCall && fInfo.Size() < 2 {
+			first = false
+		} else {
+			_, err := f.Write([]byte(",")) //TODO check err
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+		}
+
 		_, err := f.Write([]byte(item))
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -273,34 +307,39 @@ var exportCmd = &cobra.Command{
 				}
 				files = append(files, f)
 			}
-			defer func() {
-				for _, file := range files {
-					file.Close()
-				}
-			}()
 
-			for _, node := range nodes {
-				var ep string
-				if nextToken == nil {
-					ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", util.ApiBaseURL, testnetID, node.ID)
-				} else {
-					ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", util.ApiBaseURL, testnetID, node.ID,
-						url.QueryEscape(nextToken.(string)))
-				}
+			for i, node := range nodes {
+				wg.Add(1)
+				go func(node Node, i int) {
+					defer wg.Done()
+					coveredBlockNumbers := map[int64]struct{}{}
+					first := true
+					for {
+						var ep string
+						if nextToken == nil {
+							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", util.ApiBaseURL, testnetID, node.ID)
+						} else {
+							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", util.ApiBaseURL, testnetID, node.ID,
+								url.QueryEscape(nextToken.(string)))
+						}
 
-				fmt.Println(ep)
-				res, err := util.JwtHTTPRequest("GET", ep, "")
-				if err != nil {
-					util.PrintErrorFatal(err)
-				}
-				nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, sem)
-				for _, file := range files {
-					appendBlocks(blocks, nextToken == nil, file)
-				}
+						fmt.Println(ep)
+						res, err := util.JwtHTTPRequest("GET", ep, "")
+						if err != nil {
+							util.PrintErrorFatal(err)
+						}
+						fmt.Printf("%#v\n", res)
 
-				if nextToken == nil {
-					break
-				}
+						nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, &coveredBlockNumbers, sem)
+						appendBlocks(blocks, nextToken == nil, first, files[i])
+						first = false
+
+						if nextToken == nil {
+							break
+						}
+					}
+					files[i].Close()
+				}(node, i)
 			}
 		}()
 		wg.Wait()
