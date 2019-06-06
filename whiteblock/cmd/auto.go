@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/whiteblock/cli/whiteblock/util"
 	"encoding/json"
 	"fmt"
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"sort"
 	"strconv"
 	"time"
@@ -63,8 +63,8 @@ var autoCmd = &cobra.Command{
 			"node": node,
 			"name": fmt.Sprintf("node%d:%s", node, args[1]),
 			"settings": map[string]interface{}{
-				"targetDelay":    interval,
-				"sampleSize":     sampleSize,
+				"targetDelay": interval,
+				"sampleSize":  sampleSize,
 			},
 			"call":       args[1],
 			"arguments":  params,

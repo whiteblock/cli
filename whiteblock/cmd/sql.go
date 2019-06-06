@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	util "github.com/whiteblock/cli/whiteblock/util"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 )
 
-// Query from the userdata API 
+// Query from the userdata API
 /*
 func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 	body := strings.NewReader("")
@@ -40,7 +40,6 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 	return []byte(buf.String()), nil
 }
 */
-
 
 var sqlTableListCmd = &cobra.Command{
 	Use:   "sql list",

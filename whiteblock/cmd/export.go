@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	util "github.com/whiteblock/cli/whiteblock/util"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sync/semaphore"
 	"io/ioutil"
 	"net/url"

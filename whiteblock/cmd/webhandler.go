@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	util "github.com/whiteblock/cli/whiteblock/util"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"log"
 	"net/http"
 	"os"

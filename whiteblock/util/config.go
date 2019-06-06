@@ -4,9 +4,9 @@ import (
 	"os"
 )
 
-var DEFAULT_API_BASE_URL = "https://api.whiteblock.io"
+const DefaultAPIBaseURL = "https://api.whiteblock.io"
 
-var ApiEnvVar = "API_URL"
+const ApiEnvVar = "API_URL"
 
 // Get API_BASE_URL from the environment variable API_URL or fallback to the default
 func GetEnvVar(envVar, fallback string) string {
@@ -17,4 +17,4 @@ func GetEnvVar(envVar, fallback string) string {
 	return fallback
 }
 
-var ApiBaseURL = GetEnvVar(ApiEnvVar, DEFAULT_API_BASE_URL)
+var ApiBaseURL = GetEnvVar(ApiEnvVar, DefaultAPIBaseURL)
