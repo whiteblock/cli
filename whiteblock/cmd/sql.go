@@ -101,13 +101,12 @@ Format: whiteblock sql query <SQL query>
 		outRows = append(outRows, response.Rows...)
 
 		for {
-			if response.PageToken == nil {
+			if response.PageToken == "" {
 				break
 			}
 
 			response = response.next(id)
 			outRows = append(outRows, response.Rows...)
-			lastPage = response.PageToken
 		}
 
 		fmt.Println(
