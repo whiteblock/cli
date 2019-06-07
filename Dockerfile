@@ -5,6 +5,7 @@ FROM golang:1.12.5-stretch as built
 ADD . /go/src/github.com/whiteblock/cli
 # sets PWD to appropriate directory and compiles go binaries for CLI application
 WORKDIR /go/src/github.com/whiteblock/cli/whiteblock
+RUN sed -i "s/DEFAULT_VERSION/$(git tag | tail -n 1)/g" cmd/version.go
 RUN go get
 RUN go build
 
