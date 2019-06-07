@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type response
-
 var sqlCmd = &cobra.Command{
 	Use:   "sql <command>",
 	Short: "",
@@ -89,10 +87,9 @@ Format: whiteblock sql query <SQL query>
 		data := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
 
 		type metrics struct {
-			// TODO: an array of metrics
 			Schema       interface{} `json:"schema"`
 			JobReference struct {
-				JobID string `json:"jobId"`
+				JobID string `json:"job_id"`
 			} `json:"jobReference"`
 			TotalRows int             `json:"totalRows"`
 			PageToken string          `json:"pageToken"`
@@ -100,7 +97,10 @@ Format: whiteblock sql query <SQL query>
 			Error     interface{}     `json:"error"`
 		}
 
-		result := make([]metrics, 0)
+		type userMetrics struct {
+			Schema interface{}     `json:"schema"`
+			Rows   [][]interface{} `json:"rows"`
+		}
 
 		var response metrics
 
@@ -109,28 +109,32 @@ Format: whiteblock sql query <SQL query>
 			util.PrintErrorFatal(err)
 		}
 
-		result = append(result, response)
+		outRows := make([][]interface{}, 0)
+
+		for _, row := range response.Rows {
+			outRows = append(outRows, row)
+		}
 
 		for {
 			if response.PageToken == "" {
 				break
 			}
 
-			query = SqlQueryRequestPayload{Q: args[0]}
-			//TODO: HOW DOES THE QUERY CHANGE???
-			payload
+			var subsequentResponse metrics
 
-			data = apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
+			data = apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics?job_id=%s&pageToken=%s", id, response.JobReference.JobID, response.PageToken), "GET", []byte{})
 
-			err = json.Unmarshal(data, &response)
+			err = json.Unmarshal(data, &subsequentResponse)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 
-			result = append(result, response)
+			for _, row := range subsequentResponse.Rows {
+				outRows = append(outRows, row)
+			}
 		}
 
-		fmt.Println(prettypi(result))
+		fmt.Println(prettypi(userMetrics{Schema: response.Schema, Rows: outRows}))
 	},
 }
 
