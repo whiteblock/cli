@@ -297,14 +297,12 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 }
 
 var getBlockCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
 	Run:   getBlockCobra,
 }
 
 var getBlockNumCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "number",
 	Short: "Get the block number",
 	Long: `
@@ -318,7 +316,6 @@ Response: block number
 }
 
 var getBlockInfoCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "info <block number>",
 	Short: "Get the information of a block",
 	Long: `
@@ -332,14 +329,12 @@ Response: JSON representation of the block
 }
 
 var getTxCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "tx <command>",
 	Short: "Get information regarding transactions",
 	Run:   util.PartialCommand,
 }
 
 var getTxInfoCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "info <tx hash>",
 	Short: "Get transaction information",
 	Long: `
