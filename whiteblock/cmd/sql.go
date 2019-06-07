@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -37,7 +38,10 @@ Response: JSON representation of the table list in the database
 			util.PrintErrorFatal(err)
 		}
 
-		data := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET", payload)
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET", payload)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 
 		var tables struct {
 			Kind   string `json:"kind"`
@@ -84,7 +88,10 @@ Format: whiteblock sql query <SQL query>
 			util.PrintErrorFatal(err)
 		}
 
-		data := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
+		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
+		if err != nil  {
+			util.PrintErrorFatal(err)
+		}
 
 		type metrics struct {
 			Schema       interface{} `json:"schema"`
@@ -103,6 +110,7 @@ Format: whiteblock sql query <SQL query>
 		}
 
 		var response metrics
+		var lastPage string
 
 		err = json.Unmarshal(data, &response)
 		if err != nil {
@@ -116,22 +124,29 @@ Format: whiteblock sql query <SQL query>
 		}
 
 		for {
-			if response.PageToken == "" {
+			if response.PageToken == lastPage {
 				break
 			}
 
-			var subsequentResponse metrics
-
-			data = apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics?job_id=%s&pageToken=%s", id, response.JobReference.JobID, response.PageToken), "GET", []byte{})
-
-			err = json.Unmarshal(data, &subsequentResponse)
+			data, err = apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics?job_id=%s&page_token=%s", id, response.JobReference.JobID, response.PageToken), "GET", []byte{})
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 
-			for _, row := range subsequentResponse.Rows {
+			response = metrics{}
+
+			err = json.Unmarshal(data, &response)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+
+			fmt.Println(len(response.Rows))
+
+			for _, row := range response.Rows {
 				outRows = append(outRows, row)
 			}
+
+			lastPage = response.PageToken
 		}
 
 		fmt.Println(prettypi(userMetrics{Schema: response.Schema, Rows: outRows}))
@@ -145,15 +160,15 @@ func init() {
 	RootCmd.AddCommand(sqlCmd)
 }
 
-func apiRequest(path string, method string, body []byte) []byte {
+func apiRequest(path string, method string, body []byte) ([]byte, error) {
 	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", util.ApiBaseURL, path), bytes.NewReader(body))
 	if err != nil {
-		util.PrintErrorFatal(err)
+		return nil, err
 	}
 
 	auth, err := util.CreateAuthNHeader() //get the jwt
 	if err != nil {
-		util.PrintErrorFatal(err)
+		return nil, err
 	} else {
 		request.Header.Set("Authorization", auth) //If there is an error, dont send this header for now
 	}
@@ -161,14 +176,18 @@ func apiRequest(path string, method string, body []byte) []byte {
 
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		util.PrintErrorFatal(err)
+		return nil, err
 	}
 
-	return data
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(data) + "\n" + fmt.Sprintf("status code is %d", resp.StatusCode))
+	}
+
+	return data, nil
 }
