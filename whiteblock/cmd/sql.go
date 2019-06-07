@@ -168,7 +168,7 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 type metrics struct {
 	Schema       interface{} `json:"schema"`
 	JobReference struct {
-		JobID string `json:"job_id"`
+		JobID string `json:"jobId"`
 	} `json:"jobReference"`
 	TotalRows int             `json:"totalRows"`
 	PageToken string          `json:"pageToken"`
