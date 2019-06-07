@@ -7,7 +7,7 @@ import (
 
 const (
 	// VERSION is set during build
-	VERSION = "1.8.5"
+	VERSION = "1.8.10"
 )
 
 var versionCmd = &cobra.Command{
