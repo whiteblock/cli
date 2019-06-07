@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
+	log "github.com/sirupsen/logrus"
 	util "github.com/whiteblock/cli/whiteblock/util"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -51,12 +51,22 @@ func jsonRpcCallAndPrint(method string, params interface{}) {
 	}
 	fmt.Println(prettypi(reply))
 }
-
+func jsonRpcCallP(method string, params interface{}, out interface{}) error {
+	res, err := jsonRpcCall(method, params)
+	if err != nil {
+		return err
+	}
+	tmp, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, out)
+}
 func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 	//log.Println("URL IS "+url)
 	jrpc, err := json2.EncodeClientRequest(method, params)
 	if err != nil {
-		log.Println(err)
+		log.Warn(err)
 		return nil, err
 	}
 	body := strings.NewReader(string(jrpc))
@@ -69,7 +79,7 @@ func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 
 	}()
 	if err != nil {
-		log.Println(err)
+		log.Warn(err)
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")

@@ -226,7 +226,7 @@ Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := jsonRpcCall("state::kill", []string{})
-		if res.(float64) == 0 && err == nil {
+		if res != nil && res.(float64) == 0 && err == nil {
 			fmt.Println("Transactions stopped successfully")
 		} else {
 			fmt.Println("There was an error stopping transactions")

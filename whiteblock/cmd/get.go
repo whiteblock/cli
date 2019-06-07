@@ -6,6 +6,7 @@ import (
 	util "github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -80,7 +81,12 @@ var getSupportedCmd = &cobra.Command{
 	Short:   "Get the currently supported blockchains",
 	Long:    "Fetches the blockchains which whiteblock is currently able build by default",
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("get_supported_blockchains", []string{})
+
+		var blockchains []string
+		jsonRpcCallP("get_supported_blockchains", []string{}, &blockchains)
+		sortedBlockchains := sort.StringSlice(blockchains)
+		sortedBlockchains.Sort()
+		cmd.Println(prettypi([]string(sortedBlockchains)))
 	},
 }
 

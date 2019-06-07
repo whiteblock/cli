@@ -176,7 +176,7 @@ type metrics struct {
 	Error     interface{}     `json:"error"`
 }
 
-func (m *metrics) next(id int) (metrics) {
+func (m *metrics) next(id int) metrics {
 	path := fmt.Sprintf("/organizations/%d/dw/metrics?job_id=%s&page_token=%s", id, m.JobReference.JobID, m.PageToken)
 	data, err := apiRequest(path, "GET", []byte{})
 	if err != nil {
