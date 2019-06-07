@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	util "github.com/whiteblock/cli/whiteblock/util"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sys/unix"
 )
 

@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	util "github.com/whiteblock/cli/whiteblock/util"
 	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -12,7 +12,7 @@ import (
 
 func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 	body := strings.NewReader("")
-	req, err := http.NewRequest("GET", util.ApiBaseURL+"/agent", body)
+	req, err := http.NewRequest("GET", conf.APIURL+"/agent", body)
 	if err != nil {
 		return nil, err
 	}

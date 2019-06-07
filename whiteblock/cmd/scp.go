@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/util"
+	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"strconv"
-
-	util "github.com/whiteblock/cli/whiteblock/util"
-	"github.com/spf13/cobra"
-	"golang.org/x/sys/unix"
 )
 
 var scpCmd = &cobra.Command{

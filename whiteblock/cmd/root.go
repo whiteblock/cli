@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	util "github.com/whiteblock/cli/whiteblock/util"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"os"
 )
 
@@ -13,6 +13,7 @@ import (
 
 var (
 	serverAddr string
+	conf       = util.GetConfig()
 )
 
 var RootCmd = &cobra.Command{
