@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -89,67 +88,42 @@ Format: whiteblock sql query <SQL query>
 		}
 
 		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
-		if err != nil  {
+		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		type metrics struct {
-			Schema       interface{} `json:"schema"`
-			JobReference struct {
-				JobID string `json:"job_id"`
-			} `json:"jobReference"`
-			TotalRows int             `json:"totalRows"`
-			PageToken string          `json:"pageToken"`
-			Rows      [][]interface{} `json:"rows"`
-			Error     interface{}     `json:"error"`
-		}
-
-		type userMetrics struct {
-			Schema interface{}     `json:"schema"`
-			Rows   [][]interface{} `json:"rows"`
-		}
-
 		var response metrics
-		var lastPage string
-
 		err = json.Unmarshal(data, &response)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
 		outRows := make([][]interface{}, 0)
+		outRows = append(outRows, response.Rows...)
 
-		for _, row := range response.Rows {
-			outRows = append(outRows, row)
-		}
+		var lastPage string
 
 		for {
 			if response.PageToken == lastPage {
 				break
 			}
 
-			data, err = apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics?job_id=%s&page_token=%s", id, response.JobReference.JobID, response.PageToken), "GET", []byte{})
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-
-			response = metrics{}
-
-			err = json.Unmarshal(data, &response)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-
-			fmt.Println(len(response.Rows))
-
-			for _, row := range response.Rows {
-				outRows = append(outRows, row)
-			}
-
+			response = response.next(id)
+			outRows = append(outRows, response.Rows...)
 			lastPage = response.PageToken
 		}
 
-		fmt.Println(prettypi(userMetrics{Schema: response.Schema, Rows: outRows}))
+		fmt.Println(
+			prettypi(
+				struct {
+					Schema interface{}     `json:"schema"`
+					Rows   [][]interface{} `json:"rows"`
+				}{
+					Schema: response.Schema,
+					Rows:   outRows,
+				},
+			),
+		)
 	},
 }
 
@@ -186,8 +160,36 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, errors.New(string(data) + "\n" + fmt.Sprintf("status code is %d", resp.StatusCode))
+		return nil, fmt.Errorf("%s\nstatus code is %d", string(data), resp.StatusCode)
 	}
 
 	return data, nil
+}
+
+type metrics struct {
+	Schema       interface{} `json:"schema"`
+	JobReference struct {
+		JobID string `json:"job_id"`
+	} `json:"jobReference"`
+	TotalRows int             `json:"totalRows"`
+	PageToken string          `json:"pageToken"`
+	Rows      [][]interface{} `json:"rows"`
+	Error     interface{}     `json:"error"`
+}
+
+func (m *metrics) next(id int) (metrics) {
+	path := fmt.Sprintf("/organizations/%d/dw/metrics?job_id=%s&page_token=%s", id, m.JobReference.JobID, m.PageToken)
+	data, err := apiRequest(path, "GET", []byte{})
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	response := metrics{}
+
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	return response
 }
