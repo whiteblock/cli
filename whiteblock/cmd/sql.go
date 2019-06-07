@@ -3,8 +3,6 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"log"
-
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type response
+
 var sqlCmd = &cobra.Command{
 	Use:   "sql <command>",
 	Short: "",
@@ -22,7 +22,7 @@ var sqlCmd = &cobra.Command{
 	Run: util.PartialCommand,
 }
 
-var sqlTableListCmd = &cobra.Command{
+var sqlTableListCmd = &cobra.Command{ // TODO: do we need to paginate this one as well?
 	Use:   "list",
 	Short: "Gets a list of current tables in the database",
 	Long: `
@@ -39,12 +39,9 @@ Response: JSON representation of the table list in the database
 			util.PrintErrorFatal(err)
 		}
 
-		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET", payload)
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		data := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET", payload)
 
-		var response struct {
+		var tables struct {
 			Kind   string `json:"kind"`
 			Etag   string `json:"etag"`
 			Tables []struct {
@@ -58,12 +55,9 @@ Response: JSON representation of the table list in the database
 			} `json:"tables"`
 		}
 
-		err = json.Unmarshal(data, &response)
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		err = json.Unmarshal(data, &tables)
 
-		log.Println(prettypi(response))
+		fmt.Println(prettypi(tables))
 	},
 }
 
@@ -92,12 +86,10 @@ Format: whiteblock sql query <SQL query>
 			util.PrintErrorFatal(err)
 		}
 
-		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		data := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
 
-		var metrics struct {
+		type metrics struct {
+			// TODO: an array of metrics
 			Schema       interface{} `json:"schema"`
 			JobReference struct {
 				JobID string `json:"jobId"`
@@ -108,14 +100,37 @@ Format: whiteblock sql query <SQL query>
 			Error     interface{}     `json:"error"`
 		}
 
-		fmt.Println(data)
+		result := make([]metrics, 0)
 
-		err = json.Unmarshal(data, &metrics)
+		var response metrics
+
+		err = json.Unmarshal(data, &response)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		log.Println(prettypi(metrics))
+		result = append(result, response)
+
+		for {
+			if response.PageToken == "" {
+				break
+			}
+
+			query = SqlQueryRequestPayload{Q: args[0]}
+			//TODO: HOW DOES THE QUERY CHANGE???
+			payload
+
+			data = apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
+
+			err = json.Unmarshal(data, &response)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+
+			result = append(result, response)
+		}
+
+		fmt.Println(prettypi(result))
 	},
 }
 
@@ -126,7 +141,7 @@ func init() {
 	RootCmd.AddCommand(sqlCmd)
 }
 
-func apiRequest(path string, method string, body []byte) ([]byte, error) {
+func apiRequest(path string, method string, body []byte) []byte {
 	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", util.ApiBaseURL, path), bytes.NewReader(body))
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -142,9 +157,14 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		util.PrintErrorFatal(err)
+
 	}
 	defer resp.Body.Close()
 
-	return ioutil.ReadAll(resp.Body)
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	return data
 }
