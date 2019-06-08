@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 )
@@ -158,7 +159,7 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	//fmt.Println(string(data)) // TODO do something with logrus here
+	log.Trace(string(data))
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("%s\nstatus code is %d", string(data), resp.StatusCode)
