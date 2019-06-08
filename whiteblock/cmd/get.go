@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	util "github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
@@ -71,7 +70,7 @@ var getTestnetIDCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Println(testnetID)
+		cmd.Println(testnetID)
 	},
 }
 
@@ -121,7 +120,7 @@ var getNodesCmd = &cobra.Command{
 				out = append(out, rawNode)
 			}
 		}
-		fmt.Println(prettypi(out))
+		cmd.Println(prettypi(out))
 	},
 }
 
@@ -133,7 +132,6 @@ Running will check whether or not there is a test running and get the name of th
 
 Response: true or false, on whether or not a test is running; The name of the test or nothing if there is not a test running.
 	`,
-
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
 		jsonRpcCallAndPrint("state::is_running", []string{})
@@ -350,8 +348,6 @@ Response: JSON representation of the transaction.
 	},
 }
 
-// eth::get_transaction_receipt does not work.
-/*
 var getTxReceiptCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "receipt <tx hash>",
@@ -365,27 +361,10 @@ Params: The transaction hash
 Response: JSON representation of the transaction receipt.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_transaction_receipt"
-		case "eos":
-			fmt.Println("This function is not supported for the syscoin client.")
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-		default:
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		jsonRpcCallAndPrint(command, args)
+		util.CheckArguments(cmd, args, 1, 1)
+		jsonRpcCallAndPrint("get_transaction_receipt", args)
 	},
 }
-*/
 
 var getAccountCmd = &cobra.Command{
 	// Hidden: true,
@@ -409,7 +388,6 @@ Response: JSON representation of the accounts information.
 }
 
 var getContractsCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "contracts",
 	Short: "Get contracts deployed to network.",
 	Long: `
@@ -421,14 +399,13 @@ Response: JSON representation of the contract information.
 
 		contracts, err := readContractsFile()
 		if err != nil {
-			fmt.Println(err)
-			return
+			util.PrintErrorFatal(err)
 		}
 		if len(contracts) == 0 {
 			util.PrintStringError("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
 			os.Exit(1)
 		} else {
-			fmt.Println(prettyp(string(contracts)))
+			cmd.Println(prettyp(string(contracts)))
 		}
 	},
 }
@@ -442,7 +419,7 @@ func init() {
 	// dev commands that are currently being implemented
 	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
-	getTxCmd.AddCommand(getTxInfoCmd)
+	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd)
 	getAccountCmd.AddCommand(getAccountInfoCmd)
 
 	RootCmd.AddCommand(getCmd)
