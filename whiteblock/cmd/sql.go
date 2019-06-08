@@ -20,7 +20,7 @@ sql runs SQL queries to obtain organization data, specifically metrics and table
 	Run: util.PartialCommand,
 }
 
-var sqlTableListCmd = &cobra.Command{ // TODO: do we need to paginate this one as well?
+var sqlTableListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Gets a list of current tables in the database",
 	Long: `
@@ -35,6 +35,9 @@ Response: JSON representation of the table list in the database
 		id, err := cmd.Flags().GetInt("organization-id")
 		if err != nil {
 			util.PrintErrorFatal(err)
+		}
+		if id == 0 {
+			id = getOrgId()
 		}
 
 		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET", payload)
@@ -86,6 +89,9 @@ Format: whiteblock sql query <SQL query>
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		if id == 0 {
+			id = getOrgId()
+		}
 
 		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
 		if err != nil {
@@ -121,9 +127,8 @@ Format: whiteblock sql query <SQL query>
 }
 
 func init() {
-	orgId := getOrgId()
-	sqlTableListCmd.Flags().IntP("organization-id", "i", orgId, "api request returns the specified organization's data")
-	sqlQueryCmd.Flags().IntP("organization-id", "i", orgId, "api request returns the specified organization's data")
+	sqlTableListCmd.Flags().IntP("organization-id", "i", 0, "api request returns the specified organization's data")
+	sqlQueryCmd.Flags().IntP("organization-id", "i", 0, "api request returns the specified organization's data")
 	sqlCmd.AddCommand(sqlTableListCmd, sqlQueryCmd)
 	RootCmd.AddCommand(sqlCmd)
 }
@@ -133,8 +138,6 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(fmt.Sprintf("%s%s", util.GetConfig().APIURL, path)) // TODO REMOVE
 
 	auth, err := util.CreateAuthNHeader() //get the jwt
 	if err != nil {
@@ -155,7 +158,7 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	fmt.Println(string(data)) // TODO Remove
+	//fmt.Println(string(data)) // TODO do something with logrus here
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("%s\nstatus code is %d", string(data), resp.StatusCode)
@@ -198,15 +201,11 @@ func getOrgId() int {
 		util.PrintErrorFatal(err)
 	}
 
-	var responseID struct {
-		orgID int `json:"organization_id"`
-	}
-
-	err = json.Unmarshal(id, &responseID)
+	var response map[string]interface{}
+	err = json.Unmarshal(id, &response)
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
 
-	fmt.Println(responseID.orgID) // TODO REMOVE
-	return responseID.orgID
+	return int(response["organization_id"].(float64))
 }
