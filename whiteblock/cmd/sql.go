@@ -37,6 +37,7 @@ Response: JSON representation of the table list in the database
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+
 		if id == 0 {
 			id = getOrgId()
 		}
@@ -90,6 +91,7 @@ Format: whiteblock sql query <SQL query>
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+
 		if id == 0 {
 			id = getOrgId()
 		}
