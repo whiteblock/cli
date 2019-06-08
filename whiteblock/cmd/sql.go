@@ -13,8 +13,9 @@ import (
 
 var sqlCmd = &cobra.Command{
 	Use:   "sql <command>",
-	Short: "",
+	Short: "sql runs SQL queries to obtain organization data",
 	Long: `
+sql runs SQL queries to obtain organization data, specifically metrics and tables
     `,
 	Run: util.PartialCommand,
 }
@@ -100,11 +101,7 @@ Format: whiteblock sql query <SQL query>
 		outRows := make([][]interface{}, 0)
 		outRows = append(outRows, response.Rows...)
 
-		for {
-			if response.PageToken == "" {
-				break
-			}
-
+		for response.PageToken == "" {
 			response = response.next(id)
 			outRows = append(outRows, response.Rows...)
 		}
@@ -124,8 +121,9 @@ Format: whiteblock sql query <SQL query>
 }
 
 func init() {
-	sqlTableListCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
-	sqlQueryCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
+	orgId := getOrgId()
+	sqlTableListCmd.Flags().IntP("organization-id", "i", orgId, "api request returns the specified organization's data")
+	sqlQueryCmd.Flags().IntP("organization-id", "i", orgId, "api request returns the specified organization's data")
 	sqlCmd.AddCommand(sqlTableListCmd, sqlQueryCmd)
 	RootCmd.AddCommand(sqlCmd)
 }
@@ -135,6 +133,8 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(fmt.Sprintf("%s%s", util.GetConfig().APIURL, path)) // TODO REMOVE
 
 	auth, err := util.CreateAuthNHeader() //get the jwt
 	if err != nil {
@@ -154,6 +154,8 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(string(data)) // TODO Remove
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("%s\nstatus code is %d", string(data), resp.StatusCode)
@@ -188,4 +190,23 @@ func (m *metrics) next(id int) metrics {
 	}
 
 	return response
+}
+
+func getOrgId() int {
+	id, err := apiRequest("/agent", "GET", []byte{})
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	var responseID struct {
+		orgID int `json:"organization_id"`
+	}
+
+	err = json.Unmarshal(id, &responseID)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	fmt.Println(responseID.orgID) // TODO REMOVE
+	return responseID.orgID
 }
