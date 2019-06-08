@@ -110,7 +110,7 @@ Format: whiteblock sql query <SQL query>
 		outRows := make([][]interface{}, 0)
 		outRows = append(outRows, response.Rows...)
 
-		for response.PageToken == "" {
+		for response.PageToken != "" {
 			response = response.next(id)
 			outRows = append(outRows, response.Rows...)
 		}
