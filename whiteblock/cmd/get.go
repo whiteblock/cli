@@ -367,10 +367,12 @@ Response: JSON representation of the transaction receipt.
 }
 
 var getAccountCmd = &cobra.Command{
-	// Hidden: true,
-	Use:   "account <command>",
-	Short: "Get account information",
-	Run:   util.PartialCommand,
+	Aliases: []string{"accounts"},
+	Use:     "account",
+	Short:   "Get account information",
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("state::get", []string{"accounts"})
+	},
 }
 
 var getAccountInfoCmd = &cobra.Command{
