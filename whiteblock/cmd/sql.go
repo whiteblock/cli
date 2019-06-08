@@ -100,16 +100,13 @@ Format: whiteblock sql query <SQL query>
 		outRows := make([][]interface{}, 0)
 		outRows = append(outRows, response.Rows...)
 
-		var lastPage string
-
 		for {
-			if response.PageToken == lastPage {
+			if response.PageToken == "" {
 				break
 			}
 
 			response = response.next(id)
 			outRows = append(outRows, response.Rows...)
-			lastPage = response.PageToken
 		}
 
 		fmt.Println(
