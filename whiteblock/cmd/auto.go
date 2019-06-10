@@ -5,9 +5,9 @@ import (
 	"fmt"
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
-	log "github.com/sirupsen/logrus"
 	"sort"
 	"strconv"
 	"time"
@@ -119,6 +119,18 @@ clean a stoped auto routine
 	},
 }
 
+var autoPurgeCmd = &cobra.Command{
+	Use:   "purge",
+	Short: "purge all of the running autos",
+	Long: `
+Gracefully stops and removes all of the currently running auto routines.
+Most users do not need to call this as it happens automatically on the next build.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("state::purge_all_sub_routines", args)
+	},
+}
+
 var getAutoCmd = &cobra.Command{
 	Use:     "auto",
 	Aliases: []string{"routines"},
@@ -153,7 +165,7 @@ func createAutoGraph() ([]ui.Drawable, error) {
 
 		return nil, fmt.Errorf("nothing to show")
 	}
-	log.WithFields(log.Fields{"length":len(res.(map[string]interface{}))}).Trace("fetched the stats")
+	log.WithFields(log.Fields{"length": len(res.(map[string]interface{}))}).Trace("fetched the stats")
 	width, _ := getTermSize()
 	y := 0
 
@@ -286,7 +298,7 @@ func init() {
 	autoKillCmd.Flags().BoolP("force", "f", false, "force kill/stop the routine (this may cause a crash)")
 
 	getAutoDetailedCmd.Flags().Bool("graph", false, "show an interactive graph of the results")
-	autoCmd.AddCommand(autoKillCmd, autoCleanCmd)
+	autoCmd.AddCommand(autoKillCmd, autoCleanCmd, autoPurgeCmd)
 
 	getAutoCmd.AddCommand(getAutoDetailedCmd, getAutoErrorsCmd)
 	getCmd.AddCommand(getAutoCmd)
