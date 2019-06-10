@@ -47,11 +47,11 @@ var autoCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		maxNumErrMsgs,err := cmd.Flags().GetUint("max-num-err-msgs")
+		maxNumErrMsgs, err := cmd.Flags().GetUint("max-num-err-msgs")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		recordErrMsgs,err := cmd.Flags().GetBool("disable-error-recording")
+		recordErrMsgs, err := cmd.Flags().GetBool("disable-error-recording")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -72,10 +72,10 @@ var autoCmd = &cobra.Command{
 			"node": node,
 			"name": fmt.Sprintf("node%d:%s", node, args[1]),
 			"settings": map[string]interface{}{
-				"targetDelay": interval,
-				"sampleSize":  sampleSize,
-				"maxNumErrMsgs" : maxNumErrMsgs,
-				"recordErrMsgs" : !recordErrMsgs,
+				"targetDelay":   interval,
+				"sampleSize":    sampleSize,
+				"maxNumErrMsgs": maxNumErrMsgs,
+				"recordErrMsgs": !recordErrMsgs,
 			},
 			"call":       args[1],
 			"arguments":  params,
@@ -280,9 +280,9 @@ func init() {
 	autoCmd.Flags().Bool("full-error-checking", false, "Check for errors other than just connectivity errors (default false)")
 	autoCmd.Flags().IntP("interval", "i", 50000, "Send interval in microseconds")
 	autoCmd.Flags().IntP("sample-size", "s", 200, "auto stats sample size")
-	autoCmd.Flags().Uint("max-num-err-msgs",5,"the max history of error messages to keep (default 5)")
-	autoCmd.Flags().Bool("disable-error-recording",false,"disable the recording of error messages."+
-														 " (default false) Saves ~1us per error")
+	autoCmd.Flags().Uint("max-num-err-msgs", 5, "the max history of error messages to keep (default 5)")
+	autoCmd.Flags().Bool("disable-error-recording", false, "disable the recording of error messages."+
+		" (default false) Saves ~1us per error")
 	autoKillCmd.Flags().BoolP("force", "f", false, "force kill/stop the routine (this may cause a crash)")
 
 	getAutoDetailedCmd.Flags().Bool("graph", false, "show an interactive graph of the results")
