@@ -7,19 +7,21 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 )
 
 var sqlCmd = &cobra.Command{
 	Use:   "sql <command>",
-	Short: "",
+	Short: "sql runs SQL queries to obtain organization data",
 	Long: `
+sql runs SQL queries to obtain organization data, specifically metrics and tables
     `,
 	Run: util.PartialCommand,
 }
 
-var sqlTableListCmd = &cobra.Command{ // TODO: do we need to paginate this one as well?
+var sqlTableListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Gets a list of current tables in the database",
 	Long: `
@@ -34,6 +36,10 @@ Response: JSON representation of the table list in the database
 		id, err := cmd.Flags().GetInt("organization-id")
 		if err != nil {
 			util.PrintErrorFatal(err)
+		}
+
+		if id == 0 {
+			id = getOrgId()
 		}
 
 		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/tables", id), "GET", payload)
@@ -86,6 +92,10 @@ Format: whiteblock sql query <SQL query>
 			util.PrintErrorFatal(err)
 		}
 
+		if id == 0 {
+			id = getOrgId()
+		}
+
 		data, err := apiRequest(fmt.Sprintf("/organizations/%d/dw/metrics", id), "POST", payload)
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -100,11 +110,7 @@ Format: whiteblock sql query <SQL query>
 		outRows := make([][]interface{}, 0)
 		outRows = append(outRows, response.Rows...)
 
-		for {
-			if response.PageToken == "" {
-				break
-			}
-
+		for response.PageToken != "" {
 			response = response.next(id)
 			outRows = append(outRows, response.Rows...)
 		}
@@ -124,8 +130,8 @@ Format: whiteblock sql query <SQL query>
 }
 
 func init() {
-	sqlTableListCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
-	sqlQueryCmd.Flags().IntP("organization-id", "i", 10, "api request returns the specified organization's data")
+	sqlTableListCmd.Flags().IntP("organization-id", "i", 0, "api request returns the specified organization's data")
+	sqlQueryCmd.Flags().IntP("organization-id", "i", 0, "api request returns the specified organization's data")
 	sqlCmd.AddCommand(sqlTableListCmd, sqlQueryCmd)
 	RootCmd.AddCommand(sqlCmd)
 }
@@ -154,6 +160,8 @@ func apiRequest(path string, method string, body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.Trace(string(data))
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("%s\nstatus code is %d", string(data), resp.StatusCode)
@@ -188,4 +196,19 @@ func (m *metrics) next(id int) metrics {
 	}
 
 	return response
+}
+
+func getOrgId() int {
+	id, err := apiRequest("/agent", "GET", []byte{})
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	var response map[string]interface{}
+	err = json.Unmarshal(id, &response)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	return int(response["organization_id"].(float64))
 }
