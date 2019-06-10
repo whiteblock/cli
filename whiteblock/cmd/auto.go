@@ -7,6 +7,7 @@ import (
 	"github.com/gizak/termui/widgets"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
+	log "github.com/sirupsen/logrus"
 	"sort"
 	"strconv"
 	"time"
@@ -25,8 +26,10 @@ var autoCmd = &cobra.Command{
 	+block_hash random block hash
 	+block_number random block number
 	Examples:
+	object parameter with an array:
 	wb auto 0 eth_sendTransaction -i 1000000 '{"from":"+account","to":"+account","gas":"0x76c0","gasPrice":"0x9184e72a000","value":"+hex","data":"0x00"}'
-	wb auto 0 eth_getBalance -i 100000 +account latest
+	simple parameters within an array:
+	wb auto -i 100000 0 eth_getBalance  +account latest
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -150,8 +153,7 @@ func createAutoGraph() ([]ui.Drawable, error) {
 
 		return nil, fmt.Errorf("nothing to show")
 	}
-
-	//fmt.Printf("LENGTH=%d\n",len(res.(map[string]interface{})))
+	log.WithFields(log.Fields{"length":len(res.(map[string]interface{}))}).Trace("fetched the stats")
 	width, _ := getTermSize()
 	y := 0
 
@@ -171,10 +173,8 @@ func createAutoGraph() ([]ui.Drawable, error) {
 		data := res.(map[string]interface{})[routine].(map[string]interface{})
 		//render the data
 		var points []map[string]float64
-		stats := data["stats"]
-		//current := stats.(map[string]interface{})["current"]
-		//fmt.Printf("%#v\n",current)
-		historical := stats.(map[string]interface{})["historical"]
+		stats := data["stats"].(map[string]interface{})
+		historical := stats["historical"]
 		tmp, err := json.Marshal(historical)
 		if err != nil {
 			return nil, err
