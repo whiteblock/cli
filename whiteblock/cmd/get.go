@@ -332,6 +332,26 @@ var getTxCmd = &cobra.Command{
 	Run:   util.PartialCommand,
 }
 
+var getTxRecentCmd = &cobra.Command{
+	Use:   "recent []<tx hash>",
+	Short: "Get transaction information",
+	Long: `Get the tx hash(es) of recently sent transactions
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.CheckArguments(cmd, args, 0, 1)
+		var err error = nil
+		var num int = 5
+		if len(args) > 0 {
+			num, err = strconv.Atoi(args[0])
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+		}
+
+		jsonRpcCallAndPrint("state::get_recent_tx", []interface{}{num})
+	},
+}
+
 var getTxInfoCmd = &cobra.Command{
 	Use:   "info <tx hash>",
 	Short: "Get transaction information",
@@ -421,7 +441,7 @@ func init() {
 	// dev commands that are currently being implemented
 	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
-	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd)
+	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd, getTxRecentCmd)
 	getAccountCmd.AddCommand(getAccountInfoCmd)
 
 	RootCmd.AddCommand(getCmd)
