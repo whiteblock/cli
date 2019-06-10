@@ -47,6 +47,15 @@ var autoCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		maxNumErrMsgs,err := cmd.Flags().GetUint("max-num-err-msgs")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		recordErrMsgs,err := cmd.Flags().GetBool("disable-error-recording")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
 		params := []interface{}{}
 		if len(args) > 2 {
 			for _, arg := range args[2:] {
@@ -65,6 +74,8 @@ var autoCmd = &cobra.Command{
 			"settings": map[string]interface{}{
 				"targetDelay": interval,
 				"sampleSize":  sampleSize,
+				"maxNumErrMsgs" : maxNumErrMsgs,
+				"recordErrMsgs" : !recordErrMsgs,
 			},
 			"call":       args[1],
 			"arguments":  params,
@@ -112,6 +123,21 @@ var getAutoCmd = &cobra.Command{
 	Long:    "Get the QPS of the currently running automated queries",
 	Run: func(cmd *cobra.Command, args []string) {
 		jsonRpcCallAndPrint("state::sub_routines", []string{})
+	},
+}
+
+var getAutoErrorsCmd = &cobra.Command{
+	Use:     "errors",
+	Aliases: []string{"error"},
+	Short:   "Check auto errors",
+	Long:    "Get the most recent error messages",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			jsonRpcCallAndPrint("state::all_sub_routines_errors", []string{})
+			return
+		}
+		jsonRpcCallAndPrint("state::sub_routine_errors", args)
+
 	},
 }
 
@@ -254,12 +280,15 @@ func init() {
 	autoCmd.Flags().Bool("full-error-checking", false, "Check for errors other than just connectivity errors (default false)")
 	autoCmd.Flags().IntP("interval", "i", 50000, "Send interval in microseconds")
 	autoCmd.Flags().IntP("sample-size", "s", 200, "auto stats sample size")
+	autoCmd.Flags().Uint("max-num-err-msgs",5,"the max history of error messages to keep (default 5)")
+	autoCmd.Flags().Bool("disable-error-recording",false,"disable the recording of error messages."+
+														 " (default false) Saves ~1us per error")
 	autoKillCmd.Flags().BoolP("force", "f", false, "force kill/stop the routine (this may cause a crash)")
 
 	getAutoDetailedCmd.Flags().Bool("graph", false, "show an interactive graph of the results")
 	autoCmd.AddCommand(autoKillCmd, autoCleanCmd)
 
-	getAutoCmd.AddCommand(getAutoDetailedCmd)
+	getAutoCmd.AddCommand(getAutoDetailedCmd, getAutoErrorsCmd)
 	getCmd.AddCommand(getAutoCmd)
 	RootCmd.AddCommand(autoCmd)
 
