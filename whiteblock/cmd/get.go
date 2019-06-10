@@ -268,15 +268,12 @@ commands separated by blockchains.
 
 func getBlockCobra(cmd *cobra.Command, args []string) {
 	util.CheckArguments(cmd, args, 1, 1)
-	blockNum := 0
-	var err error
-	if len(args) > 0 {
-		blockNum, err = strconv.Atoi(args[0])
-		if err != nil {
-			util.PrintStringError("Invalid block number formatting.")
-			return
-		}
+
+	blockNum, err := strconv.Atoi(args[0])
+	if err != nil {
+		util.InvalidInteger("block number", args[1], true)
 	}
+
 	if blockNum < 1 {
 		util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
 		os.Exit(1)
@@ -334,7 +331,7 @@ var getTxCmd = &cobra.Command{
 }
 
 var getTxRecentCmd = &cobra.Command{
-	Use:   "recent []<tx hash>",
+	Use:   "recent [number of tx]",
 	Short: "Get transaction information",
 	Long: `Get the tx hash(es) of recently sent transactions
 	`,
