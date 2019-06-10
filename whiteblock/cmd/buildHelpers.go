@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	util "../util"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -74,25 +74,26 @@ func hasParam(params [][]string, param string) bool {
 
 func fetchParams(blockchain string) ([][]string, error) {
 	//Handle the ugly conversions, in a safe manner
+	badFmtErr := fmt.Errorf("unexpected format for params")
 	rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
 	if err != nil {
 		return nil, err
 	}
 	optionsStep1, ok := rawOptions.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Unexpected format for params")
+		return nil, badFmtErr
 	}
 	out := make([][]string, len(optionsStep1))
 	for i, optionsStep1Segment := range optionsStep1 {
 		optionsStep2, ok := optionsStep1Segment.([]interface{}) //[][]interface{}[i]
 		if !ok {
-			return nil, fmt.Errorf("Unexpected format for params")
+			return nil, badFmtErr
 		}
 		out[i] = make([]string, len(optionsStep2))
 		for j, optionsStep2Segment := range optionsStep2 {
 			out[i][j], ok = optionsStep2Segment.(string)
 			if !ok {
-				return nil, fmt.Errorf("Unexpected format for params")
+				return nil, badFmtErr
 			}
 		}
 	}
@@ -221,9 +222,9 @@ func processEnv(envVars map[string]string, nodes int) ([]map[string]string, erro
 func handleDockerAuthFlags(cmd *cobra.Command, args []string, conf *Config) {
 	if cmd.Flags().Changed("docker-password") != cmd.Flags().Changed("docker-username") {
 		if cmd.Flags().Changed("docker-password") {
-			util.PrintStringError("You must also provide --docker-password with --docker-username")
+			util.PrintStringError("you must also provide --docker-password with --docker-username")
 		} else {
-			util.PrintStringError("You must also provide --docker-username with --docker-password")
+			util.PrintStringError("you must also provide --docker-username with --docker-password")
 		}
 		os.Exit(1)
 	}
@@ -261,8 +262,19 @@ func handlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
 	}
 }
 
+func handleForceUnlockFlag(cmd *cobra.Command, args []string, conf *Config) {
+
+	fbg, err := cmd.Flags().GetBool("force-unlock")
+	if err == nil && fbg {
+		conf.Extras["forceUnlock"] = true
+	}
+}
+
 func getImage(blockchain string, imageType string, defaultImage string) string {
 	usr, err := user.Current()
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
 		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
@@ -297,6 +309,9 @@ func handleImageFlag(cmd *cobra.Command, args []string, conf *Config) {
 
 	conf.Images = make([]string, conf.Nodes)
 	images, potentialImage, err := util.UnrollStringSliceToMapIntString(imageFlag, "=")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
 	//fmt.Printf("IMAGES=%#v\n",images)
 	if len(potentialImage) > 1 {
 		util.PrintErrorFatal(fmt.Errorf("Too many default images"))

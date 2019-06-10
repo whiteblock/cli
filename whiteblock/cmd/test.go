@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	util "../util"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
 )
 

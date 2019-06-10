@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	util "../util"
 	"encoding/json"
 	"fmt"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
 )
 

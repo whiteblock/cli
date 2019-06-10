@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	util "../util"
 	"bufio"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"strconv"
@@ -32,6 +32,32 @@ func getWidth() uint {
 		panic(errno)
 	}
 	return uint(ws.Col)
+}
+
+func getTermSize() (uint, uint) {
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
+
+	if int(retCode) == -1 {
+		panic(errno)
+	}
+	return uint(ws.Row), uint(ws.Col)
+}
+
+func getTermPixSize() (uint, uint) {
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
+
+	if int(retCode) == -1 {
+		panic(errno)
+	}
+	return uint(ws.Xpixel), uint(ws.Ypixel)
 }
 
 var (
@@ -174,7 +200,7 @@ Params: sending node, receiving node
 			}
 			defer client.Close()
 
-			client.Run("pkill -9 iperf3") //Kill iperf if it is running
+			//client.Run("pkill -9 iperf3") //Kill iperf if it is running
 
 			session, err := client.GetSession()
 			if err != nil {
@@ -238,7 +264,7 @@ Params: sending node, receiving node
 			}
 			defer client.Close()
 
-			client.Run("pkill -9 iperf3")
+			//client.Run("pkill -9 iperf3")
 			spinner.Kill()
 			session, err := client.GetSession()
 			if err != nil {

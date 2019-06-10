@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	util "../util"
-	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -46,7 +46,7 @@ func readContractsFile() ([]byte, error) {
 var getCmd = &cobra.Command{
 	Use:   "get <command>",
 	Short: "Get server and network information.",
-	Long:  "\nGet will ouput server and network information and statstics.\n",
+	Long:  "\nGet will output server and network information and statistics.\n",
 	Run:   util.PartialCommand,
 }
 
@@ -54,7 +54,7 @@ var getServerCmd = &cobra.Command{
 	Use:     "server",
 	Aliases: []string{"servers"},
 	Short:   "Get server information.",
-	Long:    "\nServer will ouput server information.\n",
+	Long:    "\nServer will output server information.\n",
 	Run: func(cmd *cobra.Command, args []string) {
 		jsonRpcCallAndPrint("get_servers", []string{})
 	},
@@ -70,7 +70,7 @@ var getTestnetIDCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Println(testnetID)
+		cmd.Println(testnetID)
 	},
 }
 
@@ -80,7 +80,12 @@ var getSupportedCmd = &cobra.Command{
 	Short:   "Get the currently supported blockchains",
 	Long:    "Fetches the blockchains which whiteblock is currently able build by default",
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("get_supported_blockchains", []string{})
+
+		var blockchains []string
+		jsonRpcCallP("get_supported_blockchains", []string{}, &blockchains)
+		sortedBlockchains := sort.StringSlice(blockchains)
+		sortedBlockchains.Sort()
+		cmd.Println(prettypi([]string(sortedBlockchains)))
 	},
 }
 
@@ -91,11 +96,31 @@ var getNodesCmd = &cobra.Command{
 	Long:    "\nNodes will output all of the nodes in the current network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		jsonRpcCallAndPrint("status_nodes", []string{testnetId})
+		all, err := cmd.Flags().GetBool("all")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		if all {
+			jsonRpcCallAndPrint("status_nodes", []string{testnetID})
+			return
+		}
+		res, err := jsonRpcCall("status_nodes", []string{testnetID})
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		rawNodes := res.([]interface{})
+		out := []interface{}{}
+		for _, rawNode := range rawNodes {
+			if rawNode.(map[string]interface{})["up"].(bool) {
+				out = append(out, rawNode)
+			}
+		}
+		cmd.Println(prettypi(out))
 	},
 }
 
@@ -107,7 +132,6 @@ Running will check whether or not there is a test running and get the name of th
 
 Response: true or false, on whether or not a test is running; The name of the test or nothing if there is not a test running.
 	`,
-
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
 		jsonRpcCallAndPrint("state::is_running", []string{})
@@ -137,7 +161,7 @@ var getConfigsCmd = &cobra.Command{
 	Aliases: []string{"config"},
 	Short:   "Get the resources for a blockchain",
 	Long: `
-Get the resources for a blockchain. With one argument, lists what is availible. With two
+Get the resources for a blockchain. With one argument, lists what is available. With two
 	arguments, get the contents of the file
 
 Params: The blockchain to get the resources of, the resource/file name 
@@ -271,14 +295,12 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 }
 
 var getBlockCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
 	Run:   getBlockCobra,
 }
 
 var getBlockNumCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "number",
 	Short: "Get the block number",
 	Long: `
@@ -292,7 +314,6 @@ Response: block number
 }
 
 var getBlockInfoCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "info <block number>",
 	Short: "Get the information of a block",
 	Long: `
@@ -306,14 +327,12 @@ Response: JSON representation of the block
 }
 
 var getTxCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "tx <command>",
 	Short: "Get information regarding transactions",
 	Run:   util.PartialCommand,
 }
 
 var getTxInfoCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "info <tx hash>",
 	Short: "Get transaction information",
 	Long: `
@@ -329,8 +348,6 @@ Response: JSON representation of the transaction.
 	},
 }
 
-// eth::get_transaction_receipt does not work.
-/*
 var getTxReceiptCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "receipt <tx hash>",
@@ -344,33 +361,18 @@ Params: The transaction hash
 Response: JSON representation of the transaction receipt.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			println("\nError: Invalid number of arguments given\n")
-			cmd.Help()
-			return
-		}
-		command := ""
-		switch blockchain {
-		case "ethereum":
-			command = "eth::get_transaction_receipt"
-		case "eos":
-			fmt.Println("This function is not supported for the syscoin client.")
-		case "syscoin":
-			fmt.Println("This function is not supported for the syscoin client.")
-		default:
-			fmt.Println("No blockchain found. Please use the build function to create one")
-			return
-		}
-		jsonRpcCallAndPrint(command, args)
+		util.CheckArguments(cmd, args, 1, 1)
+		jsonRpcCallAndPrint("get_transaction_receipt", args)
 	},
 }
-*/
 
 var getAccountCmd = &cobra.Command{
-	// Hidden: true,
-	Use:   "account <command>",
-	Short: "Get account information",
-	Run:   util.PartialCommand,
+	Aliases: []string{"accounts"},
+	Use:     "account",
+	Short:   "Get account information",
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonRpcCallAndPrint("state::get", []string{"accounts"})
+	},
 }
 
 var getAccountInfoCmd = &cobra.Command{
@@ -388,7 +390,6 @@ Response: JSON representation of the accounts information.
 }
 
 var getContractsCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "contracts",
 	Short: "Get contracts deployed to network.",
 	Long: `
@@ -400,27 +401,27 @@ Response: JSON representation of the contract information.
 
 		contracts, err := readContractsFile()
 		if err != nil {
-			fmt.Println(err)
-			return
+			util.PrintErrorFatal(err)
 		}
 		if len(contracts) == 0 {
 			util.PrintStringError("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
 			os.Exit(1)
 		} else {
-			fmt.Println(prettyp(string(contracts)))
+			cmd.Println(prettyp(string(contracts)))
 		}
 	},
 }
 
 func init() {
-
+	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd)
+
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	// dev commands that are currently being implemented
 	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
-	getTxCmd.AddCommand(getTxInfoCmd)
+	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd)
 	getAccountCmd.AddCommand(getAccountInfoCmd)
 
 	RootCmd.AddCommand(getCmd)

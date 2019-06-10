@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	util "../util"
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"os"
 	"strconv"
 	"strings"
@@ -57,7 +57,8 @@ func build(buildConfig interface{}) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	fmt.Printf("Build Started successfully: %v\n", buildReply)
+	fmt.Println("Build Started Successfully.")
+	fmt.Printf("Testnet ID : %v\n", buildReply)
 
 	//Store the in progress builds temporary id until the build finishes
 	err = util.WriteStore(".in_progress_build_id", []byte(buildReply.(string)))
@@ -80,7 +81,6 @@ var buildCmd = &cobra.Command{
 		var err error
 		util.CheckArguments(cmd, args, 0, 0)
 		buildConf, _ := getPreviousBuild() //Errors are ok with this.
-
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
 		cpusEnabled := len(cpusFlag) != 0
@@ -137,6 +137,10 @@ var buildCmd = &cobra.Command{
 		}
 
 		buildArr := []string{}
+		if os.Stdin == nil && len(buildOpt) > 0 {
+			fmt.Println("Would drop into build wizard but is a non interactive context")
+			os.Exit(1)
+		}
 		scanner := bufio.NewScanner(os.Stdin)
 
 		for i := 0; i < len(buildOpt); i++ {
@@ -189,7 +193,7 @@ var buildCmd = &cobra.Command{
 		}
 		if !memoryEnabled {
 			buildConf.Resources[0].Memory = buildArr[offset]
-			offset++
+			//offset++
 		}
 
 		if len(serversFlag) > 0 {
@@ -284,6 +288,7 @@ var buildCmd = &cobra.Command{
 			buildConf.Extras["freezeAfterInfrastructure"] = true
 		}
 		handlePullFlag(cmd, args, &buildConf)
+		handleForceUnlockFlag(cmd, args, &buildConf)
 		handleDockerAuthFlags(cmd, args, &buildConf)
 		handleSSHOptions(cmd, args, &buildConf)
 		//fmt.Printf("%+v\n", buildConf)
@@ -320,8 +325,7 @@ var previousCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
-		fmt.Println(prevBuild)
+		fmt.Println(prettypi(prevBuild))
 		if previousYesAll || util.YesNoPrompt("Build from previous?") {
 			fmt.Println("building from previous configuration")
 			build(prevBuild)
@@ -351,8 +355,8 @@ var buildStopCmd = &cobra.Command{
 var buildFreezeCmd = &cobra.Command{
 	Use:     "freeze",
 	Aliases: []string{"pause"},
-	Short:   "",
-	Long:    "",
+	Short:   "Pause a build",
+	Long:    "Pause a build",
 	Run: func(cmd *cobra.Command, args []string) {
 		buildId, err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
@@ -366,8 +370,8 @@ var buildFreezeCmd = &cobra.Command{
 var buildUnfreezeCmd = &cobra.Command{
 	Use:     "unfreeze",
 	Aliases: []string{"thaw", "resume"},
-	Short:   "",
-	Long:    "",
+	Short:   "Unpause a build",
+	Long:    "Unpause a build",
 	Run: func(cmd *cobra.Command, args []string) {
 		buildId, err := util.ReadStore(".in_progress_build_id")
 		if err != nil || len(buildId) == 0 {
@@ -399,6 +403,7 @@ func init() {
 		" Takes a file containing an ssh public key")
 
 	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
+	buildCmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")

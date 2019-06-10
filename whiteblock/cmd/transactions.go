@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	util "../util"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 )
 
 var (
@@ -27,7 +27,7 @@ var txCmd = &cobra.Command{
 	Short: "Run transaction commands.",
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
-Tx will run commands relavent to sending transactions.
+Tx will run commands relevant to sending transactions.
 
 Please use the help commands to make sure you provide the correct flags. If the blockchain is not listed in the help command, the transaction command is not supported for that blockchain. 
 	`,
@@ -65,6 +65,8 @@ Optional Parameters:
 		}
 
 		switch previousBuild.Blockchain {
+		case "pantheon":
+			fallthrough
 		case "geth":
 			fallthrough
 		case "ethereum":
@@ -226,7 +228,7 @@ Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := jsonRpcCall("state::kill", []string{})
-		if res.(float64) == 0 && err == nil {
+		if res != nil && res.(float64) == 0 && err == nil {
 			fmt.Println("Transactions stopped successfully")
 		} else {
 			fmt.Println("There was an error stopping transactions")

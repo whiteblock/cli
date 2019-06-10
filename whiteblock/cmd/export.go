@@ -1,26 +1,29 @@
 package cmd
 
 import (
-	util "../util"
 	"context"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sync/semaphore"
 	"io/ioutil"
 	"net/url"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 )
 
-func handleFetchChunk(testnetID string, node Node, log string, chunk string) (string, error) {
-	ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs/%s/chunks/%s", testnetID, node.ID, log, chunk)
-	fmt.Println(ep)
+func handleFetchChunk(testnetID string, node Node, logName string, chunk string) (string, error) {
+	ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%s/chunks/%s", conf.APIURL, testnetID, node.ID, logName, chunk)
+	log.WithFields(log.Fields{"ep": ep, "chunk": chunk}).Trace("fetching the log chunk")
 	return util.JwtHTTPRequest("GET", ep, "")
 }
 
-func handleChunks(testnetID string, node Node, log string, rawChunks string, sem *semaphore.Weighted) []string {
+func handleChunks(testnetID string, node Node, logName string, rawChunks string, sem *semaphore.Weighted) []string {
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(rawChunks), &res)
 	if err != nil {
@@ -42,7 +45,7 @@ func handleChunks(testnetID string, node Node, log string, rawChunks string, sem
 			var err error
 			var res string
 			for j := 0; j < 10; j++ {
-				res, err = handleFetchChunk(testnetID, node, log, chunk)
+				res, err = handleFetchChunk(testnetID, node, logName, chunk)
 				if err == nil {
 					break
 				}
@@ -50,8 +53,8 @@ func handleChunks(testnetID string, node Node, log string, rawChunks string, sem
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			fmt.Printf("%d is done\n", i)
-			err = ioutil.WriteFile(fmt.Sprintf("./%s/%s/%s", node.ID, log, chunk), []byte(res), 0664)
+			log.WithFields(log.Fields{"chunk": chunk, "num": i}).Debug("fetched a chunk")
+			err = ioutil.WriteFile(fmt.Sprintf("./%s/%s/%s", node.ID, logName, chunk), []byte(res), 0664)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
@@ -73,41 +76,59 @@ func handleExportLogs(testnetID string, node Node, rawRes string, sem *semaphore
 	logs := res["items"].([]interface{})
 	out := map[string][]string{}
 
-	for _, log := range logs {
-		os.RemoveAll(fmt.Sprintf("./%s/%v", node.ID, log))
-		os.MkdirAll(fmt.Sprintf("./%s/%v", node.ID, log), 0755)
+	for _, logName := range logs {
+		os.RemoveAll(fmt.Sprintf("./%s/%v", node.ID, logName))
+		os.MkdirAll(fmt.Sprintf("./%s/%v", node.ID, logName), 0755)
 	}
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(logs))
 	mux := sync.Mutex{}
 
-	for _, log := range logs {
-		go func(log string) {
+	for _, logName := range logs {
+		go func(logName string) {
 			defer wg.Done()
-			ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs/%v/chunks", testnetID, node.ID, log)
-			fmt.Println(ep)
+			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/logs/%v/chunks", conf.APIURL, testnetID, node.ID, logName)
+			log.WithFields(log.Fields{"ep": ep}).Debug("fetching the log chunks")
 			res, err := util.JwtHTTPRequest("GET", ep, "")
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 			mux.Lock()
-			out[log] = handleChunks(testnetID, node, log, res, sem)
+			out[logName] = handleChunks(testnetID, node, logName, res, sem)
 			mux.Unlock()
-		}(log.(string))
+		}(logName.(string))
 
 	}
 	wg.Wait()
 	return res["nextPageToken"], out
 }
 
-func handleExportBlocks(testnetID string, node string, rawRes string, sem *semaphore.Weighted) (interface{}, []string) {
+func convertBlockNumber(blockNumber interface{}) int64 {
+	switch num := blockNumber.(type) {
+	case float64:
+		return int64(num)
+	case string:
+		num = strings.TrimLeft(num, "0")
+		res, err := strconv.ParseInt(num, 0, 64)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		return res
+	default:
+		util.PrintErrorFatal(fmt.Errorf("blocknumber is of unknown type"))
+	}
+	panic("shouldn't reach")
+}
+
+func handleExportBlocks(testnetID string, node string, rawRes string, coveredBlockNumbers *map[int64]struct{}, sem *semaphore.Weighted) (interface{}, []string) {
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(rawRes), &res)
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
 	blockNumbers := res["items"].([]interface{})
+
 	out := make([]string, len(blockNumbers))
 
 	wg := sync.WaitGroup{}
@@ -116,15 +137,22 @@ func handleExportBlocks(testnetID string, node string, rawRes string, sem *semap
 
 	ctx := context.TODO()
 	for i, blockNumber := range blockNumbers {
+
+		num := convertBlockNumber(blockNumber)
+		if _, ok := (*coveredBlockNumbers)[num]; ok {
+			wg.Done()
+			continue
+		}
+		(*coveredBlockNumbers)[num] = struct{}{}
 		sem.Acquire(ctx, 1)
 		go func(blockNumber interface{}, i int) {
 			defer wg.Done()
 			defer sem.Release(1)
-			ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks/%v", testnetID, node, blockNumber)
-			fmt.Println(ep)
+			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks/%v", conf.APIURL, testnetID, node, blockNumber)
+			log.WithFields(log.Fields{"ep": ep}).Debug("fetching the block data")
 			var res string
 			var err error
-			for i := 0; i < 10; i++ {
+			for it := 0; it < 10; it++ {
 				res, err = util.JwtHTTPRequest("GET", ep, "")
 				if err == nil {
 					break
@@ -135,7 +163,7 @@ func handleExportBlocks(testnetID string, node string, rawRes string, sem *semap
 			}
 			mux.Lock()
 			out[i] = res
-			fmt.Printf("%d is done\n", i)
+			log.WithFields(log.Fields{"num": i, "blockNumber": blockNumber}).Trace("fetched a block")
 			mux.Unlock()
 		}(blockNumber, i)
 
@@ -169,7 +197,7 @@ func mergeDown(node Node, files map[string][]string) {
 
 }
 
-func appendBlocks(items []string, finish bool, f *os.File) {
+func appendBlocks(items []string, finish bool, firstCall bool, f *os.File) {
 
 	fInfo, err := f.Stat()
 	if err != nil {
@@ -178,11 +206,20 @@ func appendBlocks(items []string, finish bool, f *os.File) {
 	if fInfo.Size() == 0 {
 		f.Write([]byte("[")) //TODO check err
 	}
-
-	for i, item := range items {
-		if fInfo.Size() > 1 || i != 0 {
-			f.Write([]byte(",")) //TODO check err
+	first := true
+	for _, item := range items {
+		if len(item) == 0 {
+			continue
 		}
+		if first && firstCall && fInfo.Size() < 2 {
+			first = false
+		} else {
+			_, err := f.Write([]byte(",")) //TODO check err
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+		}
+
 		_, err := f.Write([]byte(item))
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -200,6 +237,11 @@ var exportCmd = &cobra.Command{
 	Short:  "Export stuff",
 	Long:   "Export stuff",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		spinner := Spinner{txt: "fetching the block and log data"}
+		spinner.Run(100)
+		defer spinner.Kill()
+
 		var testnetID string
 		var err error
 		if len(args) == 0 {
@@ -210,18 +252,22 @@ var exportCmd = &cobra.Command{
 		} else {
 			testnetID = args[0]
 		}
-
+		nodes := []Node{}
 		sem := semaphore.NewWeighted(200)
-		nodes, err := GetNodes()
+		ep := fmt.Sprintf("%s/testnets/%s/nodes", conf.APIURL, testnetID)
+		res, err := util.JwtHTTPRequest("GET", ep, "")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
+		err = json.Unmarshal([]byte(res), &nodes)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 		for _, node := range nodes {
 			os.RemoveAll(fmt.Sprintf("./%s", node.ID))
 			os.MkdirAll(fmt.Sprintf("./%s", node.ID), 0755)
 		}
-		fmt.Println("removed the files")
+		log.Trace("removed the files")
 		wg := sync.WaitGroup{}
 		wg.Add(len(nodes))
 
@@ -233,17 +279,16 @@ var exportCmd = &cobra.Command{
 				for {
 					var ep string
 					if nextToken == nil {
-						ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs", testnetID, node.ID)
+						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs", conf.APIURL, testnetID, node.ID)
 					} else {
-						ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs?next=%v",
+						ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/logs?next=%v", conf.APIURL,
 							testnetID, node.ID, url.QueryEscape(nextToken.(string)))
 					}
-
-					fmt.Println(ep)
 					res, err := util.JwtHTTPRequest("GET", ep, "")
 					if err != nil {
 						util.PrintErrorFatal(err)
 					}
+					log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetching the logs")
 					nextToken, files = handleExportLogs(testnetID, node, res, sem)
 					mergeDown(node, files)
 					if nextToken == nil {
@@ -268,34 +313,38 @@ var exportCmd = &cobra.Command{
 				}
 				files = append(files, f)
 			}
-			defer func() {
-				for _, file := range files {
-					file.Close()
-				}
-			}()
 
-			for {
-				var ep string
-				if nextToken == nil {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/00000000-0000-0000-0000-000000000000/blocks", testnetID)
-				} else {
-					ep = fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/00000000-0000-0000-0000-000000000000/blocks?next=%v",
-						testnetID, url.QueryEscape(nextToken.(string)))
-				}
+			for i, node := range nodes {
+				wg.Add(1)
+				go func(node Node, i int) {
+					defer wg.Done()
+					coveredBlockNumbers := map[int64]struct{}{}
+					first := true
+					for {
+						var ep string
+						if nextToken == nil {
+							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", conf.APIURL, testnetID, node.ID)
+						} else {
+							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", conf.APIURL, testnetID, node.ID,
+								url.QueryEscape(nextToken.(string)))
+						}
+						log.WithFields(log.Fields{"ep": ep}).Debug("fetching the log chunks")
+						res, err := util.JwtHTTPRequest("GET", ep, "")
+						if err != nil {
+							util.PrintErrorFatal(err)
+						}
+						log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetched the blocks")
 
-				fmt.Println(ep)
-				res, err := util.JwtHTTPRequest("GET", ep, "")
-				if err != nil {
-					util.PrintErrorFatal(err)
-				}
-				nextToken, blocks = handleExportBlocks(testnetID, "00000000-0000-0000-0000-000000000000", res, sem)
-				for _, file := range files {
-					appendBlocks(blocks, nextToken == nil, file)
-				}
+						nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, &coveredBlockNumbers, sem)
+						appendBlocks(blocks, nextToken == nil, first, files[i])
+						first = false
 
-				if nextToken == nil {
-					break
-				}
+						if nextToken == nil {
+							break
+						}
+					}
+					files[i].Close()
+				}(node, i)
 			}
 		}()
 		wg.Wait()

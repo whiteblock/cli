@@ -52,7 +52,7 @@ func HttpRequest(method string, url string, bodyData string) ([]byte, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Host", "api.whiteblock.io")
+	req.Header.Set("Host", conf.APIURL)
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -99,7 +99,7 @@ func JwtHTTPRequest(method string, url string, bodyData string) (string, error) 
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", auth)
-	//req.Header.Set("Host","api.whiteblock.io")
+	//req.Header.Set("Host", ApiBaseURL)
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

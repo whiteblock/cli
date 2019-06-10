@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	util "../util"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"os"
 )
 
@@ -13,13 +13,14 @@ import (
 
 var (
 	serverAddr string
+	conf       = util.GetConfig()
 )
 
 var RootCmd = &cobra.Command{
 	Use:     "whiteblock",
 	Version: VERSION,
 	Short:   "Create and test blockchains",
-	Long: `This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. 
+	Long: `This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network.
 	Documentation, usages, and exmaples can be found at https://docs.whiteblock.io/.
 	`,
 }

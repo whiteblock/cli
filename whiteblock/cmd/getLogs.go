@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	util "../util"
 	"bufio"
 	"fmt"
 	"github.com/spf13/cobra"
+	util "github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"strconv"
@@ -108,7 +108,6 @@ Response: stdout and stderr of the blockchain process
 			scanner.Scan()
 			fmt.Println(scanner.Text())
 		}
-		session.Wait()
 	},
 }
 
