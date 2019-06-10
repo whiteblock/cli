@@ -21,7 +21,7 @@ var autoCmd = &cobra.Command{
 	+tx_hash random tx hash; only works after you call wb tx start stream
 	+account random account
 	+number random base 10 number
-	+hex random hex number
+	+hex random base16 number
 	+block_hash random block hash
 	+block_number random block number
 	Examples:

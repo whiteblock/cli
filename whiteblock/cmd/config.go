@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	util "github.com/whiteblock/cli/whiteblock/util"
+	"github.com/whiteblock/cli/whiteblock/util"
 )
 
 var confCmd = &cobra.Command{
