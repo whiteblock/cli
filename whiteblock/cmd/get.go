@@ -145,8 +145,6 @@ var getDefaultsCmd = &cobra.Command{
 	Long: `
 Get the blockchain specific parameters for a deployed blockchain.
 
-Format: The blockchain to get the build params of
-
 Response: The params as a list of key value params, of name and type respectively
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
