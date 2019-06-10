@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
-	"strconv"
 )
 
 func GetNodes() ([]Node, error) {
@@ -212,8 +211,6 @@ var statsByBlockCmd = &cobra.Command{
 	Long: `
 Stats block will allow the user to get statistics regarding the network.
 
-Params: start block number end block number
-
 Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -228,12 +225,10 @@ Response: JSON representation of statistics
 }
 
 var statsPastBlocksCmd = &cobra.Command{
-	Use:   "past <blocks> ",
+	Use:   "past <number of blocks> ",
 	Short: "Get stastics of a blockchain from the past x blocks",
 	Long: `
 Stats block will allow the user to get statistics regarding the network.
-
-Params: Number of blocks 
 
 Response: JSON representation of statistics
 	`,
@@ -268,11 +263,7 @@ commands separated by blockchains.
 
 func getBlockCobra(cmd *cobra.Command, args []string) {
 	util.CheckArguments(cmd, args, 1, 1)
-
-	blockNum, err := strconv.Atoi(args[0])
-	if err != nil {
-		util.InvalidInteger("block number", args[1], true)
-	}
+	blockNum := util.CheckAndConvertInt(args[0], "block number")
 
 	if blockNum < 1 {
 		util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
@@ -317,8 +308,6 @@ var getBlockInfoCmd = &cobra.Command{
 	Long: `
 Gets the information inside a block including transactions and other information relevant to the currently connected blockchain.
 
-Params: Block number
-
 Response: JSON representation of the block
 	`,
 	Run: getBlockCobra,
@@ -337,13 +326,9 @@ var getTxRecentCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
-		var err error = nil
 		var num int = 5
 		if len(args) > 0 {
-			num, err = strconv.Atoi(args[0])
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
+			num = util.CheckAndConvertInt(args[0], "number of transactions")
 		}
 
 		jsonRpcCallAndPrint("state::get_recent_tx", []interface{}{num})
@@ -354,9 +339,8 @@ var getTxInfoCmd = &cobra.Command{
 	Use:   "info <tx hash>",
 	Short: "Get transaction information",
 	Long: `
-Get a transaction by its hash. The user can find the transaction hash by viewing block information. To view block information, the command 'get block info <block number>' can be used.
-
-Params: The transaction hash
+Get a transaction by its hash. The user can find the transaction hash by viewing block information. 
+To view block information, the command 'get block info <block number>' can be used.
 
 Response: JSON representation of the transaction.
 	`,
@@ -367,14 +351,11 @@ Response: JSON representation of the transaction.
 }
 
 var getTxReceiptCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "receipt <tx hash>",
 	Short: "Get the transaction receipt",
 	Long: `
-Get the transaction receipt by the tx hash. The user can find the transaction hash by viewing block information. To view block information, the command 'get block info <block number>' can be used.
-
-Format: <hash>
-Params: The transaction hash
+Get the transaction receipt by the tx hash. The user can find the transaction hash by viewing block information. 
+To view block information, the command 'get block info <block number>' can be used.
 
 Response: JSON representation of the transaction receipt.
 	`,
@@ -411,7 +392,8 @@ var getContractsCmd = &cobra.Command{
 	Use:   "contracts",
 	Short: "Get contracts deployed to network.",
 	Long: `
-Gets the list of contracts that were deployed to the network. The information includes the address that deployed the contract, the contract name, and the contract's address.
+Gets the list of contracts that were deployed to the network. The information includes the address that deployed the contract, 
+the contract name, and the contract's address.
 
 Response: JSON representation of the contract information.
 `,
@@ -436,7 +418,6 @@ func init() {
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
-	// dev commands that are currently being implemented
 	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
 	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd, getTxRecentCmd)
