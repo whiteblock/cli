@@ -277,20 +277,21 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 			return
 		}
 	}
-	if blockNum < 1 && len(args) > 0 {
+	if blockNum < 1 {
 		util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
-		return
-	} else {
-		res, err := jsonRpcCall("get_block_number", []string{})
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		blocknum := int(res.(float64))
-		if blocknum < 1 {
-			util.PrintStringError("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
-			return
-		}
+		os.Exit(1)
 	}
+	res, err := jsonRpcCall("get_block_number", []string{})
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	blocknum := int(res.(float64))
+	if blocknum < 1 {
+		util.PrintStringError("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
+		os.Exit(1)
+	}
+
 	jsonRpcCallAndPrint("get_block", args)
 }
 
