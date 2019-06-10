@@ -6,7 +6,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	util "github.com/whiteblock/cli/whiteblock/util"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sync/semaphore"
 	"io/ioutil"
 	"net/url"

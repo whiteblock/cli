@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
 	log "github.com/sirupsen/logrus"
-	util "github.com/whiteblock/cli/whiteblock/util"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"net/http"
 	"os"
 	"os/signal"

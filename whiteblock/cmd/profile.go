@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	util "github.com/whiteblock/cli/whiteblock/util"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
 )
 

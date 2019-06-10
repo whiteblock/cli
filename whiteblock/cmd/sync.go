@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	util "github.com/whiteblock/cli/whiteblock/util"
+	"github.com/whiteblock/cli/whiteblock/util"
 )
 
 var syncCmd = &cobra.Command{
