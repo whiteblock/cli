@@ -268,6 +268,7 @@ var getAutoDetailedCmd = &cobra.Command{
 
 				plots, err := createAutoGraph()
 				if err != nil {
+					ui.Close()
 					util.PrintErrorFatal(err)
 				}
 				ui.Render(plots...)
