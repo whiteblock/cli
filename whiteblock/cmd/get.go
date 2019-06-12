@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
@@ -17,24 +19,13 @@ func GetNodes() ([]Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp := res.([]interface{})
-	nodes := []map[string]interface{}{}
-	for _, t := range tmp {
-		nodes = append(nodes, t.(map[string]interface{}))
+	tmp, err := json.Marshal(res)
+	if err != nil {
+		return nil, err
 	}
-
-	out := []Node{}
-	for _, node := range nodes {
-		out = append(out, Node{
-			LocalID:   int(node["localId"].(float64)),
-			Server:    int(node["server"].(float64)),
-			TestNetID: node["testnetId"].(string),
-			ID:        node["id"].(string),
-			IP:        node["ip"].(string),
-			Label:     node["label"].(string),
-		})
-	}
-	return out, nil
+	var out []Node
+	log.WithFields(log.Fields{"res": res}).Trace("raw nodes")
+	return out, json.Unmarshal(tmp, &out)
 }
 
 func readContractsFile() ([]byte, error) {
