@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
+	"io/ioutil"
+	"net/http"
 )
 
 var sqlCmd = &cobra.Command{
@@ -135,7 +134,7 @@ func init() {
 }
 
 func apiRequest(path string, method string, body []byte) ([]byte, error) {
-	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", util.GetConfig().APIURL, path), bytes.NewReader(body))
+	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", conf.APIURL, path), bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
