@@ -76,8 +76,6 @@ var sqlQueryCmd = &cobra.Command{
 	Short: "Runs SQL command to retrieve structured log data",
 	Long: `
 This command will run a SQL query to the database to retrieve structured log data
-
-Format: whiteblock sql query <SQL query>
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
