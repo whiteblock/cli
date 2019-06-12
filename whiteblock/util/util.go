@@ -11,7 +11,14 @@ import (
 )
 
 func PartialCommand(cmd *cobra.Command, args []string) {
-	fmt.Println("\nNo command given. Please choose a command from the list below.")
+	if len(args) == 0 {
+		cmd.Println("\nNo command given. Please choose a command from the list below.")
+	} else if len(args) == 1 {
+		cmd.Printf("\nInvalid subcommand \"%s\" given. Please choose a command from the list below.\n", args[0])
+	} else {
+		cmd.Println("\nIncorrect subcommands given. Please choose a command from the list below.")
+	}
+
 	cmd.Help()
 	return
 }
