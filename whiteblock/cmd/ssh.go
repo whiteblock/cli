@@ -18,6 +18,7 @@ type Node struct {
 	LocalID   int    `json:"localId"`
 	IP        string `json:"ip"`
 	Label     string `json:"label"`
+	Up        bool   `json:"up"`
 }
 
 var sshCmd = &cobra.Command{
@@ -44,6 +45,10 @@ SSH will allow the user to go into the container where the specified node exists
 		}
 		if nodeNumber >= len(nodes) {
 			util.PrintStringError("Node number too high")
+			os.Exit(1)
+		}
+		if !nodes[nodeNumber].Up {
+			util.PrintStringError("Node is down.")
 			os.Exit(1)
 		}
 		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
