@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
@@ -29,11 +28,7 @@ SSH will allow the user to go into the container where the specified node exists
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Println("\nError: Invalid number of arguments given")
-			cmd.Help()
-			return
-		}
+		util.CheckArguments(cmd, args, 1, -1)
 
 		nodes, err := GetNodes()
 		if err != nil {
