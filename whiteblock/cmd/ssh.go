@@ -14,7 +14,7 @@ type Node struct {
 	ID        string `json:"id"`
 	TestNetID string `json:"testnetId"`
 	Server    int    `json:"server"`
-	LocalID   int    `json:"localID"`
+	LocalID   int    `json:"localId"`
 	IP        string `json:"ip"`
 	Label     string `json:"label"`
 }
