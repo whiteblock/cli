@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"strconv"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sys/unix"
+	"os"
+	"strconv"
+	"strings"
 )
 
 type Node struct {
@@ -64,7 +64,7 @@ SSH will allow the user to go into the container where the specified node exists
 		sshArgs = append(sshArgs, "root@"+nodes[nodeNumber].IP)
 
 		sshArgs = append(sshArgs, args[1:]...)
-		//fmt.Println(strings.Join(sshArgs," "))
+		log.WithFields(log.Fields{"command": strings.Join(sshArgs, " ")}).Trace("ssh")
 		log.Fatal(unix.Exec("/usr/bin/ssh", sshArgs, os.Environ()))
 	},
 }
