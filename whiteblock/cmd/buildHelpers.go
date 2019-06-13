@@ -417,3 +417,27 @@ func handleSSHOptions(cmd *cobra.Command, args []string, conf *Config) {
 
 	conf.Extras["postbuild"].(map[string]interface{})["ssh"].(map[string]interface{})["pubKeys"] = pubKeys
 }
+
+func handleDockerfile(cmd *cobra.Command, args []string, conf *Config) {
+	filePath, err := cmd.Flags().GetString("dockerfile")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	if len(filePath) == 0 {
+		return
+	}
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	if conf.Extras == nil {
+		conf.Extras = map[string]interface{}{}
+	}
+
+	if _, ok := conf.Extras["prebuild"]; !ok {
+		conf.Extras["prebuild"] = map[string]interface{}{}
+	}
+	conf.Extras["prebuild"].(map[string]interface{})["build"] = true
+	conf.Extras["prebuild"].(map[string]interface{})["dockerfile"] = base64.StdEncoding.EncodeToString(data)
+}
