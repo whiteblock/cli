@@ -291,6 +291,7 @@ var buildCmd = &cobra.Command{
 		handleForceUnlockFlag(cmd, args, &buildConf)
 		handleDockerAuthFlags(cmd, args, &buildConf)
 		handleSSHOptions(cmd, args, &buildConf)
+		handleDockerfile(cmd, args, &buildConf)
 		//fmt.Printf("%+v\n", buildConf)
 		build(buildConf)
 		removeSmartContracts()
@@ -405,7 +406,7 @@ func init() {
 	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
 	buildCmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
-
+	buildCmd.Flags().String("dockerfile", "", "docker auth username")
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
 	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd, buildFreezeCmd, buildUnfreezeCmd)

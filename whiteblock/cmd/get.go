@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"fmt"
 )
 
 func GetNodes() ([]Node, error) {
@@ -60,7 +61,21 @@ var getTestnetIDCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		cmd.Println(testnetID)
+		fmt.Println(testnetID)
+	},
+}
+
+var getBuildCmd = &cobra.Command{
+	Use:     "build",
+	Aliases: []string{"built"},
+	Short:   "Get the last applied build",
+	Long:    "\nGet the last applied build.\n",
+	Run: func(cmd *cobra.Command, args []string) {
+		prevBuild, err := getPreviousBuild()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		fmt.Println(prettypi(prevBuild))
 	},
 }
 
@@ -75,7 +90,7 @@ var getSupportedCmd = &cobra.Command{
 		jsonRpcCallP("get_supported_blockchains", []string{}, &blockchains)
 		sortedBlockchains := sort.StringSlice(blockchains)
 		sortedBlockchains.Sort()
-		cmd.Println(prettypi([]string(sortedBlockchains)))
+		fmt.Println(prettypi([]string(sortedBlockchains)))
 	},
 }
 
@@ -110,7 +125,7 @@ var getNodesCmd = &cobra.Command{
 				out = append(out, rawNode)
 			}
 		}
-		cmd.Println(prettypi(out))
+		fmt.Println(prettypi(out))
 	},
 }
 
@@ -265,7 +280,8 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 
 	blocknum := int(res.(float64))
 	if blocknum < 1 {
-		util.PrintStringError("Unable to get block information because no blocks have been created. Please use the command 'whiteblock miner start' to start generating blocks.")
+		util.PrintStringError("Unable to get block information because no blocks have been created." +
+			" Please use the command 'whiteblock miner start' to start generating blocks.")
 		os.Exit(1)
 	}*/
 
@@ -409,17 +425,19 @@ Response: JSON representation of the contract information.
 			util.PrintErrorFatal(err)
 		}
 		if len(contracts) == 0 {
-			util.PrintStringError("No smart contract has been deployed yet. Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
+			util.PrintStringError("No smart contract has been deployed yet." +
+				" Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
 			os.Exit(1)
 		} else {
-			cmd.Println(prettyp(string(contracts)))
+			fmt.Println(prettyp(string(contracts)))
 		}
 	},
 }
 
 func init() {
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
-	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd, getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd)
+	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
+		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd)
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
