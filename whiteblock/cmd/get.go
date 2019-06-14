@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"fmt"
 )
 
 func GetNodes() ([]Node, error) {
@@ -69,7 +70,7 @@ var getTestnetIDCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		cmd.Println(testnetID)
+		fmt.Println(testnetID)
 	},
 }
 
@@ -83,7 +84,7 @@ var getBuildCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		cmd.Println(prettypi(prevBuild))
+		fmt.Println(prettypi(prevBuild))
 	},
 }
 
@@ -98,7 +99,7 @@ var getSupportedCmd = &cobra.Command{
 		jsonRpcCallP("get_supported_blockchains", []string{}, &blockchains)
 		sortedBlockchains := sort.StringSlice(blockchains)
 		sortedBlockchains.Sort()
-		cmd.Println(prettypi([]string(sortedBlockchains)))
+		fmt.Println(prettypi([]string(sortedBlockchains)))
 	},
 }
 
@@ -133,7 +134,7 @@ var getNodesCmd = &cobra.Command{
 				out = append(out, rawNode)
 			}
 		}
-		cmd.Println(prettypi(out))
+		fmt.Println(prettypi(out))
 	},
 }
 
@@ -421,7 +422,7 @@ Response: JSON representation of the contract information.
 				" Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
 			os.Exit(1)
 		} else {
-			cmd.Println(prettyp(string(contracts)))
+			fmt.Println(prettyp(string(contracts)))
 		}
 	},
 }
