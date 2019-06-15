@@ -69,6 +69,8 @@ Optional Parameters:
 			fallthrough
 		case "geth":
 			fallthrough
+		case "ethclassic":
+			fallthrough
 		case "ethereum":
 			fallthrough
 		case "parity":
@@ -139,6 +141,8 @@ Optional Parameters:
 		case "pantheon":
 			fallthrough
 		case "geth":
+			fallthrough
+		case "ethclassic":
 			fallthrough
 		case "parity":
 			fallthrough
