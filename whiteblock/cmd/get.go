@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
 	"os"
 	"sort"
-	"fmt"
 )
 
 func GetNodes() ([]Node, error) {

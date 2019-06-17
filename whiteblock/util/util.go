@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func PartialCommand(cmd *cobra.Command, args []string) {
@@ -92,6 +93,17 @@ func CreateAuthNHeader() (string, error) {
 // JwtHTTPRequest is similar to HttpRequest, but it have the content-type set as application/json and it will
 // put the given jwt in the auth header
 func JwtHTTPRequest(method string, url string, bodyData string) (string, error) {
+	var res string
+	var err error
+	for i := 0; i < conf.HTTPRetries; i++ {
+		res, err = jwtHTTPRequest(method, url, bodyData)
+		if err == nil {
+			break
+		}
+	}
+	return res, err
+}
+func jwtHTTPRequest(method string, url string, bodyData string) (string, error) {
 	if bodyData == "test" {
 		return "{}", nil
 	}
@@ -108,7 +120,8 @@ func JwtHTTPRequest(method string, url string, bodyData string) (string, error) 
 	req.Header.Set("Authorization", auth)
 	//req.Header.Set("Host", ApiBaseURL)
 	req.Close = true
-	resp, err := http.DefaultClient.Do(req)
+	client := http.Client{Timeout: time.Duration(conf.HTTPTimeout) * time.Millisecond}
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}

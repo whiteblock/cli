@@ -8,8 +8,10 @@ import (
 // Config groups all of the global configuration parameters into
 // a single struct
 type Config struct {
-	APIURL    string `mapstructure:"apiURL"`
-	Verbosity string `mapstructure:"verbosity"`
+	APIURL      string `mapstructure:"apiURL"`
+	Verbosity   string `mapstructure:"verbosity"`
+	HTTPTimeout int64  `mapstructure:"httpTimeout"`
+	HTTPRetries int    `mapstructure:"httpRetries"`
 }
 
 var conf = new(Config)
@@ -17,10 +19,14 @@ var conf = new(Config)
 func setViperEnvBindings() {
 	viper.BindEnv("apiURL", "API_URL")
 	viper.BindEnv("verbosity", "VERBOSITY")
+	viper.BindEnv("httpTimeout", "HTTP_TIMEOUT")
+	viper.BindEnv("httpRetries", "HTTP_RETRIES")
 }
 func setViperDefaults() {
 	viper.SetDefault("apiURL", "https://api.whiteblock.io")
 	viper.SetDefault("verbosity", "ERROR")
+	viper.SetDefault("httpTimeout", 10000)
+	viper.SetDefault("httpRetries", 5)
 }
 
 func init() {
