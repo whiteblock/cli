@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
@@ -440,4 +441,17 @@ func handleDockerfile(cmd *cobra.Command, args []string, conf *Config) {
 	}
 	conf.Extras["prebuild"].(map[string]interface{})["build"] = true
 	conf.Extras["prebuild"].(map[string]interface{})["dockerfile"] = base64.StdEncoding.EncodeToString(data)
+}
+
+func handleStartLoggingAtBlock(cmd *cobra.Command, args []string, conf *Config) {
+	if !cmd.Flags().Changed("start-logging-at-block") { //Don't bother if not specified
+		return
+	}
+
+	startBlock, err := cmd.Flags().GetInt("start-logging-at-block")
+	if err != nil {
+		log.Trace("there was an error with the flag")
+	} else {
+		conf.Meta["startBlock"] = startBlock
+	}
 }

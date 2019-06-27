@@ -35,6 +35,7 @@ type Config struct {
 	Files        []map[string]string    `json:"files"`
 	Logs         []map[string]string    `json:"logs"`
 	Extras       map[string]interface{} `json:"extras"`
+	Meta         map[string]interface{} `json:"__meta"`
 }
 
 type Resources struct {
@@ -98,6 +99,7 @@ var buildCmd = &cobra.Command{
 
 		buildConf.Params = map[string]interface{}{}
 		buildConf.Extras = map[string]interface{}{}
+		buildConf.Meta = map[string]interface{}{}
 
 		if cpusFlag == "0" {
 			cpusFlag = ""
@@ -240,9 +242,6 @@ var buildCmd = &cobra.Command{
 			}
 		} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
 			//PARAMS
-
-			//scanner := bufio.NewScanner(os.Stdin)
-
 			for i := 0; i < len(options); i++ {
 				key := options[i][0]
 				key_type := options[i][1]
@@ -292,6 +291,7 @@ var buildCmd = &cobra.Command{
 		handleDockerAuthFlags(cmd, args, &buildConf)
 		handleSSHOptions(cmd, args, &buildConf)
 		handleDockerfile(cmd, args, &buildConf)
+		handleStartLoggingAtBlock(cmd, args, &buildConf)
 		//fmt.Printf("%+v\n", buildConf)
 		build(buildConf)
 		removeSmartContracts()
@@ -407,6 +407,9 @@ func init() {
 	buildCmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 	buildCmd.Flags().String("dockerfile", "", "docker auth username")
+	//META FLAGS
+	buildCmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
+
 	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
 	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd, buildFreezeCmd, buildUnfreezeCmd)
