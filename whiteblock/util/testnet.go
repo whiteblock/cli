@@ -5,6 +5,6 @@ func ReadTestnetStore(name string, out interface{}) error {
 }
 
 func WriteTestnetStore(name string, in interface{}) error {
-	_, err := JsonRpcCall("set_extra", []interface{}{in})
+	_, err := JsonRpcCall("set_extra", []interface{}{name, in})
 	return err
 }
