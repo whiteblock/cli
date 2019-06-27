@@ -242,7 +242,7 @@ Output: Deployed contract address
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 2, 2)
 		//assertions for sanity
-		res, err := jsonRpcCall("get_block_number", []string{})
+		res, err := util.JsonRpcCall("get_block_number", []string{})
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -326,7 +326,7 @@ Params: The transaction hash
 Response: JSON representation of the transaction receipt.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		jsonRpcCallAndPrint("eth::get_transaction_receipt", args)
+		util.JsonRpcCallAndPrint("eth::get_transaction_receipt", args)
 	},
 }
 
@@ -339,7 +339,7 @@ Get the current hash rate per node
 Response: The hash rate of a single node in the network`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
-		jsonRpcCallAndPrint("eth::get_hash_rate", []string{})
+		util.JsonRpcCallAndPrint("eth::get_hash_rate", []string{})
 	},
 }
 
@@ -359,7 +359,7 @@ Response: JSON object of transaction data`,
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		jsonRpcCallAndPrint("eth::get_recent_sent_tx", []interface{}{num})
+		util.JsonRpcCallAndPrint("eth::get_recent_sent_tx", []interface{}{num})
 	},
 }
 
@@ -376,7 +376,7 @@ Params: The sender account, a block number
 Response: The transaction count`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd,args, 1, 2)
-		jsonRpcCallAndPrint("eth::get_transaction_count", args)
+		util.JsonRpcCallAndPrint("eth::get_transaction_count", args)
 	},
 }
 
@@ -392,7 +392,7 @@ Params: The transaction hash
 Response: JSON representation of the transaction.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd,args, 1, 1)
-		jsonRpcCallAndPrint("eth::get_transaction", args)
+		util.JsonRpcCallAndPrint("eth::get_transaction", args)
 	},
 }
 */

@@ -23,7 +23,7 @@ Params: The node to get info from
 Response: eos blockchain state info`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
-		jsonRpcCallAndPrint("eos::get_info", args)
+		util.JsonRpcCallAndPrint("eos::get_info", args)
 	},
 }
 

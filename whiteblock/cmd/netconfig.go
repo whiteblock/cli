@@ -65,7 +65,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 			netInfo,
 		}
 
-		jsonRpcCallAndPrint("netem", networkConf)
+		util.JsonRpcCallAndPrint("netem", networkConf)
 	},
 }
 
@@ -105,7 +105,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 			netInfo,
 		}
 
-		jsonRpcCallAndPrint("netem_all", networkConf)
+		util.JsonRpcCallAndPrint("netem_all", networkConf)
 	},
 }
 
@@ -124,7 +124,7 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 			util.PrintStringError("No previous build found")
 			os.Exit(1)
 		}
-		jsonRpcCallAndPrint("netem_delete", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("netem_delete", []interface{}{testnetId})
 	},
 }
 
@@ -143,7 +143,7 @@ Netconfig get will fetch the current network conditions
 			util.PrintStringError("No previous build found")
 			os.Exit(1)
 		}
-		jsonRpcCallAndPrint("netem_get", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("netem_get", []interface{}{testnetId})
 	},
 }
 
@@ -166,7 +166,7 @@ Get a json array of the connections which are blocked.
 		if len(args) == 1 {
 			outArgs = append(outArgs, args[0])
 		}
-		jsonRpcCallAndPrint("get_outages", outArgs)
+		util.JsonRpcCallAndPrint("get_outages", outArgs)
 	},
 }
 
@@ -187,7 +187,7 @@ var netconfigGetPartitionsCmd = &cobra.Command{
 		spinner.SetText("Fetching the network partitions")
 		spinner.Run(100)
 		defer spinner.Kill()*/
-		jsonRpcCallAndPrint("get_partitions", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("get_partitions", []interface{}{testnetId})
 	},
 }
 
@@ -214,7 +214,7 @@ Allow the given pair of nodes to connect
 		if err != nil {
 			util.InvalidInteger("node2", args[1], true)
 		}
-		jsonRpcCallAndPrint("remove_outage", []interface{}{testnetId, node1, node2})
+		util.JsonRpcCallAndPrint("remove_outage", []interface{}{testnetId, node1, node2})
 	},
 }
 
@@ -241,7 +241,7 @@ Prevent the given pair of nodes from connecting
 		if err != nil {
 			util.InvalidInteger("node2", args[1], true)
 		}
-		jsonRpcCallAndPrint("make_outage", []interface{}{testnetId, node1, node2})
+		util.JsonRpcCallAndPrint("make_outage", []interface{}{testnetId, node1, node2})
 	},
 }
 
@@ -272,7 +272,7 @@ Partition the given nodes from the rest of the network
 		spinner.SetText("Partition the network")
 		spinner.Run(100)
 		defer spinner.Kill()*/
-		jsonRpcCallAndPrint("partition_outage", []interface{}{testnetId, nodes})
+		util.JsonRpcCallAndPrint("partition_outage", []interface{}{testnetId, nodes})
 	},
 }
 
@@ -295,7 +295,7 @@ Remove any outages and allow connections between all nodes
 		spinner.SetText("Putting the network back together")
 		spinner.Run(100)
 		defer spinner.Kill()*/
-		jsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetId})
 	},
 }
 

@@ -22,7 +22,7 @@ var signalCmd = &cobra.Command{
 			signal = args[1]
 		}
 
-		jsonRpcCallAndPrint("signal_node", []interface{}{testnetID, args[0], signal})
+		util.JsonRpcCallAndPrint("signal_node", []interface{}{testnetID, args[0], signal})
 	},
 }
 

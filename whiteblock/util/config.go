@@ -3,15 +3,18 @@ package util
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
 )
 
 // Config groups all of the global configuration parameters into
 // a single struct
 type Config struct {
-	APIURL      string `mapstructure:"apiURL"`
-	Verbosity   string `mapstructure:"verbosity"`
-	HTTPTimeout int64  `mapstructure:"httpTimeout"`
-	HTTPRetries int    `mapstructure:"httpRetries"`
+	APIURL         string `mapstructure:"apiURL"`
+	Verbosity      string `mapstructure:"verbosity"`
+	HTTPTimeout    int64  `mapstructure:"httpTimeout"`
+	HTTPRetries    int    `mapstructure:"httpRetries"`
+	StoreDirectory string `mapstructure:"storeDirectory"`
+	ServerAddr     string `mapstructure:"serverAddr"`
 }
 
 var conf = new(Config)
@@ -21,12 +24,16 @@ func setViperEnvBindings() {
 	viper.BindEnv("verbosity", "VERBOSITY")
 	viper.BindEnv("httpTimeout", "HTTP_TIMEOUT")
 	viper.BindEnv("httpRetries", "HTTP_RETRIES")
+	viper.BindEnv("storeDirectory", "STORE_DIRECTORY")
+	viper.BindEnv("serverAddr", "SERVER_ADDR")
 }
 func setViperDefaults() {
 	viper.SetDefault("apiURL", "https://api.whiteblock.io")
 	viper.SetDefault("verbosity", "ERROR")
 	viper.SetDefault("httpTimeout", 10000)
 	viper.SetDefault("httpRetries", 5)
+	viper.SetDefault("storeDirectory", os.Getenv("HOME")+"/.config/whiteblock/cli/")
+	viper.SetDefault("serverAddr", "localhost:5000")
 }
 
 func init() {

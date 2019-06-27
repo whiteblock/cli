@@ -24,7 +24,7 @@ This command will read from a file to run a test.
 			util.PrintErrorFatal(err)
 		}
 
-		fmt.Println(prettyp(string(b)))
+		fmt.Println(util.Prettyp(string(b)))
 
 		var cont map[string]interface{}
 		err = json.Unmarshal(b, &cont)
@@ -37,14 +37,14 @@ This command will read from a file to run a test.
 		fmt.Println(cont["rpc"])
 		fmt.Println(cont["tests"])
 
-		jsonRpcCallAndPrint("add_commands", cont["rpc"])
-		res, err := jsonRpcCall("build", cont["build"])
+		util.JsonRpcCallAndPrint("add_commands", cont["rpc"])
+		res, err := util.JsonRpcCall("build", cont["build"])
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 		buildListener(res.(string))
-		jsonRpcCallAndPrint("netem", cont["netconfig"])
-		jsonRpcCallAndPrint("run_tests", cont["tests"])
+		util.JsonRpcCallAndPrint("netem", cont["netconfig"])
+		util.JsonRpcCallAndPrint("run_tests", cont["tests"])
 	},
 }
 

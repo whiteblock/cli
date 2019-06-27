@@ -27,7 +27,7 @@ func getPreviousBuild() (Config, error) {
 		return Config{}, err
 	}
 
-	prevBuild, err := jsonRpcCall("get_build", []string{buildId})
+	prevBuild, err := util.JsonRpcCall("get_build", []string{buildId})
 	if err != nil {
 		return Config{}, err
 	}
@@ -48,7 +48,7 @@ func fetchPreviousBuild() (Config, error) {
 		return Config{}, err
 	}
 
-	prevBuild, err := jsonRpcCall("get_last_build", []string{buildId})
+	prevBuild, err := util.JsonRpcCall("get_last_build", []string{buildId})
 	if err != nil {
 		return Config{}, err
 	}
@@ -75,7 +75,7 @@ func hasParam(params [][]string, param string) bool {
 func fetchParams(blockchain string) ([][]string, error) {
 	//Handle the ugly conversions, in a safe manner
 	badFmtErr := fmt.Errorf("unexpected format for params")
-	rawOptions, err := jsonRpcCall("get_params", []string{blockchain})
+	rawOptions, err := util.JsonRpcCall("get_params", []string{blockchain})
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func fetchParams(blockchain string) ([][]string, error) {
 
 func getServer() []int {
 	idList := make([]int, 0)
-	res, err := jsonRpcCall("get_servers", []string{})
+	res, err := util.JsonRpcCall("get_servers", []string{})
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}

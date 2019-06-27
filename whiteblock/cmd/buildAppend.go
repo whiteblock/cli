@@ -103,7 +103,7 @@ var buildAppendCmd = &cobra.Command{
 			util.PrintErrorFatal(err)
 		}
 		//fmt.Printf("%+v\n", buildConf)
-		_, err = jsonRpcCall("add_nodes", []interface{}{testnetID, buildConf})
+		_, err = util.JsonRpcCall("add_nodes", []interface{}{testnetID, buildConf})
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}

@@ -45,7 +45,7 @@ Response: stdout and stderr of the blockchain process
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			jsonRpcCallAndPrint("log", map[string]interface{}{
+			util.JsonRpcCallAndPrint("log", map[string]interface{}{
 				"testnetId": testNetId,
 				"node":      n,
 				"lines":     tailval,
@@ -130,7 +130,7 @@ var getLogAllCmd = &cobra.Command{
 			util.PrintErrorFatal(err)
 		}
 		for i := range nodes {
-			jsonRpcCallAndPrint("log", map[string]interface{}{
+			util.JsonRpcCallAndPrint("log", map[string]interface{}{
 				"testnetId": testNetId,
 				"node":      i,
 				"lines":     tailval,

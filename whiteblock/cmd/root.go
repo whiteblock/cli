@@ -11,10 +11,7 @@ import (
 	Globals
 */
 
-var (
-	serverAddr string
-	conf       = util.GetConfig()
-)
+var conf = util.GetConfig()
 
 var RootCmd = &cobra.Command{
 	Use:     "whiteblock",
@@ -45,7 +42,7 @@ var completionCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
+	//RootCmd.PersistentFlags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	RootCmd.AddCommand(completionCmd)
 	//Possibly update this on load.
 	if util.StoreExists("profile") {

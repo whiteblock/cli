@@ -19,7 +19,7 @@ var killCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		jsonRpcCallAndPrint("kill_node", []interface{}{testnetId, args[0]})
+		util.JsonRpcCallAndPrint("kill_node", []interface{}{testnetId, args[0]})
 	},
 }
 

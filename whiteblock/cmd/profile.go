@@ -110,7 +110,6 @@ func LoadBiomeAddress() error {
 			return fmt.Errorf("Could not find biome")
 		}
 	}
-	serverAddr = biome["host"].(string) + ":5001"
-	//fmt.Println(serverAddr)
+	conf.ServerAddr = biome["host"].(string) + ":5001"
 	return nil
 }

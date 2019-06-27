@@ -71,7 +71,7 @@ var autoCmd = &cobra.Command{
 			}
 		}
 
-		jsonRpcCallAndPrint("setup_load", []interface{}{map[string]interface{}{
+		util.JsonRpcCallAndPrint("setup_load", []interface{}{map[string]interface{}{
 			"node": node,
 			"name": fmt.Sprintf("node%d:%s", node, args[1]),
 			"settings": map[string]interface{}{
@@ -101,9 +101,9 @@ Kill an auto routine.
 		}
 		if forced {
 			util.CheckArguments(cmd, args, 1, 1)
-			jsonRpcCallAndPrint("state::force_stop_sub_routine", []interface{}{args[0]})
+			util.JsonRpcCallAndPrint("state::force_stop_sub_routine", []interface{}{args[0]})
 		} else {
-			jsonRpcCallAndPrint("state::kill_sub_routines", args)
+			util.JsonRpcCallAndPrint("state::kill_sub_routines", args)
 		}
 	},
 }
@@ -115,7 +115,7 @@ var autoCleanCmd = &cobra.Command{
 clean a stoped auto routine
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("state::clean_sub_routines", args)
+		util.JsonRpcCallAndPrint("state::clean_sub_routines", args)
 	},
 }
 
@@ -127,7 +127,7 @@ Gracefully stops and removes all of the currently running auto routines.
 Most users do not need to call this as it happens automatically on the next build.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("state::purge_all_sub_routines", args)
+		util.JsonRpcCallAndPrint("state::purge_all_sub_routines", args)
 	},
 }
 
@@ -137,7 +137,7 @@ var getAutoCmd = &cobra.Command{
 	Short:   "Check auto QPS",
 	Long:    "Get the QPS of the currently running automated queries",
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("state::sub_routines", []string{})
+		util.JsonRpcCallAndPrint("state::sub_routines", []string{})
 	},
 }
 
@@ -148,16 +148,16 @@ var getAutoErrorsCmd = &cobra.Command{
 	Long:    "Get the most recent error messages",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			jsonRpcCallAndPrint("state::all_sub_routines_errors", []string{})
+			util.JsonRpcCallAndPrint("state::all_sub_routines_errors", []string{})
 			return
 		}
-		jsonRpcCallAndPrint("state::sub_routine_errors", args)
+		util.JsonRpcCallAndPrint("state::sub_routine_errors", args)
 
 	},
 }
 
 func createAutoGraph() ([]ui.Drawable, error) {
-	res, err := jsonRpcCall("state::sub_routines_stats", []string{})
+	res, err := util.JsonRpcCall("state::sub_routines_stats", []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ var getAutoDetailedCmd = &cobra.Command{
 			util.PrintErrorFatal(err)
 		}
 		if !graphIt {
-			jsonRpcCallAndPrint("state::sub_routines_stats", []string{})
+			util.JsonRpcCallAndPrint("state::sub_routines_stats", []string{})
 			return
 		}
 		if err = ui.Init(); err != nil {

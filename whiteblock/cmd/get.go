@@ -16,7 +16,7 @@ func GetNodes() ([]Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := jsonRpcCall("nodes", []string{testnetId})
+	res, err := util.JsonRpcCall("nodes", []string{testnetId})
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ var getServerCmd = &cobra.Command{
 	Short:   "Get server information.",
 	Long:    "\nServer will output server information.\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("get_servers", []string{})
+		util.JsonRpcCallAndPrint("get_servers", []string{})
 	},
 }
 
@@ -75,7 +75,7 @@ var getBuildCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Println(prettypi(prevBuild))
+		fmt.Println(util.Prettypi(prevBuild))
 	},
 }
 
@@ -87,10 +87,10 @@ var getSupportedCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var blockchains []string
-		jsonRpcCallP("get_supported_blockchains", []string{}, &blockchains)
+		util.JsonRpcCallP("get_supported_blockchains", []string{}, &blockchains)
 		sortedBlockchains := sort.StringSlice(blockchains)
 		sortedBlockchains.Sort()
-		fmt.Println(prettypi([]string(sortedBlockchains)))
+		fmt.Println(util.Prettypi([]string(sortedBlockchains)))
 	},
 }
 
@@ -110,10 +110,10 @@ var getNodesCmd = &cobra.Command{
 			util.PrintErrorFatal(err)
 		}
 		if all {
-			jsonRpcCallAndPrint("status_nodes", []string{testnetID})
+			util.JsonRpcCallAndPrint("status_nodes", []string{testnetID})
 			return
 		}
-		res, err := jsonRpcCall("status_nodes", []string{testnetID})
+		res, err := util.JsonRpcCall("status_nodes", []string{testnetID})
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -125,7 +125,7 @@ var getNodesCmd = &cobra.Command{
 				out = append(out, rawNode)
 			}
 		}
-		fmt.Println(prettypi(out))
+		fmt.Println(util.Prettypi(out))
 	},
 }
 
@@ -139,8 +139,8 @@ Response: true or false, on whether or not a test is running; The name of the te
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
-		jsonRpcCallAndPrint("state::is_running", []string{})
-		jsonRpcCallAndPrint("state::what_is_running", []string{})
+		util.JsonRpcCallAndPrint("state::is_running", []string{})
+		util.JsonRpcCallAndPrint("state::what_is_running", []string{})
 	},
 }
 
@@ -155,7 +155,7 @@ Response: The params as a list of key value params, of name and type respectivel
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		jsonRpcCallAndPrint("get_defaults", args)
+		util.JsonRpcCallAndPrint("get_defaults", args)
 	},
 }
 
@@ -173,7 +173,7 @@ Response: The resoures as a list of key value params, of name and type respectiv
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 2)
-		jsonRpcCallAndPrint("get_resources", args)
+		util.JsonRpcCallAndPrint("get_resources", args)
 	},
 }
 
@@ -200,7 +200,7 @@ Response: JSON representation of network statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 2, 2)
-		jsonRpcCallAndPrint("stats", map[string]int64{
+		util.JsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  util.CheckAndConvertInt64(args[0], "start unix timestamp"),
 			"endTime":    util.CheckAndConvertInt64(args[1], "end unix timestamp"),
 			"startBlock": 0,
@@ -219,7 +219,7 @@ Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 2, 2)
-		jsonRpcCallAndPrint("stats", map[string]int64{
+		util.JsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
 			"startBlock": util.CheckAndConvertInt64(args[0], "start block number"),
@@ -238,7 +238,7 @@ Response: JSON representation of statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		jsonRpcCallAndPrint("stats", map[string]int64{
+		util.JsonRpcCallAndPrint("stats", map[string]int64{
 			"startTime":  0,
 			"endTime":    0,
 			"startBlock": util.CheckAndConvertInt64(args[0], "blocks") * -1, //Negative number signals past
@@ -256,7 +256,7 @@ Stats all will allow the user to get all the statistics regarding the network.
 Response: JSON representation of network statistics
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("all_stats", []string{})
+		util.JsonRpcCallAndPrint("all_stats", []string{})
 	},
 }
 
@@ -273,7 +273,7 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 		util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
 		os.Exit(1)
 	}
-	/*res, err := jsonRpcCall("get_block_number", []string{})
+	/*res, err := util.JsonRpcCall("get_block_number", []string{})
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
@@ -285,14 +285,14 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}*/
 
-	res, err := jsonRpcCall("get_block", args)
+	res, err := util.JsonRpcCall("get_block", args)
 	if err != nil { //try a few nodes
 		nodes, er := GetNodes()
 		if er != nil {
 			util.PrintErrorFatal(er)
 		}
 		for i := range nodes {
-			res, err = jsonRpcCall("get_block", []interface{}{args[0], i})
+			res, err = util.JsonRpcCall("get_block", []interface{}{args[0], i})
 			if err == nil {
 				break
 			}
@@ -301,7 +301,7 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	cmd.Println(prettypi(res))
+	cmd.Println(util.Prettypi(res))
 }
 
 var getBlockCmd = &cobra.Command{
@@ -319,7 +319,7 @@ Gets the most recent block number that had been added to the blockchain.
 Response: block number
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("get_block_number", []string{})
+		util.JsonRpcCallAndPrint("get_block_number", []string{})
 	},
 }
 
@@ -352,7 +352,7 @@ var getTxRecentCmd = &cobra.Command{
 			num = util.CheckAndConvertInt(args[0], "number of transactions")
 		}
 
-		jsonRpcCallAndPrint("state::get_recent_tx", []interface{}{num})
+		util.JsonRpcCallAndPrint("state::get_recent_tx", []interface{}{num})
 	},
 }
 
@@ -367,7 +367,7 @@ Response: JSON representation of the transaction.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		jsonRpcCallAndPrint("get_transaction", args)
+		util.JsonRpcCallAndPrint("get_transaction", args)
 	},
 }
 
@@ -382,7 +382,7 @@ Response: JSON representation of the transaction receipt.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		jsonRpcCallAndPrint("get_transaction_receipt", args)
+		util.JsonRpcCallAndPrint("get_transaction_receipt", args)
 	},
 }
 
@@ -391,7 +391,7 @@ var getAccountCmd = &cobra.Command{
 	Use:     "account",
 	Short:   "Get account information",
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("state::get", []string{"accounts"})
+		util.JsonRpcCallAndPrint("state::get", []string{"accounts"})
 	},
 }
 
@@ -405,7 +405,7 @@ Gets the account information relevant to the currently connected blockchain.
 Response: JSON representation of the accounts information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint("accounts_status", []string{})
+		util.JsonRpcCallAndPrint("accounts_status", []string{})
 	},
 }
 
@@ -429,7 +429,7 @@ Response: JSON representation of the contract information.
 				" Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
 			os.Exit(1)
 		} else {
-			fmt.Println(prettyp(string(contracts)))
+			fmt.Println(util.Prettyp(string(contracts)))
 		}
 	},
 }

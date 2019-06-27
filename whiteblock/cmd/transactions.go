@@ -91,7 +91,7 @@ Optional Parameters:
 		default:
 			util.ClientNotSupported(previousBuild.Blockchain)
 		}
-		jsonRpcCallAndPrint(command, params)
+		util.JsonRpcCallAndPrint(command, params)
 	},
 }
 
@@ -171,7 +171,7 @@ Optional Parameters:
 		default:
 			util.ClientNotSupported(previousBuild.Blockchain)
 		}
-		jsonRpcCallAndPrint("run_constant_tps", params)
+		util.JsonRpcCallAndPrint("run_constant_tps", params)
 	},
 }
 
@@ -218,7 +218,7 @@ Optional Parameters:
 		default:
 			util.ClientNotSupported(previousBuild.Blockchain)
 		}
-		jsonRpcCallAndPrint("run_burst_tx", params)
+		util.JsonRpcCallAndPrint("run_burst_tx", params)
 	},
 }
 
@@ -231,7 +231,7 @@ The user must specify the blockchain flag as well as any other flags that will b
 Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		res, err := jsonRpcCall("state::kill", []string{})
+		res, err := util.JsonRpcCall("state::kill", []string{})
 		if res != nil && res.(float64) == 0 && err == nil {
 			fmt.Println("Transactions stopped successfully")
 		} else {

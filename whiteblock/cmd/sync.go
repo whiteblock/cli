@@ -15,7 +15,7 @@ var syncCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		res, err := jsonRpcCall("get_last_build", []interface{}{})
+		res, err := util.JsonRpcCall("get_last_build", []interface{}{})
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}

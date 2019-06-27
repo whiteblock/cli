@@ -49,7 +49,7 @@ var showConfCmd = &cobra.Command{
 			fmt.Println("No configuration file could be found. One will be automatically generated once a successful build has been built. Please refer to the command: 'whiteblock build -h' for help")
 			return
 		}
-		fmt.Println(prettyp(string(b)))
+		fmt.Println(util.Prettyp(string(b)))
 	},
 }
 

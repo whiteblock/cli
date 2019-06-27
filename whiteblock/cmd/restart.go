@@ -17,7 +17,7 @@ Kill a node by sending SIGINT and then re-run the original command used to run i
 			util.PrintErrorFatal(err)
 		}
 
-		jsonRpcCallAndPrint("restart_node", []interface{}{testnetId, args[0]})
+		util.JsonRpcCallAndPrint("restart_node", []interface{}{testnetId, args[0]})
 	},
 }
 

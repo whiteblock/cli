@@ -3,11 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/rpc/v2/json2"
 	"github.com/graarh/golang-socketio"
-	log "github.com/sirupsen/logrus"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -22,89 +19,6 @@ type BuildStatus struct {
 	Frozen   bool              `json:"frozen"`
 }
 
-func jsonRpcCallAndPrint(method string, params interface{}) {
-	reply, err := jsonRpcCall(method, params)
-	switch reply.(type) {
-	case string:
-		_, noPretty := os.LookupEnv("NO_PRETTY")
-		if noPretty {
-			fmt.Println(reply.(string))
-		} else {
-			fmt.Printf("\033[97m%s\033[0m\n", reply.(string))
-		}
-
-		return
-	}
-
-	if err != nil {
-		jsonError, ok := err.(*json2.Error)
-		if ok && jsonError.Data != nil {
-			res, err := json.Marshal(jsonError.Data)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-			util.PrintStringError(string(res))
-			os.Exit(1)
-		} else {
-			util.PrintErrorFatal(err)
-		}
-	}
-	fmt.Println(prettypi(reply))
-}
-func jsonRpcCallP(method string, params interface{}, out interface{}) error {
-	res, err := jsonRpcCall(method, params)
-	if err != nil {
-		return err
-	}
-	tmp, err := json.Marshal(res)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(tmp, out)
-}
-func jsonRpcCall(method string, params interface{}) (interface{}, error) {
-	//log.Println("URL IS "+url)
-	jrpc, err := json2.EncodeClientRequest(method, params)
-	if err != nil {
-		log.Warn(err)
-		return nil, err
-	}
-	body := strings.NewReader(string(jrpc))
-	req, err := func() (*http.Request, error) {
-		if strings.HasSuffix(serverAddr, "5000") { //5000 is http
-			return http.NewRequest("POST", fmt.Sprintf("http://%s/rpc", serverAddr), body)
-		} else { //5001 is https
-			return http.NewRequest("POST", fmt.Sprintf("https://%s/rpc", serverAddr), body)
-		}
-
-	}()
-	if err != nil {
-		log.Warn(err)
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	auth, err := util.CreateAuthNHeader()
-	if err != nil {
-		log.Println(err)
-	} else {
-		req.Header.Set("Authorization", auth) //If there is an error, dont send this header for now
-	}
-
-	req.Close = true
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	var out interface{}
-	err = json2.DecodeClientResponse(resp.Body, &out)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func buildListener(testnetId string) {
 	sigChan := make(chan os.Signal, 1)
 	pauseChan := make(chan os.Signal, 1)
@@ -114,7 +28,7 @@ func buildListener(testnetId string) {
 	go func() {
 		<-sigChan
 		defer util.DeleteStore(".in_progress_build_id")
-		res, err := jsonRpcCall("stop_build", []string{testnetId})
+		res, err := util.JsonRpcCall("stop_build", []string{testnetId})
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -135,7 +49,7 @@ func buildListener(testnetId string) {
 			sigId := <-pauseChan
 			if sigId == syscall.SIGTSTP && !paused {
 				paused = true
-				res, err := jsonRpcCall("freeze_build", []string{testnetId})
+				res, err := util.JsonRpcCall("freeze_build", []string{testnetId})
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
@@ -145,7 +59,7 @@ func buildListener(testnetId string) {
 				signal.Notify(pauseChan, syscall.SIGTSTP)
 			} else if sigId == syscall.SIGCONT && paused {
 				paused = false
-				res, err := jsonRpcCall("unfreeze_build", []string{testnetId})
+				res, err := util.JsonRpcCall("unfreeze_build", []string{testnetId})
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
@@ -157,13 +71,13 @@ func buildListener(testnetId string) {
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
 	c, err := func() (*gosocketio.Client, error) {
-		if strings.HasSuffix(serverAddr, "5000") { //5000 is http
+		if strings.HasSuffix(conf.ServerAddr, "5000") { //5000 is http
 			return gosocketio.Dial(
-				"ws://"+serverAddr+"/socket.io/?EIO=3&transport=websocket",
+				"ws://"+conf.ServerAddr+"/socket.io/?EIO=3&transport=websocket",
 				GetDefaultWebsocketTransport())
 		} else { //5001 is https
 			return gosocketio.Dial(
-				"wss://"+serverAddr+"/socket.io/?EIO=3&transport=websocket",
+				"wss://"+conf.ServerAddr+"/socket.io/?EIO=3&transport=websocket",
 				GetDefaultWebsocketTransport())
 		}
 	}()

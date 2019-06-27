@@ -1,4 +1,4 @@
-package cmd
+package util
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func prettyp(s string) string {
+func Prettyp(s string) string {
 	_, noPretty := os.LookupEnv("NO_PRETTY")
 	if noPretty {
 		return s
@@ -25,7 +25,7 @@ func prettyp(s string) string {
 	return string(pps)
 }
 
-func prettypi(i interface{}) string {
+func Prettypi(i interface{}) string {
 	_, noPretty := os.LookupEnv("NO_PRETTY")
 	if noPretty {
 		out, _ := json.Marshal(i)

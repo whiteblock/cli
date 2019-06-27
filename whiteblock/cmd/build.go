@@ -53,7 +53,7 @@ func buildAttach(buildId string) {
 }
 
 func build(buildConfig interface{}) {
-	buildReply, err := jsonRpcCall("build", buildConfig)
+	buildReply, err := util.JsonRpcCall("build", buildConfig)
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
@@ -326,7 +326,7 @@ var previousCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Println(prettypi(prevBuild))
+		fmt.Println(util.Prettypi(prevBuild))
 		if previousYesAll || util.YesNoPrompt("Build from previous?") {
 			fmt.Println("building from previous configuration")
 			build(prevBuild)
@@ -349,7 +349,7 @@ var buildStopCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		defer util.DeleteStore(".in_progress_build_id")
-		jsonRpcCallAndPrint("stop_build", []string{string(buildId)})
+		util.JsonRpcCallAndPrint("stop_build", []string{string(buildId)})
 	},
 }
 
@@ -364,7 +364,7 @@ var buildFreezeCmd = &cobra.Command{
 			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
-		jsonRpcCallAndPrint("freeze_build", []string{string(buildId)})
+		util.JsonRpcCallAndPrint("freeze_build", []string{string(buildId)})
 	},
 }
 
@@ -379,7 +379,7 @@ var buildUnfreezeCmd = &cobra.Command{
 			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
-		jsonRpcCallAndPrint("unfreeze_build", []string{string(buildId)})
+		util.JsonRpcCallAndPrint("unfreeze_build", []string{string(buildId)})
 		buildAttach(string(buildId))
 	},
 }

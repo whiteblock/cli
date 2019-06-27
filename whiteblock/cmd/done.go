@@ -18,7 +18,7 @@ var doneCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		jsonRpcCallAndPrint("delete_testnet", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("delete_testnet", []interface{}{testnetId})
 	},
 }
 

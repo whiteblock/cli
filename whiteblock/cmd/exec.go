@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/util"
 )
 
 var execCmd = &cobra.Command{
@@ -10,7 +11,7 @@ var execCmd = &cobra.Command{
 	Short:  "Execute a function call",
 	Long:   "\nMainly for internal and debug purposes.\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonRpcCallAndPrint(args[0], args[1:])
+		util.JsonRpcCallAndPrint(args[0], args[1:])
 	},
 }
 

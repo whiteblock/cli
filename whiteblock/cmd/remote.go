@@ -9,7 +9,7 @@ var remoteCmd = &cobra.Command{
 	Short:   "Remove all auth stored",
 	Long:    "\nDeletes all stored auth\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Printf("You are connected to %s\n", serverAddr)
+		cmd.Printf("You are connected to %s\n", conf.ServerAddr)
 	},
 }
 
