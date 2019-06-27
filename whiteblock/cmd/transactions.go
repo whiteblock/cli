@@ -73,6 +73,8 @@ Optional Parameters:
 			fallthrough
 		case "ethereum":
 			fallthrough
+		case "multigeth":
+			fallthrough
 		case "parity":
 			if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
 				fmt.Println("Required flags were not provided. Please input the required flags.")
@@ -145,6 +147,8 @@ Optional Parameters:
 		case "ethclassic":
 			fallthrough
 		case "parity":
+			fallthrough
+		case "multigeth":
 			fallthrough
 		case "ethereum":
 			//error handling for invalid flags
