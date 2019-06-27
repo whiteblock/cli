@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
+	"strconv"
 )
 
 var (
@@ -57,10 +57,10 @@ Optional Parameters:
 		command := ""
 		params := []string{}
 
-		previousBuild, err := getPreviousBuild()
+		/*previousBuild, err := getPreviousBuild()
 		if err != nil {
 			util.PrintErrorFatal(err)
-		}
+		}*/
 
 		if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
 			fmt.Println("Required flags were not provided. Please input the required flags.")
@@ -70,19 +70,19 @@ Optional Parameters:
 		command = "eth::send_transaction"
 		params = []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
 		/*
-		switch previousBuild.Blockchain {
-		case "eos":
-			if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
-				fmt.Println("Required flags were not provided. Please input the required flags.")
-				return
+			switch previousBuild.Blockchain {
+			case "eos":
+				if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
+					fmt.Println("Required flags were not provided. Please input the required flags.")
+					return
+				}
+				command = "eos::send_transaction"
+				params = []string{nodeFlag, fromFlag, toFlag, strconv.Itoa(valueFlag)}
+			default:
+				util.ClientNotSupported(previousBuild.Blockchain)
 			}
-			command = "eos::send_transaction"
-			params = []string{nodeFlag, fromFlag, toFlag, strconv.Itoa(valueFlag)}
-		default:
-			util.ClientNotSupported(previousBuild.Blockchain)
-		}
 		*/
-		jsonRpcCallAndPrint(command, params)
+		util.JsonRpcCallAndPrint(command, params)
 	},
 }
 
@@ -123,10 +123,10 @@ Optional Parameters:
 		}
 		params := []string{strconv.Itoa(tpsFlag)}
 
-		previousBuild, err := getPreviousBuild()
+		/*previousBuild, err := getPreviousBuild()
 		if err != nil {
 			util.PrintErrorFatal(err)
-		}
+		}*/
 
 		//error handling for invalid flags
 		if !(txSizeFlag == 0) {
@@ -141,20 +141,20 @@ Optional Parameters:
 			params = append(params, toFlag)
 		}
 		/*
-		case "eos":
-			//error handling for invalid flags
+			case "eos":
+				//error handling for invalid flags
 
-			if txSizeFlag >= 174 {
-				params = append(params, strconv.Itoa(txSizeFlag))
-			} else if txSizeFlag > 0 && txSizeFlag < 174 {
-				fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
-				os.Exit(1)
+				if txSizeFlag >= 174 {
+					params = append(params, strconv.Itoa(txSizeFlag))
+				} else if txSizeFlag > 0 && txSizeFlag < 174 {
+					fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
+					os.Exit(1)
+				}
+			default:
+				util.ClientNotSupported(previousBuild.Blockchain)
 			}
-		default:
-			util.ClientNotSupported(previousBuild.Blockchain)
-		}
 		*/
-		jsonRpcCallAndPrint("run_constant_tps", params)
+		util.JsonRpcCallAndPrint("run_constant_tps", params)
 	},
 }
 
@@ -201,7 +201,7 @@ Optional Parameters:
 		default:
 			util.ClientNotSupported(previousBuild.Blockchain)
 		}
-		jsonRpcCallAndPrint("run_burst_tx", params)
+		util.JsonRpcCallAndPrint("run_burst_tx", params)
 	},
 }
 
@@ -214,7 +214,7 @@ The user must specify the blockchain flag as well as any other flags that will b
 Stops the sending of transactions if transactions are currently being sent
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		res, err := jsonRpcCall("state::kill", []string{})
+		res, err := util.JsonRpcCall("state::kill", []string{})
 		if res != nil && res.(float64) == 0 && err == nil {
 			fmt.Println("Transactions stopped successfully")
 		} else {
