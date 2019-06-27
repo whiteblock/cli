@@ -42,6 +42,7 @@ var completionCmd = &cobra.Command{
 }
 
 func init() {
+	util.CheckLoad()
 	//RootCmd.PersistentFlags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	RootCmd.AddCommand(completionCmd)
 	//Possibly update this on load.

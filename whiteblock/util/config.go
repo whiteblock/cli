@@ -9,12 +9,14 @@ import (
 // Config groups all of the global configuration parameters into
 // a single struct
 type Config struct {
-	APIURL         string `mapstructure:"apiURL"`
-	Verbosity      string `mapstructure:"verbosity"`
-	HTTPTimeout    int64  `mapstructure:"httpTimeout"`
-	HTTPRetries    int    `mapstructure:"httpRetries"`
-	StoreDirectory string `mapstructure:"storeDirectory"`
-	ServerAddr     string `mapstructure:"serverAddr"`
+	APIURL            string  `mapstructure:"apiURL"`
+	Verbosity         string  `mapstructure:"verbosity"`
+	HTTPTimeout       int64   `mapstructure:"httpTimeout"`
+	HTTPRetries       int     `mapstructure:"httpRetries"`
+	StoreDirectory    string  `mapstructure:"storeDirectory"`
+	ServerAddr        string  `mapstructure:"serverAddr"`
+	CheckLoad         bool    `mapstructure:"checkLoad"`
+	LoadWarnThreshold float64 `mapstructure:"loadWarnThreshold"`
 }
 
 var conf = new(Config)
@@ -26,6 +28,8 @@ func setViperEnvBindings() {
 	viper.BindEnv("httpRetries", "HTTP_RETRIES")
 	viper.BindEnv("storeDirectory", "STORE_DIRECTORY")
 	viper.BindEnv("serverAddr", "SERVER_ADDR")
+	viper.BindEnv("checkLoad", "CHECK_LOAD")
+	viper.BindEnv("loadWarnThreshold", "LOAD_WARN_THRESHOLD")
 }
 func setViperDefaults() {
 	viper.SetDefault("apiURL", "https://api.whiteblock.io")
@@ -34,6 +38,8 @@ func setViperDefaults() {
 	viper.SetDefault("httpRetries", 5)
 	viper.SetDefault("storeDirectory", os.Getenv("HOME")+"/.config/whiteblock/cli/")
 	viper.SetDefault("serverAddr", "localhost:5000")
+	viper.SetDefault("checkLoad", false)
+	viper.SetDefault("loadWarnThreshold", 100)
 }
 
 func init() {

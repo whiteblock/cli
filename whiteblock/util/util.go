@@ -169,3 +169,33 @@ func UnrollStringSliceToMapIntString(slices []string, delim string) (map[int]str
 	}
 	return out, noDelimRes, nil
 }
+
+func CheckLoad() {
+	if !conf.CheckLoad {
+		return
+	}
+	rawData, err := ioutil.ReadFile("/proc/loadavg")
+	if err != nil {
+		return //Unable to get the load average
+	}
+	data := strings.Split(string(rawData), " ")
+	if len(data) < 5 {
+		return //Unexpected format
+	}
+	/*load1,err := strconv.ParseFloat(data[0], 64)
+	if err != nil {
+		return //Unable to get the load average
+	}*/
+	load5, err := strconv.ParseFloat(data[1], 64)
+	if err != nil {
+		return //Unable to get the load average
+	}
+	load15, err := strconv.ParseFloat(data[2], 64)
+	if err != nil {
+		return //Unable to get the load average
+	}
+
+	if load15 > conf.LoadWarnThreshold || load5 > conf.LoadWarnThreshold {
+		fmt.Println("Warning high cpu usage. Performance may become compromised")
+	}
+}
