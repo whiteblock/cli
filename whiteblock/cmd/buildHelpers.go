@@ -453,3 +453,47 @@ func handleStartLoggingAtBlock(cmd *cobra.Command, args []string, conf *Config) 
 		conf.Meta["startBlock"] = startBlock
 	}
 }
+
+func handleResources(cmd *cobra.Command, args []string, conf *Config) (givenCPU bool, givenMem bool) {
+	givenCPU = cmd.Flags().Changed("cpus")
+	givenMem = cmd.Flags().Changed("memory")
+
+	cpus, err := cmd.Flags().GetString("cpus")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	memory, err := cmd.Flags().GetString("memory")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	if cpus != "0" {
+		conf.Resources[0].Cpus = cpus
+	}
+	if memoryFlag != "0" {
+		conf.Resources[0].Memory = memory
+	}
+	return
+}
+
+func handlePortMapping(cmd *cobra.Command, args []string, conf *Config) {
+	if !cmd.Flags().Changed("expose-port-mapping") {
+		return
+	}
+	portMapping, err := cmd.Flags().GetStringToString("expose-port-mapping")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	firstResources := conf.Resources[0]
+
+	for conf.Nodes > len(conf.Resources) {
+		conf.Resources = append(conf.Resources, firstResources)
+	}
+	for node, portM := range portMapping {
+		nodeNum := util.CheckAndConvertInt(node, "name")
+		for nodeNum >= len(conf.Resources) {
+			conf.Resources = append(conf.Resources, firstResources)
+		}
+		conf.Resources[nodeNum].Ports = []string{portM}
+		log.WithFields(log.Fields{"node": node, "port": portM}).Debug("adding the port mapping")
+	}
+}

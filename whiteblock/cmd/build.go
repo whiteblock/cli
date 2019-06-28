@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"os"
@@ -39,8 +40,9 @@ type Config struct {
 }
 
 type Resources struct {
-	Cpus   string `json:"cpus"`
-	Memory string `json:"memory"`
+	Cpus   string   `json:"cpus"`
+	Memory string   `json:"memory"`
+	Ports  []string `json:"ports"`
 }
 
 func buildAttach(buildId string) {
@@ -84,8 +86,6 @@ var buildCmd = &cobra.Command{
 		buildConf, _ := getPreviousBuild() //Errors are ok with this.
 		blockchainEnabled := len(blockchainFlag) > 0
 		nodesEnabled := nodesFlag > 0
-		cpusEnabled := len(cpusFlag) != 0
-		memoryEnabled := len(memoryFlag) != 0
 
 		defaultCpus := ""
 		defaultMemory := ""
@@ -101,17 +101,7 @@ var buildCmd = &cobra.Command{
 		buildConf.Extras = map[string]interface{}{}
 		buildConf.Meta = map[string]interface{}{}
 
-		if cpusFlag == "0" {
-			cpusFlag = ""
-		} else if cpusEnabled {
-			buildConf.Resources[0].Cpus = cpusFlag
-		}
-
-		if memoryFlag == "0" {
-			memoryFlag = ""
-		} else if memoryEnabled {
-			buildConf.Resources[0].Memory = memoryFlag
-		}
+		cpusEnabled, memoryEnabled := handleResources(cmd, args, &buildConf)
 
 		buildOpt := []string{}
 		defOpt := []string{}
@@ -292,7 +282,8 @@ var buildCmd = &cobra.Command{
 		handleSSHOptions(cmd, args, &buildConf)
 		handleDockerfile(cmd, args, &buildConf)
 		handleStartLoggingAtBlock(cmd, args, &buildConf)
-		//fmt.Printf("%+v\n", buildConf)
+		handlePortMapping(cmd, args, &buildConf)
+		log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
 		build(buildConf)
 		removeSmartContracts()
 	},
@@ -407,6 +398,8 @@ func init() {
 	buildCmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
 	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 	buildCmd.Flags().String("dockerfile", "", "docker auth username")
+	buildCmd.Flags().StringToStringP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
+
 	//META FLAGS
 	buildCmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
 
