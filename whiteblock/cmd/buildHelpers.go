@@ -40,8 +40,7 @@ func getPreviousBuild() (Config, error) {
 	}
 
 	var out Config
-	err = json.Unmarshal(tmp, &out)
-	return out, err
+	return out, json.Unmarshal(tmp, &out)
 }
 
 func fetchPreviousBuild() (Config, error) {
@@ -61,8 +60,7 @@ func fetchPreviousBuild() (Config, error) {
 	}
 
 	var out Config
-	err = json.Unmarshal(tmp, &out)
-	return out, err
+	return out, json.Unmarshal(tmp, &out)
 }
 
 func hasParam(params [][]string, param string) bool {
