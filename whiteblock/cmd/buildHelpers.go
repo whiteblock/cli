@@ -17,7 +17,8 @@ import (
 func getPreviousBuildId() (string, error) {
 	buildId, err := util.ReadStore(".previous_build_id")
 	if err != nil || len(buildId) == 0 {
-		return "", fmt.Errorf("No previous build. Use build command to deploy a blockchain.")
+		return "", fmt.Errorf("No previous build. Use build command to deploy a blockchain, " +
+			"or run `whiteblock sync` if you already have a blockchain deployed.")
 	}
 	return string(buildId), nil
 }
@@ -319,8 +320,8 @@ func handleImageFlag(cmd *cobra.Command, args []string, conf *Config) {
 	}
 	imgDefault := ""
 	if len(potentialImage) == 1 {
-		fmt.Println("given default image")
 		imgDefault = potentialImage[0]
+		log.WithFields(log.Fields{"image": imgDefault}).Debug("given default image")
 	}
 	baseImage := getImage(conf.Blockchain, "stable", imgDefault)
 
@@ -329,10 +330,9 @@ func handleImageFlag(cmd *cobra.Command, args []string, conf *Config) {
 		conf.Images[i] = baseImage
 		image, exists := images[i]
 		if exists {
-			fmt.Println("exists")
+			log.WithFields(log.Fields{"image": image}).Trace("image exists")
 			conf.Images[i] = image
 		}
-		//fmt.Println(conf.Images[i])
 	}
 }
 
