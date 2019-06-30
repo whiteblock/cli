@@ -238,12 +238,24 @@ var exportCmd = &cobra.Command{
 	Long:   "Export stuff",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		spinner := Spinner{txt: "fetching the block and log data"}
+		/*spinner := Spinner{txt: "fetching the block and log data"}
 		spinner.Run(100)
-		defer spinner.Kill()
+		defer spinner.Kill()*/
+		local, err := cmd.Flags().GetBool("local")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		outputDir, err := cmd.Flags().GetString("dir")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		os.MkdirAll(outputDir, 0755)
+		if local {
+			fetchDataLocally(outputDir)
+			return
+		}
 
 		var testnetID string
-		var err error
 		if len(args) == 0 {
 			testnetID, err = getPreviousBuildId()
 			if err != nil {
@@ -253,7 +265,7 @@ var exportCmd = &cobra.Command{
 			testnetID = args[0]
 		}
 		nodes := []Node{}
-		sem := semaphore.NewWeighted(200)
+		sem := semaphore.NewWeighted(conf.MaxConns)
 		ep := fmt.Sprintf("%s/testnets/%s/nodes", conf.APIURL, testnetID)
 		res, err := util.JwtHTTPRequest("GET", ep, "")
 		if err != nil {
@@ -264,8 +276,8 @@ var exportCmd = &cobra.Command{
 			util.PrintErrorFatal(err)
 		}
 		for _, node := range nodes {
-			os.RemoveAll(fmt.Sprintf("./%s", node.ID))
-			os.MkdirAll(fmt.Sprintf("./%s", node.ID), 0755)
+			os.RemoveAll(fmt.Sprintf("%s/%s", outputDir, node.ID))
+			os.MkdirAll(fmt.Sprintf("%s/%s", outputDir, node.ID), 0755)
 		}
 		log.Trace("removed the files")
 		wg := sync.WaitGroup{}
@@ -307,7 +319,7 @@ var exportCmd = &cobra.Command{
 			files := []*os.File{}
 			for _, node := range nodes {
 
-				f, err := os.Create(fmt.Sprintf("./%s/blocks.json", node.ID))
+				f, err := os.Create(fmt.Sprintf("%s/%s/blocks.json", outputDir, node.ID))
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
@@ -359,6 +371,110 @@ var exportCmd = &cobra.Command{
 	},
 }
 
+func GrabManyBlocks(sem *semaphore.Weighted, start int, end int) ([]string, error) {
+	out := make([]string, end-start)
+	var outErr error
+	wg := sync.WaitGroup{}
+	ctx := context.TODO()
+
+	for i := start; i < end; i++ {
+		wg.Add(1)
+		sem.Acquire(ctx, 1)
+		go func(blck *string) {
+			sem.Release(1)
+			defer wg.Done()
+			data, err := util.JsonRpcCall("get_block", []interface{}{i})
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			block, err := json.Marshal(data)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			*blck = string(block)
+		}(&out[i-start])
+	}
+	wg.Wait()
+	return out, outErr
+}
+
+func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, dir string) {
+	os.RemoveAll(fmt.Sprintf("%s/%s", dir, node.ID))
+	os.MkdirAll(fmt.Sprintf("%s/%s", dir, node.ID), 0755)
+	fd, err := os.Create(fmt.Sprintf("%s/%s/blocks.json", dir, node.ID))
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	defer fd.Close()
+
+	diff := 100
+	for i := 1; i <= blockHeight; i += diff {
+		endPoint := i + diff
+		if endPoint > blockHeight {
+			endPoint = blockHeight
+		}
+		blocks, err := GrabManyBlocks(sem, i, endPoint)
+		if err != nil {
+			log.Error(err)
+			i -= diff
+			continue
+		}
+		appendBlocks(blocks, i == 1, endPoint == blockHeight, fd)
+	}
+}
+
+//only supports the main log and the block data
+func fetchDataLocally(dir string) {
+	sem := semaphore.NewWeighted(conf.MaxConns)
+	nodes, err := GetNodes()
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	blockHeights := make([]int, len(nodes))
+	for i := range nodes {
+		err := util.JsonRpcCallP("get_block_number", []interface{}{i}, &blockHeights[i])
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+	}
+	wg := sync.WaitGroup{}
+	/*testnetID, err := getPreviousBuildId()
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}*/
+	for i, blockHeight := range blockHeights {
+		wg.Add(1)
+		go func(blockHeight int, i int) {
+			defer wg.Done()
+			fetchBlockDataLocally(sem, nodes[i], blockHeight, dir)
+		}(blockHeight, i)
+		/*wg.Add(1)
+
+		go func(i int){
+			defer wg.Done()
+			res,err := util.JsonRpcCall("log", map[string]interface{}{
+				"testnetId": testnetID,
+				"node":      i,
+				"lines":     -1,
+			})
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			toWrite,err := json.Marshal(res)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			err = ioutil.WriteFile(fmt.Sprintf("%s/%s/output.log",dir, nodes[i].ID), toWrite, 0664)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+		}(i)*/
+	}
+	wg.Wait()
+}
+
 func init() {
+	exportCmd.Flags().Bool("local", false, "get data from the local nodes instead of the API")
+	exportCmd.Flags().String("dir", ".", "specify a custom output directory")
 	RootCmd.AddCommand(exportCmd)
 }

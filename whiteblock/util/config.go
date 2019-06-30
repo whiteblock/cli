@@ -17,6 +17,7 @@ type Config struct {
 	ServerAddr        string  `mapstructure:"serverAddr"`
 	CheckLoad         bool    `mapstructure:"checkLoad"`
 	LoadWarnThreshold float64 `mapstructure:"loadWarnThreshold"`
+	MaxConns          int64   `mapstructure:"maxConns"`
 }
 
 var conf = new(Config)
@@ -30,6 +31,7 @@ func setViperEnvBindings() {
 	viper.BindEnv("serverAddr", "SERVER_ADDR")
 	viper.BindEnv("checkLoad", "CHECK_LOAD")
 	viper.BindEnv("loadWarnThreshold", "LOAD_WARN_THRESHOLD")
+	viper.BindEnv("maxConns", "MAX_CONNS")
 }
 func setViperDefaults() {
 	viper.SetDefault("apiURL", "https://api.whiteblock.io")
@@ -40,6 +42,7 @@ func setViperDefaults() {
 	viper.SetDefault("serverAddr", "localhost:5000")
 	viper.SetDefault("checkLoad", false)
 	viper.SetDefault("loadWarnThreshold", 100)
+	viper.SetDefault("maxConns", 200)
 }
 
 func init() {
