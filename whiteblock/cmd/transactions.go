@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
@@ -116,44 +117,38 @@ Optional Parameters:
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if tpsFlag == 0 { //TPS will always be required
-			fmt.Println("No \"tpsFlag\" flag has been provided. Please input the tps flag with a value.")
+
+		if !cmd.Flags().Changed("tps") { //TPS will always be required
+			fmt.Println("No \"tps\" flag has been provided. Please input the tps flag with a value.")
 			cmd.Help()
 			return
 		}
-		params := []string{strconv.Itoa(tpsFlag)}
-
-		/*previousBuild, err := getPreviousBuild()
+		tps, err := cmd.Flags().GetInt("tps")
 		if err != nil {
 			util.PrintErrorFatal(err)
-		}*/
-
-		//error handling for invalid flags
-		if !(txSizeFlag == 0) {
-			fmt.Println("Invalid use of flag \"txSizeFlag\". This is not supported with Ethereum")
-			cmd.Help()
-			return
 		}
-
-		toEth := strconv.Itoa(valueFlag) + "000000000000000000"
+		params := []interface{}{strconv.Itoa(tps)}
+		//value parameter
+		value, err := cmd.Flags().GetInt("value")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		toEth := strconv.Itoa(value) + "000000000000000000"
 		params = append(params, toEth)
-		if len(toFlag) > 0 {
-			params = append(params, toFlag)
-		}
-		/*
-			case "eos":
-				//error handling for invalid flags
 
-				if txSizeFlag >= 174 {
-					params = append(params, strconv.Itoa(txSizeFlag))
-				} else if txSizeFlag > 0 && txSizeFlag < 174 {
-					fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
-					os.Exit(1)
-				}
-			default:
-				util.ClientNotSupported(previousBuild.Blockchain)
-			}
-		*/
+		size, err := cmd.Flags().GetInt("size")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params = append(params, size)
+		dest, err := cmd.Flags().GetString("destination")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		if len(dest) > 0 {
+			params = append(params, dest)
+		}
+		log.WithFields(log.Fields{"params": params}).Debug("Sending the request to start sending tx")
 		util.JsonRpcCallAndPrint("run_constant_tps", params)
 	},
 }
@@ -232,10 +227,10 @@ func init() {
 	sendSingleTxCmd.Flags().StringVarP(&gasPriceFlag, "gasprice", "p", "", "specify gas price for tx")
 	sendSingleTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
 
-	startStreamTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
-	startStreamTxCmd.Flags().IntVarP(&txSizeFlag, "size", "s", 0, "size of the transaction in bytes")
-	startStreamTxCmd.Flags().IntVarP(&tpsFlag, "tps", "t", 0, "transactions per second")
-	startStreamTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
+	startStreamTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
+	startStreamTxCmd.Flags().IntP("size", "s", 0, "size of the transaction in bytes")
+	startStreamTxCmd.Flags().IntP("tps", "t", 0, "transactions per second")
+	startStreamTxCmd.Flags().IntP("value", "v", -1, "amount to send in transaction")
 	startStreamTxCmd.MarkFlagRequired("tps")
 
 	startBurstTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
