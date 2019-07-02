@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	ui "github.com/whiteblock/termui"
-	"github.com/whiteblock/termui/widgets"
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"

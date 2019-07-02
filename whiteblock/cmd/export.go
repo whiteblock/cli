@@ -438,21 +438,21 @@ func fetchDataLocally(dir string) {
 		}
 	}
 	wg := sync.WaitGroup{}
-	/*testnetID, err := getPreviousBuildId()
+	testnetID, err := getPreviousBuildId()
 	if err != nil {
 		util.PrintErrorFatal(err)
-	}*/
+	}
 	for i, blockHeight := range blockHeights {
 		wg.Add(1)
 		go func(blockHeight int, i int) {
 			defer wg.Done()
 			fetchBlockDataLocally(sem, nodes[i], blockHeight, dir)
 		}(blockHeight, i)
-		/*wg.Add(1)
+		wg.Add(1)
 
-		go func(i int){
+		go func(i int) {
 			defer wg.Done()
-			res,err := util.JsonRpcCall("log", map[string]interface{}{
+			res, err := util.JsonRpcCall("log", map[string]interface{}{
 				"testnetId": testnetID,
 				"node":      i,
 				"lines":     -1,
@@ -460,15 +460,15 @@ func fetchDataLocally(dir string) {
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			toWrite,err := json.Marshal(res)
+			toWrite, err := json.Marshal(res)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			err = ioutil.WriteFile(fmt.Sprintf("%s/%s/output.log",dir, nodes[i].ID), toWrite, 0664)
+			err = ioutil.WriteFile(fmt.Sprintf("%s/%s/output.log", dir, nodes[i].ID), toWrite, 0664)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-		}(i)*/
+		}(i)
 	}
 	wg.Wait()
 }
