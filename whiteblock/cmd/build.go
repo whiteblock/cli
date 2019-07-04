@@ -89,14 +89,7 @@ var buildCmd = &cobra.Command{
 
 		defaultCpus := ""
 		defaultMemory := ""
-
-		if buildConf.Resources != nil && len(buildConf.Resources) > 0 {
-			defaultCpus = string(buildConf.Resources[0].Cpus)
-			defaultMemory = "" //string(buildConf.Resources[0].Memory)
-		} else if buildConf.Resources == nil {
-			buildConf.Resources = []Resources{Resources{}}
-		}
-
+		buildConf.Resources = []Resources{Resources{Cpus: "", Memory: ""}}
 		buildConf.Params = map[string]interface{}{}
 		buildConf.Extras = map[string]interface{}{}
 		buildConf.Meta = map[string]interface{}{}
