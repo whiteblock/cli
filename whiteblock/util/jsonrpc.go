@@ -51,6 +51,18 @@ func JsonRpcCallP(method string, params interface{}, out interface{}) error {
 	return json.Unmarshal(tmp, out)
 }
 func JsonRpcCall(method string, params interface{}) (interface{}, error) {
+	var res interface{}
+	var err error
+	for i := 0; i < conf.RPCRetries; i++ {
+		res, err = jsonRpcCall(method, params)
+		if err == nil {
+			break
+		}
+	}
+	return res, err
+}
+
+func jsonRpcCall(method string, params interface{}) (interface{}, error) {
 	//log.Println("URL IS "+url)
 	jrpc, err := json2.EncodeClientRequest(method, params)
 	if err != nil {
