@@ -66,6 +66,12 @@
                 "latest":"gcr.io/whiteblock/artemis:dev"
             }
 	},
+        "prysm":{
+            "images":{
+                "stable":"gcr.io/whiteblock/eth2/prysm:master",
+                "latest":"gcr.io/whiteblock/eth2/prysm:master"
+            }
+        },
 	"orion":{
 	    "images":{
 		"stable":"gcr.io/whiteblock/orion:dev",
