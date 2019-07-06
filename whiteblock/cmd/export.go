@@ -238,9 +238,9 @@ var exportCmd = &cobra.Command{
 	Long:   "Export stuff",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		/*spinner := Spinner{txt: "fetching the block and log data"}
+		spinner := Spinner{txt: "fetching the block and log data"}
 		spinner.Run(100)
-		defer spinner.Kill()*/
+		defer spinner.Kill()
 		local, err := cmd.Flags().GetBool("local")
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -249,9 +249,14 @@ var exportCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		startBlock, err := cmd.Flags().GetInt("start-block")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
 		os.MkdirAll(outputDir, 0755)
 		if local {
-			fetchDataLocally(outputDir)
+			fetchDataLocally(outputDir, startBlock)
 			return
 		}
 
@@ -395,10 +400,11 @@ func GrabManyBlocks(sem *semaphore.Weighted, start int, end int) ([]string, erro
 		}(&out[i-start])
 	}
 	wg.Wait()
+	log.WithFields(log.Fields{"start": start, "end": end}).Trace("fetched some blocks")
 	return out, outErr
 }
 
-func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, dir string) {
+func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, starkblock int, dir string) {
 	os.RemoveAll(fmt.Sprintf("%s/%s", dir, node.ID))
 	os.MkdirAll(fmt.Sprintf("%s/%s", dir, node.ID), 0755)
 	fd, err := os.Create(fmt.Sprintf("%s/%s/blocks.json", dir, node.ID))
@@ -408,7 +414,7 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 	defer fd.Close()
 
 	diff := 100
-	for i := 1; i <= blockHeight; i += diff {
+	for i := starkblock; i <= blockHeight; i += diff {
 		endPoint := i + diff
 		if endPoint > blockHeight {
 			endPoint = blockHeight
@@ -419,12 +425,12 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 			i -= diff
 			continue
 		}
-		appendBlocks(blocks, i == 1, endPoint == blockHeight, fd)
+		appendBlocks(blocks, i == starkblock, endPoint == blockHeight, fd)
 	}
 }
 
 //only supports the main log and the block data
-func fetchDataLocally(dir string) {
+func fetchDataLocally(dir string, startBlock int) {
 	sem := semaphore.NewWeighted(conf.MaxConns)
 	nodes, err := GetNodes()
 	if err != nil {
@@ -446,7 +452,7 @@ func fetchDataLocally(dir string) {
 		wg.Add(1)
 		go func(blockHeight int, i int) {
 			defer wg.Done()
-			fetchBlockDataLocally(sem, nodes[i], blockHeight, dir)
+			fetchBlockDataLocally(sem, nodes[i], blockHeight, startBlock, dir)
 		}(blockHeight, i)
 		wg.Add(1)
 
@@ -476,5 +482,6 @@ func fetchDataLocally(dir string) {
 func init() {
 	exportCmd.Flags().Bool("local", false, "get data from the local nodes instead of the API")
 	exportCmd.Flags().String("dir", ".", "specify a custom output directory")
+	exportCmd.Flags().Int("start-block", 1, "the export start time for local only")
 	RootCmd.AddCommand(exportCmd)
 }
