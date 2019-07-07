@@ -493,6 +493,6 @@ func init() {
 	exportCmd.Flags().Bool("local", false, "get data from the local nodes instead of the API")
 	exportCmd.Flags().String("dir", ".", "specify a custom output directory")
 	exportCmd.Flags().Int("start-block", 1, "the export start block for local only")
-	exportCmd.Flags().Bool("single-node-mode", 1, "the export start time for local only")
+	exportCmd.Flags().Bool("single-node-mode", false, "the export start time for local only")
 	RootCmd.AddCommand(exportCmd)
 }
