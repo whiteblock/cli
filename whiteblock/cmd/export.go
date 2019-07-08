@@ -408,9 +408,12 @@ func GrabManyBlocks(sem *semaphore.Weighted, start int, end int) ([]string, erro
 	return out, outErr
 }
 
-func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, starkblock int, dir string) {
+func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, startBlock int, dir string) {
 	os.RemoveAll(fmt.Sprintf("%s/%s", dir, node.ID))
-	os.MkdirAll(fmt.Sprintf("%s/%s", dir, node.ID), 0755)
+	err := os.MkdirAll(fmt.Sprintf("%s/%s", dir, node.ID), 0755)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
 	fd, err := os.Create(fmt.Sprintf("%s/%s/blocks.json", dir, node.ID))
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -418,7 +421,7 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 	defer fd.Close()
 
 	diff := 100
-	for i := starkblock; i <= blockHeight; i += diff {
+	for i := startBlock; i <= blockHeight; i += diff {
 		endPoint := i + diff
 		if endPoint > blockHeight {
 			endPoint = blockHeight
@@ -429,7 +432,7 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 			i -= diff
 			continue
 		}
-		appendBlocks(blocks, i == starkblock, endPoint == blockHeight, fd)
+		appendBlocks(blocks, endPoint == blockHeight, i == startBlock, fd)
 	}
 }
 
