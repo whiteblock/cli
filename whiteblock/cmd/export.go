@@ -389,7 +389,7 @@ func GrabManyBlocks(sem *semaphore.Weighted, start int, end int) ([]string, erro
 	for i := start; i < end; i++ {
 		wg.Add(1)
 		sem.Acquire(ctx, 1)
-		go func(blck *string) {
+		go func(blck *string, i int) {
 			sem.Release(1)
 			defer wg.Done()
 			data, err := util.JsonRpcCall("get_block", []interface{}{i})
@@ -401,7 +401,7 @@ func GrabManyBlocks(sem *semaphore.Weighted, start int, end int) ([]string, erro
 				util.PrintErrorFatal(err)
 			}
 			*blck = string(block)
-		}(&out[i-start])
+		}(&out[i-start],i)
 	}
 	wg.Wait()
 	log.WithFields(log.Fields{"start": start, "end": end}).Trace("fetched some blocks")
