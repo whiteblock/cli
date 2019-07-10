@@ -179,7 +179,13 @@ func mergeDown(node Node, files map[string][]string) {
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		defer fd.Close()
+		defer func() {
+			_, err = fd.Write([]byte("]"))
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			_ = fd.Close()
+		}()
 		for _, chunk := range chunks {
 			data, err := ioutil.ReadFile(fmt.Sprintf("./%s/%s/%s", node.ID, file, chunk))
 			if err != nil {
@@ -190,21 +196,29 @@ func mergeDown(node Node, files map[string][]string) {
 				util.PrintErrorFatal(err)
 			}
 		}
-		os.RemoveAll(fmt.Sprintf("./%s/%s", node.ID, file))
-
-		syscall.Rename(fmt.Sprintf("./%s/%s.tmp", node.ID, file), fmt.Sprintf("./%s/%s", node.ID, file))
+		err = os.RemoveAll(fmt.Sprintf("./%s/%s", node.ID, file))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		err = syscall.Rename(fmt.Sprintf("./%s/%s.tmp", node.ID, file), fmt.Sprintf("./%s/%s", node.ID, file))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 	}
 
 }
 
-func appendBlocks(items []string, finish bool, firstCall bool, f *os.File) {
+func appendBlocks(items []string, firstCall bool, f *os.File) {
 
 	fInfo, err := f.Stat()
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
 	if fInfo.Size() == 0 {
-		f.Write([]byte("[")) //TODO check err
+		_, err = f.Write([]byte("["))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 	}
 	first := true
 	for _, item := range items {
@@ -214,7 +228,7 @@ func appendBlocks(items []string, finish bool, firstCall bool, f *os.File) {
 		if first && firstCall && fInfo.Size() < 2 {
 			first = false
 		} else {
-			_, err := f.Write([]byte(",")) //TODO check err
+			_, err := f.Write([]byte(","))
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
@@ -224,10 +238,6 @@ func appendBlocks(items []string, finish bool, firstCall bool, f *os.File) {
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-	}
-
-	if finish {
-		f.Write([]byte("]"))
 	}
 }
 
@@ -357,14 +367,21 @@ var exportCmd = &cobra.Command{
 						log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetched the blocks")
 
 						nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, &coveredBlockNumbers, sem)
-						appendBlocks(blocks, nextToken == nil, first, files[i])
+						appendBlocks(blocks, first, files[i])
 						first = false
 
 						if nextToken == nil {
 							break
 						}
 					}
-					files[i].Close()
+					_, err = files[i].Write([]byte("]"))
+					if err != nil {
+						util.PrintErrorFatal(err)
+					}
+					err = files[i].Close()
+					if err != nil {
+						util.PrintErrorFatal(err)
+					}
 				}(node, i)
 			}
 		}()
@@ -418,7 +435,13 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	defer fd.Close()
+	defer func() {
+		_, err = fd.Write([]byte("]"))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		_ = fd.Close()
+	}()
 
 	diff := 100
 	for i := startBlock; i <= blockHeight; i += diff {
@@ -432,7 +455,7 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 			i -= diff
 			continue
 		}
-		appendBlocks(blocks, endPoint == blockHeight, i == startBlock, fd)
+		appendBlocks(blocks, i == startBlock, fd)
 	}
 }
 
