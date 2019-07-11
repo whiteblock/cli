@@ -41,7 +41,7 @@ func setViperDefaults() {
 	viper.SetDefault("httpTimeout", 10000)
 	viper.SetDefault("httpRetries", 5)
 	viper.SetDefault("storeDirectory", os.Getenv("HOME")+"/.config/whiteblock/cli/")
-	viper.SetDefault("serverAddr", "localhost:5000")
+	viper.SetDefault("serverAddr", "127.0.0.1:5000")
 	viper.SetDefault("checkLoad", false)
 	viper.SetDefault("loadWarnThreshold", 100)
 	viper.SetDefault("maxConns", 200)
