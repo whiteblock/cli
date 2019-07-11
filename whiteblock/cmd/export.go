@@ -450,8 +450,16 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 			continue
 		}
 		appendBlocks(blocks, i == startBlock, fd)
+		err = fd.Sync()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 	}
 	_, err = fd.Write([]byte("]"))
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	err = fd.Sync()
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
