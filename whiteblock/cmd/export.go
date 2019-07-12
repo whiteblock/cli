@@ -418,7 +418,7 @@ func GrabManyBlocks(sem *semaphore.Weighted, start int, end int) ([]string, erro
 				util.PrintErrorFatal(err)
 			}
 			*blck = string(block)
-		}(&out[i-start],i)
+		}(&out[i-start], i)
 	}
 	wg.Wait()
 	log.WithFields(log.Fields{"start": start, "end": end}).Trace("fetched some blocks")

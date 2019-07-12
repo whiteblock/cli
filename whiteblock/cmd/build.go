@@ -13,7 +13,6 @@ import (
 )
 
 var (
-	previousYesAll bool
 	serversFlag    string
 	blockchainFlag string
 	nodesFlag      int
@@ -55,11 +54,25 @@ func buildAttach(buildId string) {
 	}
 }
 
-func build(buildConfig interface{}) {
-	buildReply, err := util.JsonRpcCall("build", buildConfig)
-	if err != nil {
-		util.PrintErrorFatal(err)
+func buildStart(buildConfig interface{}, isAppend bool) {
+	var buildReply interface{}
+	var err error
+	if isAppend {
+		buildReply,err =  getPreviousBuildId()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		_, err = util.JsonRpcCall("add_nodes", []interface{}{buildReply,buildConfig})
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+	}else{
+		buildReply, err = util.JsonRpcCall("build", buildConfig)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
 	}
+	
 	fmt.Println("Build Started Successfully.")
 	fmt.Printf("Testnet ID : %v\n", buildReply)
 
@@ -72,6 +85,227 @@ func build(buildConfig interface{}) {
 	buildAttach(buildReply.(string))
 }
 
+func build(cmd *cobra.Command, args []string, isAppend bool) {
+	var err error
+	util.CheckArguments(cmd, args, 0, 0)
+	buildConf, _ := getPreviousBuild() //Errors are ok with this.
+	blockchainEnabled := len(blockchainFlag) > 0
+	nodesEnabled := nodesFlag > 0
+
+	defaultCpus := ""
+	defaultMemory := ""
+	buildConf.Resources = []Resources{Resources{Cpus: "", Memory: ""}}
+	buildConf.Params = map[string]interface{}{}
+	buildConf.Extras = map[string]interface{}{}
+	buildConf.Meta = map[string]interface{}{}
+
+	previousYesAll, err := cmd.Flags().GetBool("yes")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	cpusEnabled, memoryEnabled := handleResources(cmd, args, &buildConf)
+
+	buildOpt := []string{}
+	defOpt := []string{}
+	allowEmpty := []bool{}
+
+	if !blockchainEnabled {
+		allowEmpty = append(allowEmpty, false)
+		buildOpt = append(buildOpt, "blockchain"+tern((len(buildConf.Blockchain) == 0), "", " ("+buildConf.Blockchain+")"))
+		defOpt = append(defOpt, fmt.Sprintf(buildConf.Blockchain))
+	}
+	if !nodesEnabled {
+		allowEmpty = append(allowEmpty, false)
+		buildOpt = append(buildOpt, fmt.Sprintf("nodes(%d)", buildConf.Nodes))
+		defOpt = append(defOpt, fmt.Sprintf("%d", buildConf.Nodes))
+	}
+	if !cpusEnabled {
+		allowEmpty = append(allowEmpty, true)
+		buildOpt = append(buildOpt, "cpus"+tern((defaultCpus == ""), "(empty for no limit)", " ("+defaultCpus+")"))
+		defOpt = append(defOpt, fmt.Sprintf(defaultCpus))
+	}
+	if !memoryEnabled {
+		allowEmpty = append(allowEmpty, true)
+		buildOpt = append(buildOpt, "memory"+tern((defaultMemory == ""), "(empty for no limit)", " ("+defaultMemory+")"))
+		defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
+	}
+
+	buildArr := []string{}
+	if os.Stdin == nil && len(buildOpt) > 0 {
+		fmt.Println("Would drop into build wizard but is a non interactive context")
+		os.Exit(1)
+	}
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for i := 0; i < len(buildOpt); i++ {
+		fmt.Print(buildOpt[i] + ": ")
+		if !scanner.Scan() {
+			util.PrintErrorFatal(scanner.Err())
+		}
+
+		text := scanner.Text()
+		if len(text) != 0 {
+			buildArr = append(buildArr, text)
+		} else if len(defOpt[i]) != 0 || allowEmpty[i] {
+			buildArr = append(buildArr, defOpt[i])
+		} else {
+			i--
+			fmt.Println("Value required")
+			continue
+		}
+	}
+
+	offset := 0
+	if blockchainEnabled {
+		buildConf.Blockchain = strings.ToLower(blockchainFlag)
+	} else {
+		buildConf.Blockchain = strings.ToLower(buildArr[offset])
+		offset++
+	} //Final blockchain definition. Will need to start another round of prompting
+	optionsChannel := make(chan [][]string, 1)
+	go func() {
+		opt, err := fetchParams(buildConf.Blockchain)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		optionsChannel <- opt
+	}()
+
+	if nodesEnabled {
+		buildConf.Nodes = nodesFlag
+	} else {
+		buildConf.Nodes, err = strconv.Atoi(buildArr[offset])
+		if err != nil {
+			util.InvalidInteger("nodes", buildArr[offset], true)
+		}
+		offset++
+	}
+
+	if !cpusEnabled {
+		buildConf.Resources[0].Cpus = buildArr[offset]
+		offset++
+	}
+	if !memoryEnabled {
+		buildConf.Resources[0].Memory = buildArr[offset]
+		//offset++
+	}
+
+	if len(serversFlag) > 0 {
+		serversInter := strings.Split(serversFlag, ",")
+		buildConf.Servers = []int{}
+		for _, serverStr := range serversInter {
+			serverNum, err := strconv.Atoi(serverStr)
+			if err != nil {
+				util.InvalidInteger("servers", serverStr, true)
+			}
+			buildConf.Servers = append(buildConf.Servers, serverNum)
+		}
+	} else if len(buildConf.Servers) == 0 {
+		buildConf.Servers = getServer()
+	}
+
+	options := <-optionsChannel //Currently has a negative impact but will be positive in the future
+	if validators < 0 && hasParam(options, "validators") {
+		fmt.Print("validators: ")
+		scanner.Scan()
+		text := scanner.Text()
+		validators, err = strconv.Atoi(text)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+	}
+	handleImageFlag(cmd, args, &buildConf)
+	if optionsFlag != nil {
+		buildConf.Params, err = processOptions(optionsFlag, options)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+	} else if len(paramsFile) != 0 {
+		f, err := os.Open(paramsFile)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		decoder := json.NewDecoder(f)
+		decoder.UseNumber()
+		err = decoder.Decode(&buildConf.Params)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+	} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
+		//PARAMS
+		for i := 0; i < len(options); i++ {
+			key := options[i][0]
+			key_type := options[i][1]
+
+			fmt.Printf("%s (%s): ", key, key_type)
+			scanner.Scan()
+			text := scanner.Text()
+			if len(text) == 0 {
+				continue
+			}
+			switch key_type {
+			case "string":
+				//needs to have filtering
+				buildConf.Params[key] = text
+			case "[]string":
+				preprocessed := strings.Replace(text, " ", ",", -1)
+				buildConf.Params[key] = strings.Split(preprocessed, ",")
+			case "int":
+				val, err := strconv.ParseInt(text, 0, 64)
+				if err != nil {
+					util.InvalidInteger(key, text, false)
+					i--
+					continue
+				}
+				buildConf.Params[key] = val
+			case "bool":
+				val,err := util.GetAsBool(text)
+				if err != nil {
+					util.PrintStringError(err.Error())
+					i--
+					continue
+				}
+				buildConf.Params[key] = val
+			}
+		}
+	}
+	if validators >= 0 {
+		buildConf.Params["validators"] = validators
+	}
+	handleFilesFlag(cmd, args, &buildConf)
+
+	if envFlag != nil {
+		buildConf.Environments, err = processEnv(envFlag, buildConf.Nodes)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+	}
+
+	fbg, err := cmd.Flags().GetBool("freeze-before-genesis")
+	if err == nil && fbg {
+		buildConf.Extras["freezeAfterInfrastructure"] = true
+	}
+	handlePullFlag(cmd, args, &buildConf)
+	handleForceUnlockFlag(cmd, args, &buildConf)
+	handleDockerAuthFlags(cmd, args, &buildConf)
+	handleSSHOptions(cmd, args, &buildConf)
+	handleDockerfile(cmd, args, &buildConf)
+	if !isAppend {
+		handleStartLoggingAtBlock(cmd, args, &buildConf)
+	}
+
+	handlePortMapping(cmd, args, &buildConf)
+	log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
+	buildStart(buildConf, isAppend)
+
+	if !isAppend {
+		removeSmartContracts()
+	}
+
+}
+
 var buildCmd = &cobra.Command{
 	Use:     "build",
 	Aliases: []string{"init", "create", "buidl"},
@@ -81,204 +315,7 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		var err error
-		util.CheckArguments(cmd, args, 0, 0)
-		buildConf, _ := getPreviousBuild() //Errors are ok with this.
-		blockchainEnabled := len(blockchainFlag) > 0
-		nodesEnabled := nodesFlag > 0
-
-		defaultCpus := ""
-		defaultMemory := ""
-		buildConf.Resources = []Resources{Resources{Cpus: "", Memory: ""}}
-		buildConf.Params = map[string]interface{}{}
-		buildConf.Extras = map[string]interface{}{}
-		buildConf.Meta = map[string]interface{}{}
-
-		cpusEnabled, memoryEnabled := handleResources(cmd, args, &buildConf)
-
-		buildOpt := []string{}
-		defOpt := []string{}
-		allowEmpty := []bool{}
-
-		if !blockchainEnabled {
-			allowEmpty = append(allowEmpty, false)
-			buildOpt = append(buildOpt, "blockchain"+tern((len(buildConf.Blockchain) == 0), "", " ("+buildConf.Blockchain+")"))
-			defOpt = append(defOpt, fmt.Sprintf(buildConf.Blockchain))
-		}
-		if !nodesEnabled {
-			allowEmpty = append(allowEmpty, false)
-			buildOpt = append(buildOpt, fmt.Sprintf("nodes(%d)", buildConf.Nodes))
-			defOpt = append(defOpt, fmt.Sprintf("%d", buildConf.Nodes))
-		}
-		if !cpusEnabled {
-			allowEmpty = append(allowEmpty, true)
-			buildOpt = append(buildOpt, "cpus"+tern((defaultCpus == ""), "(empty for no limit)", " ("+defaultCpus+")"))
-			defOpt = append(defOpt, fmt.Sprintf(defaultCpus))
-		}
-		if !memoryEnabled {
-			allowEmpty = append(allowEmpty, true)
-			buildOpt = append(buildOpt, "memory"+tern((defaultMemory == ""), "(empty for no limit)", " ("+defaultMemory+")"))
-			defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
-		}
-
-		buildArr := []string{}
-		if os.Stdin == nil && len(buildOpt) > 0 {
-			fmt.Println("Would drop into build wizard but is a non interactive context")
-			os.Exit(1)
-		}
-		scanner := bufio.NewScanner(os.Stdin)
-
-		for i := 0; i < len(buildOpt); i++ {
-			fmt.Print(buildOpt[i] + ": ")
-			if !scanner.Scan() {
-				util.PrintErrorFatal(scanner.Err())
-			}
-
-			text := scanner.Text()
-			if len(text) != 0 {
-				buildArr = append(buildArr, text)
-			} else if len(defOpt[i]) != 0 || allowEmpty[i] {
-				buildArr = append(buildArr, defOpt[i])
-			} else {
-				i--
-				fmt.Println("Value required")
-				continue
-			}
-		}
-
-		offset := 0
-		if blockchainEnabled {
-			buildConf.Blockchain = strings.ToLower(blockchainFlag)
-		} else {
-			buildConf.Blockchain = strings.ToLower(buildArr[offset])
-			offset++
-		} //Final blockchain definition. Will need to start another round of prompting
-		optionsChannel := make(chan [][]string, 1)
-		go func() {
-			opt, err := fetchParams(buildConf.Blockchain)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-			optionsChannel <- opt
-		}()
-
-		if nodesEnabled {
-			buildConf.Nodes = nodesFlag
-		} else {
-			buildConf.Nodes, err = strconv.Atoi(buildArr[offset])
-			if err != nil {
-				util.InvalidInteger("nodes", buildArr[offset], true)
-			}
-			offset++
-		}
-
-		if !cpusEnabled {
-			buildConf.Resources[0].Cpus = buildArr[offset]
-			offset++
-		}
-		if !memoryEnabled {
-			buildConf.Resources[0].Memory = buildArr[offset]
-			//offset++
-		}
-
-		if len(serversFlag) > 0 {
-			serversInter := strings.Split(serversFlag, ",")
-			buildConf.Servers = []int{}
-			for _, serverStr := range serversInter {
-				serverNum, err := strconv.Atoi(serverStr)
-				if err != nil {
-					util.InvalidInteger("servers", serverStr, true)
-				}
-				buildConf.Servers = append(buildConf.Servers, serverNum)
-			}
-		} else if len(buildConf.Servers) == 0 {
-			buildConf.Servers = getServer()
-		}
-
-		options := <-optionsChannel //Currently has a negative impact but will be positive in the future
-		if validators < 0 && hasParam(options, "validators") {
-			fmt.Print("validators: ")
-			scanner.Scan()
-			text := scanner.Text()
-			validators, err = strconv.Atoi(text)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-		}
-		handleImageFlag(cmd, args, &buildConf)
-		if optionsFlag != nil {
-			buildConf.Params, err = processOptions(optionsFlag, options)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-		} else if len(paramsFile) != 0 {
-			f, err := os.Open(paramsFile)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-
-			decoder := json.NewDecoder(f)
-			decoder.UseNumber()
-			err = decoder.Decode(&buildConf.Params)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-		} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
-			//PARAMS
-			for i := 0; i < len(options); i++ {
-				key := options[i][0]
-				key_type := options[i][1]
-
-				fmt.Printf("%s (%s): ", key, key_type)
-				scanner.Scan()
-				text := scanner.Text()
-				if len(text) == 0 {
-					continue
-				}
-				switch key_type {
-				case "string":
-					//needs to have filtering
-					buildConf.Params[key] = text
-				case "[]string":
-					preprocessed := strings.Replace(text, " ", ",", -1)
-					buildConf.Params[key] = strings.Split(preprocessed, ",")
-				case "int":
-					val, err := strconv.ParseInt(text, 0, 64)
-					if err != nil {
-						util.InvalidInteger(key, text, false)
-						i--
-						continue
-					}
-					buildConf.Params[key] = val
-				}
-			}
-		}
-		if validators >= 0 {
-			buildConf.Params["validators"] = validators
-		}
-		handleFilesFlag(cmd, args, &buildConf)
-
-		if envFlag != nil {
-			buildConf.Environments, err = processEnv(envFlag, buildConf.Nodes)
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-		}
-
-		fbg, err := cmd.Flags().GetBool("freeze-before-genesis")
-		if err == nil && fbg {
-			buildConf.Extras["freezeAfterInfrastructure"] = true
-		}
-		handlePullFlag(cmd, args, &buildConf)
-		handleForceUnlockFlag(cmd, args, &buildConf)
-		handleDockerAuthFlags(cmd, args, &buildConf)
-		handleSSHOptions(cmd, args, &buildConf)
-		handleDockerfile(cmd, args, &buildConf)
-		handleStartLoggingAtBlock(cmd, args, &buildConf)
-		handlePortMapping(cmd, args, &buildConf)
-		log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
-		build(buildConf)
-		removeSmartContracts()
+		build(cmd, args, false)
 	},
 }
 
@@ -310,10 +347,15 @@ var previousCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		previousYesAll, err := cmd.Flags().GetBool("yes")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
 		fmt.Println(util.Prettypi(prevBuild))
 		if previousYesAll || util.YesNoPrompt("Build from previous?") {
 			fmt.Println("building from previous configuration")
-			build(prevBuild)
+			buildStart(prevBuild, false)
 			removeSmartContracts()
 			return
 		}
@@ -368,36 +410,53 @@ var buildUnfreezeCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	buildCmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
-	buildCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
-	buildCmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
-	buildCmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
-	buildCmd.Flags().StringVarP(&cpusFlag, "cpus", "c", "", "specify number of cpus")
-	buildCmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
-	buildCmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
-	buildCmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
-	buildCmd.Flags().StringSliceP("image", "i", []string{}, "image tag")
-	buildCmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
-	buildCmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
-	buildCmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
+var buildAppendCmd = &cobra.Command{
+	Use:   "append",
+	Short: "Build a blockchain using image and deploy nodes",
+	Long: "Build will create and deploy a blockchain and the specified number of nodes." +
+		" Each node will be instantiated in its own container and will interact" +
+		" individually as a participant of the specified network.\n",
 
-	buildCmd.Flags().String("docker-username", "", "docker auth username")
-	buildCmd.Flags().String("docker-password", "", "docker auth password. Note: this will be stored unencrypted while the build is in progress")
-	buildCmd.Flags().StringSlice("user-ssh-key", []string{}, "add an additional ssh key as authorized for the nodes."+
+	Run: func(cmd *cobra.Command, args []string) {
+		build(cmd, args, true)
+	},
+}
+
+func addBuildFlagsToCommand(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
+	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
+	cmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
+	cmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
+	cmd.Flags().StringVarP(&cpusFlag, "cpus", "c", "", "specify number of cpus")
+	cmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
+	cmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
+	cmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
+	cmd.Flags().StringSliceP("image", "i", []string{}, "image tag")
+	cmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
+	cmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
+	cmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
+
+	cmd.Flags().String("docker-username", "", "docker auth username")
+	cmd.Flags().String("docker-password", "", "docker auth password. Note: this will be stored unencrypted while the build is in progress")
+	cmd.Flags().StringSlice("user-ssh-key", []string{}, "add an additional ssh key as authorized for the nodes."+
 		" Takes a file containing an ssh public key")
 
-	buildCmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
-	buildCmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
-	buildCmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
-	buildCmd.Flags().String("dockerfile", "", "docker auth username")
-	buildCmd.Flags().StringToStringP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
+	cmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
+	cmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
+	cmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
+	cmd.Flags().String("dockerfile", "", "docker auth username")
+	cmd.Flags().StringToStringP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
 
 	//META FLAGS
-	buildCmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
+	cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
+}
 
-	previousCmd.Flags().BoolVarP(&previousYesAll, "yes", "y", false, "Yes to all prompts. Evokes default parameters.")
+func init() {
+	addBuildFlagsToCommand(buildCmd)
+	addBuildFlagsToCommand(buildAppendCmd)
 
-	buildCmd.AddCommand(previousCmd, buildStopCmd, buildAttachCmd, buildFreezeCmd, buildUnfreezeCmd)
+	previousCmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
+
+	buildCmd.AddCommand(previousCmd, buildAppendCmd, buildStopCmd, buildAttachCmd, buildFreezeCmd, buildUnfreezeCmd)
 	RootCmd.AddCommand(buildCmd)
 }
