@@ -445,7 +445,7 @@ func addBuildFlagsToCommand(cmd *cobra.Command) {
 	cmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
 	cmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
 	cmd.Flags().String("dockerfile", "", "docker auth username")
-	cmd.Flags().StringToStringP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
+	cmd.Flags().StringSliceP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
 
 	//META FLAGS
 	cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
