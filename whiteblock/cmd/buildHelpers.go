@@ -125,14 +125,6 @@ func tern(exp bool, res1 string, res2 string) string {
 	return res2
 }
 
-func removeSmartContracts() {
-	cwd := os.Getenv("HOME")
-	err := os.RemoveAll(cwd + "/smart-contracts/whiteblock/contracts.json")
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-}
-
 func processOptions(givenOptions map[string]string, format [][]string) (map[string]interface{}, error) {
 	out := map[string]interface{}{}
 

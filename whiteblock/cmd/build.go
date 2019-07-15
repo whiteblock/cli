@@ -299,11 +299,6 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 	handlePortMapping(cmd, args, &buildConf)
 	log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
 	buildStart(buildConf, isAppend)
-
-	if !isAppend {
-		removeSmartContracts()
-	}
-
 }
 
 var buildCmd = &cobra.Command{
@@ -356,7 +351,6 @@ var previousCmd = &cobra.Command{
 		if previousYesAll || util.YesNoPrompt("Build from previous?") {
 			fmt.Println("building from previous configuration")
 			buildStart(prevBuild, false)
-			removeSmartContracts()
 			return
 		}
 	},

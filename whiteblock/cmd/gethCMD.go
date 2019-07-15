@@ -2,14 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
-	"regexp"
-	"strconv"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sys/unix"
+	"os"
+	"os/exec"
+	"regexp"
+	"strconv"
 )
 
 type Contract struct {
@@ -236,7 +236,7 @@ Output: Deployed contract address
 			nodeIP := nodes[nodeNumber].IP
 			deployContractOut := deployContract(args[1], nodeIP)
 			re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
-			log.WithFields(log.Fields{"out":deployContractOut}).Debug("deployed contract")
+			log.WithFields(log.Fields{"out": deployContractOut}).Debug("deployed contract")
 			addrList := re.FindAllString(deployContractOut, -1)
 			if len(addrList) < 2 {
 				util.PrintStringError("There was an issue deploying the smart contract.")
