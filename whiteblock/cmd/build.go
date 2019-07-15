@@ -58,21 +58,21 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 	var buildReply interface{}
 	var err error
 	if isAppend {
-		buildReply,err =  getPreviousBuildId()
+		buildReply, err = getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		_, err = util.JsonRpcCall("add_nodes", []interface{}{buildReply,buildConfig})
+		_, err = util.JsonRpcCall("add_nodes", []interface{}{buildReply, buildConfig})
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-	}else{
+	} else {
 		buildReply, err = util.JsonRpcCall("build", buildConfig)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 	}
-	
+
 	fmt.Println("Build Started Successfully.")
 	fmt.Printf("Testnet ID : %v\n", buildReply)
 
@@ -261,7 +261,7 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 				}
 				buildConf.Params[key] = val
 			case "bool":
-				val,err := util.GetAsBool(text)
+				val, err := util.GetAsBool(text)
 				if err != nil {
 					util.PrintStringError(err.Error())
 					i--

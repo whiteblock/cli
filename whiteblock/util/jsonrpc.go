@@ -50,6 +50,7 @@ func JsonRpcCallP(method string, params interface{}, out interface{}) error {
 	}
 	return json.Unmarshal(tmp, out)
 }
+
 func JsonRpcCall(method string, params interface{}) (interface{}, error) {
 	var res interface{}
 	var err error

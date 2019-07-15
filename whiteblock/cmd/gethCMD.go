@@ -1,25 +1,21 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
-	"strings"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sys/unix"
 )
 
-type Contracts struct {
-	DeployedNodeAddress string `json:",omitempty"`
-	ContractName        string `json:",omitempty"`
-	ContractAddress     string `json:",omitempty"`
+type Contract struct {
+	DeployedNodeAddress string `json:"deployedNodeAddress,omitempty"`
+	ContractName        string `json:"contractName,omitempty"`
+	ContractAddress     string `json:"contractAddress,omitempty"`
 }
 
 const (
@@ -55,41 +51,11 @@ const abi = JSON.parse(output.contracts[':'+contractName].interface);
 module.exports = {abi, bytecode};`
 )
 
-func writeContractListFile(addrs string) {
-	cwd := os.Getenv("HOME")
-	err := os.MkdirAll(cwd+"/smart-contracts/whiteblock/", 0755)
-	if err != nil {
-		log.Fatalf("could not create directory: %s", err)
-	}
-
-	file, err := os.OpenFile(cwd+"/smart-contracts/whiteblock/contracts.json", os.O_WRONLY|os.O_CREATE, 0755)
-	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
-	}
-	defer file.Close()
-
-	newCont := ""
-	cont, err := ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	contents := string(cont)
-	if len(cont) > 0 {
-		contents = strings.TrimRight(contents, "]")
-		addrs = strings.TrimLeft(addrs, "[")
-		addrs = ", " + addrs
-		newCont = contents + addrs
-		_, err = file.WriteString(newCont)
-		if err != nil {
-			log.Fatalf("failed writing to file: %s", err)
-		}
-	} else {
-		_, err = file.WriteString(addrs)
-		if err != nil {
-			log.Fatalf("failed writing to file: %s", err)
-		}
-	}
-
+func addContract(contract Contract) error {
+	var contracts []Contract
+	util.ReadTestnetStore("contracts", &contracts)
+	contracts = append(contracts, contract)
+	return util.WriteTestnetStore("contracts", contracts)
 }
 
 func checkContractDir() {
@@ -270,19 +236,20 @@ Output: Deployed contract address
 			nodeIP := nodes[nodeNumber].IP
 			deployContractOut := deployContract(args[1], nodeIP)
 			re := regexp.MustCompile(`(?m)0x[0-9a-fA-F]{40}`)
+			log.WithFields(log.Fields{"out":deployContractOut}).Debug("deployed contract")
 			addrList := re.FindAllString(deployContractOut, -1)
-
-			ContractList := make([]interface{}, 0)
-			ContractList = append(ContractList, Contracts{
+			if len(addrList) < 2 {
+				util.PrintStringError("There was an issue deploying the smart contract.")
+				os.Exit(1)
+			}
+			err = addContract(Contract{
 				DeployedNodeAddress: addrList[0],
 				ContractName:        args[1],
 				ContractAddress:     addrList[1],
 			})
-			contracts, err := json.Marshal(ContractList)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
-			writeContractListFile(fmt.Sprintf("%s", contracts))
 		}
 	},
 }
@@ -362,40 +329,6 @@ Response: JSON object of transaction data`,
 		util.JsonRpcCallAndPrint("eth::get_recent_sent_tx", []interface{}{num})
 	},
 }
-
-/*
-var gethGetTxCountCmd = &cobra.Command{
-	Use:   "get_transaction_count <address> [block number]",
-	Short: "Get transaction count",
-	Long: `
-Get the transaction count sent from an address, optionally by block
-
-Format: <address> [block number]
-Params: The sender account, a block number
-
-Response: The transaction count`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 2)
-		util.JsonRpcCallAndPrint("eth::get_transaction_count", args)
-	},
-}
-
-var gethGetTxCmd = &cobra.Command{
-	Use:   "get_transaction <hash>",
-	Short: "Get transaction information",
-	Long: `
-Get a transaction by its hash
-
-Format: <hash>
-Params: The transaction hash
-
-Response: JSON representation of the transaction.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd,args, 1, 1)
-		util.JsonRpcCallAndPrint("eth::get_transaction", args)
-	},
-}
-*/
 
 func init() {
 

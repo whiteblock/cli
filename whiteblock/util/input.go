@@ -7,19 +7,18 @@ import (
 	"strings"
 )
 
-
-func ParseIntToStringSlice(vals []string) (map[int][]string,error) {
+func ParseIntToStringSlice(vals []string) (map[int][]string, error) {
 	out := map[int][]string{}
-	for _,val := range vals {
-		splitVal := strings.SplitN(val,"=",2)
+	for _, val := range vals {
+		splitVal := strings.SplitN(val, "=", 2)
 		if len(splitVal) != 2 {
-			return nil, fmt.Errorf("unexpected value %s",val)
+			return nil, fmt.Errorf("unexpected value %s", val)
 		}
 		index := CheckAndConvertInt(splitVal[0], "index")
-		if _,ok := out[index]; !ok {
-			out[index] =  []string{splitVal[1]}
-		}else{
-			out[index] = append(out[index],splitVal[1])
+		if _, ok := out[index]; !ok {
+			out[index] = []string{splitVal[1]}
+		} else {
+			out[index] = append(out[index], splitVal[1])
 		}
 	}
 	return out, nil

@@ -6,7 +6,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"io/ioutil"
 	"os"
 	"sort"
 )
@@ -27,11 +26,6 @@ func GetNodes() ([]Node, error) {
 	var out []Node
 	log.WithFields(log.Fields{"res": res}).Trace("raw nodes")
 	return out, json.Unmarshal(tmp, &out)
-}
-
-func readContractsFile() ([]byte, error) {
-	cwd := os.Getenv("HOME")
-	return ioutil.ReadFile(cwd + "/smart-contracts/whiteblock/contracts.json")
 }
 
 var getCmd = &cobra.Command{
@@ -419,18 +413,14 @@ the contract name, and the contract's address.
 Response: JSON representation of the contract information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		contracts, err := readContractsFile()
+		var contracts []interface{}
+		err := util.ReadTestnetStore("contracts", &contracts)
 		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		if len(contracts) == 0 {
 			util.PrintStringError("No smart contract has been deployed yet." +
 				" Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
 			os.Exit(1)
-		} else {
-			fmt.Println(util.Prettyp(string(contracts)))
 		}
+		fmt.Println(util.Prettypi(contracts))
 	},
 }
 
