@@ -7,7 +7,10 @@ import (
 	"runtime"
 )
 
-const debug = false
+const (
+	debug     = false
+	NoMaxArgs = -1
+)
 
 /**
  * Unify error messages through function calls
@@ -32,7 +35,7 @@ func CheckArguments(cmd *cobra.Command, args []string, min int, max int) {
 		PrintStringError(fmt.Sprintf("Missing arguments. Expected atleast %d argument%s. Given %d.", min, plural, len(args)))
 		os.Exit(1)
 	}
-	if max != -1 && len(args) > max {
+	if max != NoMaxArgs && len(args) > max {
 		fmt.Println(cmd.UsageString())
 		plural := "s"
 		if max == 1 {
