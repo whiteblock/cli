@@ -208,7 +208,9 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 	options := <-optionsChannel //Currently has a negative impact but will be positive in the future
 	if validators < 0 && hasParam(options, "validators") && !isAppend {
 		fmt.Print("validators: ")
-		scanner.Scan()
+		if !scanner.Scan() {
+			util.PrintErrorFatal(scanner.Err())
+		}
 		text := scanner.Text()
 		validators, err = strconv.Atoi(text)
 		if err != nil {
