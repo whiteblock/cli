@@ -491,6 +491,36 @@ func handlePortMapping(cmd *cobra.Command, args []string, conf *Config) {
 	}
 }
 
+func handleRepoBuild(cmd *cobra.Command, args []string, conf *Config) {
+	if !cmd.Flags().Changed("git-repo") {
+		return
+	}
+	if conf.Extras == nil {
+		conf.Extras = map[string]interface{}{}
+	}
+
+	if _, ok := conf.Extras["prebuild"]; !ok {
+		conf.Extras["prebuild"] = map[string]interface{}{}
+	}
+	conf.Extras["prebuild"].(map[string]interface{})["build"] = true
+
+	repo, err := cmd.Flags().GetString("git-repo")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	conf.Extras["prebuild"].(map[string]interface{})["repo"] = repo
+	if cmd.Flags().Changed("git-repo-branch") {
+		branch, err := cmd.Flags().GetString("git-repo-branch")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		log.Trace("given a git repo branch")
+		conf.Extras["prebuild"].(map[string]interface{})["branch"] = branch
+	}
+
+}
+
 func sanitizeBuild(conf *Config) {
 	conf.Blockchain = strings.ToLower(strings.Trim(conf.Blockchain, "\r\t\v\n "))
 	for i := range conf.Images {

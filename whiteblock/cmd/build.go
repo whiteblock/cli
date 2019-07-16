@@ -294,6 +294,7 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 	handleDockerAuthFlags(cmd, args, &buildConf)
 	handleSSHOptions(cmd, args, &buildConf)
 	handleDockerfile(cmd, args, &buildConf)
+	handleRepoBuild(cmd, args, &buildConf)
 	if !isAppend {
 		handleStartLoggingAtBlock(cmd, args, &buildConf)
 	}
@@ -441,9 +442,11 @@ func addBuildFlagsToCommand(cmd *cobra.Command) {
 	cmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
 	cmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
 	cmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
-	cmd.Flags().String("dockerfile", "", "docker auth username")
+	cmd.Flags().String("dockerfile", "", "build from a dockerfile")
 	cmd.Flags().StringSliceP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
 
+	cmd.Flags().String("git-repo", "", "build from a git repo")
+	cmd.Flags().String("git-repo-branch", "", "specify the branch to build from in a git repo")
 	//META FLAGS
 	cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
 }
