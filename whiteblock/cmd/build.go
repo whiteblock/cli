@@ -298,6 +298,7 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 
 	handlePortMapping(cmd, args, &buildConf)
 	log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
+	sanitizeBuild(&buildConf)
 	buildStart(buildConf, isAppend)
 }
 

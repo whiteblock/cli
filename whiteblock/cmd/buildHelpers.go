@@ -490,3 +490,10 @@ func handlePortMapping(cmd *cobra.Command, args []string, conf *Config) {
 		log.WithFields(log.Fields{"node": node, "ports": mappings}).Trace("adding the port mapping")
 	}
 }
+
+func sanitizeBuild(conf *Config) {
+	conf.Blockchain = strings.ToLower(strings.Trim(conf.Blockchain, "\r\t\v\n "))
+	for i := range conf.Images {
+		conf.Images[i] = strings.Trim(conf.Images[i], "\r\t\v\n ")
+	}
+}
