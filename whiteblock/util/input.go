@@ -48,7 +48,9 @@ func YesNoPrompt(msg string) bool {
 
 	for {
 		fmt.Printf("%s ([y]es/[n]o) ", msg)
-		scanner.Scan()
+		if !scanner.Scan() {
+			util.PrintErrorFatal(scanner.Err())
+		}
 		ask := scanner.Text()
 		res, err := GetAsBool(ask)
 		if err != nil {
