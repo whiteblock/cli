@@ -6,6 +6,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"os"
 	"strconv"
@@ -21,26 +22,6 @@ var (
 	optionsFlag    map[string]string
 	envFlag        map[string]string
 )
-
-type Config struct {
-	Servers      []int                  `json:"servers"`
-	Blockchain   string                 `json:"blockchain"`
-	Nodes        int                    `json:"nodes"`
-	Images       []string               `json:"images"`
-	Resources    []Resources            `json:"resources"`
-	Params       map[string]interface{} `json:"params"`
-	Environments []map[string]string    `json:"environments"`
-	Files        []map[string]string    `json:"files"`
-	Logs         []map[string]string    `json:"logs"`
-	Extras       map[string]interface{} `json:"extras"`
-	Meta         map[string]interface{} `json:"__meta"`
-}
-
-type Resources struct {
-	Cpus   string   `json:"cpus"`
-	Memory string   `json:"memory"`
-	Ports  []string `json:"ports"`
-}
 
 func buildAttach(buildId string) {
 	buildListener(buildId)
@@ -83,7 +64,7 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 	buildAttach(buildReply.(string))
 }
 
-func build(cmd *cobra.Command, args []string, isAppend bool) {
+func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	var err error
 	util.CheckArguments(cmd, args, 0, 0)
 	buildConf, _ := getPreviousBuild() //Errors are ok with this.
@@ -92,7 +73,7 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 
 	defaultCpus := ""
 	defaultMemory := ""
-	buildConf.Resources = []Resources{Resources{Cpus: "", Memory: ""}}
+	buildConf.Resources = []build.Resources{build.Resources{Cpus: "", Memory: ""}}
 	buildConf.Params = map[string]interface{}{}
 	buildConf.Extras = map[string]interface{}{}
 	buildConf.Meta = map[string]interface{}{}
@@ -102,7 +83,7 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 		util.PrintErrorFatal(err)
 	}
 
-	cpusEnabled, memoryEnabled := handleResources(cmd, args, &buildConf)
+	cpusEnabled, memoryEnabled := build.HandleResources(cmd, args, &buildConf)
 
 	buildOpt := []string{}
 	defOpt := []string{}
@@ -215,7 +196,7 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 			util.PrintErrorFatal(err)
 		}
 	}
-	handleImageFlag(cmd, args, &buildConf)
+	build.HandleImageFlag(cmd, args, &buildConf)
 	if optionsFlag != nil {
 		buildConf.Params, err = processOptions(optionsFlag, options)
 		if err != nil {
@@ -274,7 +255,7 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 	if validators >= 0 {
 		buildConf.Params["validators"] = validators
 	}
-	handleFilesFlag(cmd, args, &buildConf)
+	build.HandleFilesFlag(cmd, args, &buildConf)
 
 	if envFlag != nil {
 		buildConf.Environments, err = processEnv(envFlag, buildConf.Nodes)
@@ -287,19 +268,19 @@ func build(cmd *cobra.Command, args []string, isAppend bool) {
 	if err == nil && fbg {
 		buildConf.Extras["freezeAfterInfrastructure"] = true
 	}
-	handlePullFlag(cmd, args, &buildConf)
-	handleForceUnlockFlag(cmd, args, &buildConf)
-	handleDockerAuthFlags(cmd, args, &buildConf)
-	handleSSHOptions(cmd, args, &buildConf)
-	handleDockerfile(cmd, args, &buildConf)
-	handleRepoBuild(cmd, args, &buildConf)
+	build.HandlePullFlag(cmd, args, &buildConf)
+	build.HandleForceUnlockFlag(cmd, args, &buildConf)
+	build.HandleDockerAuthFlags(cmd, args, &buildConf)
+	build.HandleSSHOptions(cmd, args, &buildConf)
+	build.HandleDockerfile(cmd, args, &buildConf)
+	build.HandleRepoBuild(cmd, args, &buildConf)
 	if !isAppend {
-		handleStartLoggingAtBlock(cmd, args, &buildConf)
+		build.HandleStartLoggingAtBlock(cmd, args, &buildConf)
 	}
 
-	handlePortMapping(cmd, args, &buildConf)
+	build.HandlePortMapping(cmd, args, &buildConf)
 	log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
-	sanitizeBuild(&buildConf)
+	build.SanitizeBuild(&buildConf)
 	buildStart(buildConf, isAppend)
 }
 
@@ -312,7 +293,7 @@ var buildCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		build(cmd, args, false)
+		Build(cmd, args, false)
 	},
 }
 
@@ -414,7 +395,7 @@ var buildAppendCmd = &cobra.Command{
 		" individually as a participant of the specified network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		build(cmd, args, true)
+		Build(cmd, args, true)
 	},
 }
 
@@ -445,6 +426,7 @@ func addBuildFlagsToCommand(cmd *cobra.Command) {
 
 	cmd.Flags().String("git-repo", "", "build from a git repo")
 	cmd.Flags().String("git-repo-branch", "", "specify the branch to build from in a git repo")
+	cmd.Flags().UintSlice("expose-all", []uint{}, "expose a port linearly for all nodes")
 	//META FLAGS
 	cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
 }
