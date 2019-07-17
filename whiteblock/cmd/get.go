@@ -295,7 +295,7 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	cmd.Println(util.Prettypi(res))
+	fmt.Println(util.Prettypi(res))
 }
 
 var getBlockCmd = &cobra.Command{
