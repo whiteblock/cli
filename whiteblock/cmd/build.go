@@ -16,8 +16,6 @@ var (
 	serversFlag    string
 	blockchainFlag string
 	nodesFlag      int
-	cpusFlag       string
-	memoryFlag     string
 	paramsFile     string
 	validators     int
 	optionsFlag    map[string]string
@@ -425,8 +423,8 @@ func addBuildFlagsToCommand(cmd *cobra.Command) {
 	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	cmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
 	cmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
-	cmd.Flags().StringVarP(&cpusFlag, "cpus", "c", "", "specify number of cpus")
-	cmd.Flags().StringVarP(&memoryFlag, "memory", "m", "", "specify memory allocated")
+	cmd.Flags().StringP("cpus", "c", "", "specify number of cpus")
+	cmd.Flags().StringP("memory", "m", "", "specify memory allocated")
 	cmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	cmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 	cmd.Flags().StringSliceP("image", "i", []string{}, "image tag")

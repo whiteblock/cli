@@ -461,7 +461,7 @@ func handleResources(cmd *cobra.Command, args []string, conf *Config) (givenCPU 
 	if cpus != "0" {
 		conf.Resources[0].Cpus = cpus
 	}
-	if memoryFlag != "0" {
+	if memory != "0" {
 		conf.Resources[0].Memory = memory
 	}
 	return

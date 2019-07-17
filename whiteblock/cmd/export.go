@@ -484,6 +484,7 @@ func fetchDataLocally(dir string, startBlock int, singleNodeMode bool) {
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		log.WithFields(log.Fields{"node":i,"block number":blockHeights[i]}).Trace("got the block height for the node")
 	}
 	wg := sync.WaitGroup{}
 	testnetID, err := getPreviousBuildId()
