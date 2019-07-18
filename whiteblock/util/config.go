@@ -45,7 +45,7 @@ func setViperDefaults() {
 	viper.SetDefault("checkLoad", false)
 	viper.SetDefault("loadWarnThreshold", 100)
 	viper.SetDefault("maxConns", 200)
-	viper.SetDefault("rpcRetries", 5)
+	viper.SetDefault("rpcRetries", 20)
 }
 
 func init() {
