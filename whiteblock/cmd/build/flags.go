@@ -117,6 +117,9 @@ func HandleFilesFlag(cmd *cobra.Command, args []string, conf *Config) {
 				util.PrintErrorFatal(fmt.Errorf("Invalid argument"))
 			}
 		}
+		for i := range tuple {
+			tuple[i] = strings.Trim(tuple[i], " \n\r\t")
+		}
 		if len(tuple) == 2 {
 			data, err := ioutil.ReadFile(tuple[1])
 			if err != nil {
