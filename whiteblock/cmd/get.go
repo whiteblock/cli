@@ -403,6 +403,14 @@ Response: JSON representation of the accounts information.
 	},
 }
 
+var getBiomeCmd = &cobra.Command{
+	Use:   "biome",
+	Short: "Get the biome id",
+	Run: func(cmd *cobra.Command, args []string) {
+		util.JsonRpcCallAndPrint("get_biome_id", []string{})
+	},
+}
+
 var getContractsCmd = &cobra.Command{
 	Use:   "contracts",
 	Short: "Get contracts deployed to network.",
@@ -431,7 +439,7 @@ func init() {
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
-	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd)
+	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd, getBiomeCmd)
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
 	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd, getTxRecentCmd)
 	getAccountCmd.AddCommand(getAccountInfoCmd)
