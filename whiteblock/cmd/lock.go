@@ -27,7 +27,7 @@ This call will block until a unique lock has been acquired on the endpoint
 		for {
 			res, err := util.JsonRpcCall("lock", []interface{}{})
 			if err == nil {
-				fmt.Println(util.Prettypi(res))
+				fmt.Println(util.Prettyp(res.(string)))
 				break
 			}
 			time.Sleep(time.Second * 10)
