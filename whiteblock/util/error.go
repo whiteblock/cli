@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"runtime"
 )
 
 const (
-	debug     = false
 	NoMaxArgs = -1
 )
 
@@ -68,38 +66,14 @@ func CheckIntegerBounds(cmd *cobra.Command, name string, val int, min int, max i
 }
 
 func ClientNotSupported(client string) {
-	PrintStringError(fmt.Sprintf("This function is not supported for %s.", client))
-	os.Exit(1)
+	PrintErrorFatal(fmt.Sprintf("This function is not supported for %s.", client))
 }
 
-func PrintErrorFatal(err error) {
-	if debug {
-		_, file, line, ok := runtime.Caller(1)
-		if !ok {
-			file = "???"
-			line = 0
-		}
-		fmt.Printf("\033[31mError: %v:%v\033[0m %s\n", file, line, err)
-		os.Exit(1)
-	}
-	PrintError(err)
+func PrintErrorFatal(err interface{}) {
+	PrintStringError(fmt.Sprint(err))
 	os.Exit(1)
-}
-
-func PrintError(err error) {
-	PrintStringError(err.Error())
 }
 
 func PrintStringError(err string) {
-	if debug {
-		_, file, line, ok := runtime.Caller(1)
-		if !ok {
-			file = "???"
-			line = 0
-		}
-		fmt.Printf("\033[31mError: %v:%v\033[0m %s\n", file, line, err)
-	} else {
-		fmt.Printf("\033[31mError:\033[0m %s\n", err)
-	}
-
+	fmt.Printf("\033[31mError:\033[0m %s\n", err)
 }
