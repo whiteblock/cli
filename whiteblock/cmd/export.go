@@ -388,9 +388,9 @@ var exportCmd = &cobra.Command{
 		wg.Wait()
 		/*for _,node := range nodes {
 			ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks",testnetID,node.ID)
-			fmt.Println(ep)
+			util.Print(ep)
 			res,err := util.JwtHTTPRequest("GET",ep,"")
-			fmt.Println(res,err)
+			util.Print(res,err)
 		}*/
 		//fmt.Printf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks\n",testnetID,node.ID)
 		//	fmt.Printf("https://api.whiteblock.io/testnets/%s/nodes/%s/logs\n",testnetID,node.ID)
