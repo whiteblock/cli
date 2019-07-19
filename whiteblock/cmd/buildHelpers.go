@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -179,8 +178,7 @@ func processEnvKey(in string) (int, string) {
 	}
 
 	if index == len(in) {
-		util.PrintStringError("Cannot have a numerical environment variable")
-		os.Exit(1)
+		util.PrintErrorFatal("Cannot have a numerical environment variable")
 	}
 
 	var err error
