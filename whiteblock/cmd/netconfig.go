@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"os"
 	"strconv"
 )
 
@@ -40,10 +39,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 		}
 
 		netInfo := make(map[string]interface{})
-		node, err := strconv.Atoi(args[0])
-		if err != nil {
-			util.InvalidInteger("node", args[0], true)
-		}
+		node := util.CheckAndConvertInt(args[0], "node")
 
 		netInfo["node"] = node
 		if limitFlag != 1000 {
@@ -119,12 +115,11 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal("No previous build found")
 		}
-		util.JsonRpcCallAndPrint("netem_delete", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("netem_delete", []interface{}{testnetID})
 	},
 }
 
@@ -138,12 +133,11 @@ Netconfig get will fetch the current network conditions
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal("No previous build found")
 		}
-		util.JsonRpcCallAndPrint("netem_get", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("netem_get", []interface{}{testnetID})
 	},
 }
 
@@ -157,12 +151,11 @@ Get a json array of the connections which are blocked.
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal("No previous build found")
 		}
-		outArgs := []interface{}{testnetId}
+		outArgs := []interface{}{testnetID}
 		if len(args) == 1 {
 			outArgs = append(outArgs, args[0])
 		}
@@ -178,16 +171,11 @@ var netconfigGetPartitionsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal(util.ErrNoPreviousBuild)
 		}
-		/*spinner := Spinner{}
-		spinner.SetText("Fetching the network partitions")
-		spinner.Run(100)
-		defer spinner.Kill()*/
-		util.JsonRpcCallAndPrint("get_partitions", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("get_partitions", []interface{}{testnetID})
 	},
 }
 
@@ -201,20 +189,14 @@ Allow the given pair of nodes to connect
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 2, 2)
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal(util.ErrNoPreviousBuild)
 		}
-		node1, err := strconv.Atoi(args[0])
-		if err != nil {
-			util.InvalidInteger("node1", args[0], true)
-		}
-		node2, err := strconv.Atoi(args[1])
-		if err != nil {
-			util.InvalidInteger("node2", args[1], true)
-		}
-		util.JsonRpcCallAndPrint("remove_outage", []interface{}{testnetId, node1, node2})
+		util.JsonRpcCallAndPrint("remove_outage", []interface{}{
+			testnetID,
+			util.CheckAndConvertInt(args[0], "node1"),
+			util.CheckAndConvertInt(args[1], "node2")})
 	},
 }
 
@@ -228,20 +210,14 @@ Prevent the given pair of nodes from connecting
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 2, 2)
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal(util.ErrNoPreviousBuild)
 		}
-		node1, err := strconv.Atoi(args[0])
-		if err != nil {
-			util.InvalidInteger("node1", args[0], true)
-		}
-		node2, err := strconv.Atoi(args[1])
-		if err != nil {
-			util.InvalidInteger("node2", args[1], true)
-		}
-		util.JsonRpcCallAndPrint("make_outage", []interface{}{testnetId, node1, node2})
+		util.JsonRpcCallAndPrint("make_outage", []interface{}{
+			testnetID,
+			util.CheckAndConvertInt(args[0], "node1"),
+			util.CheckAndConvertInt(args[1], "node2")})
 	},
 }
 
@@ -257,28 +233,18 @@ Partition the given nodes from the rest of the network
 
 		testnetId, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal(util.ErrNoPreviousBuild)
 		}
 		nodes := []int{}
 		for i, arg := range args {
-			node, err := strconv.Atoi(arg)
-			if err != nil {
-				util.InvalidInteger(fmt.Sprintf("argument %d", i), args[0], true)
-			}
-			nodes = append(nodes, node)
+			nodes = append(nodes, util.CheckAndConvertInt(arg, fmt.Sprintf("argument %d", i)))
 		}
-		/*spinner := Spinner{}
-		spinner.SetText("Partition the network")
-		spinner.Run(100)
-		defer spinner.Kill()*/
 		util.JsonRpcCallAndPrint("partition_outage", []interface{}{testnetId, nodes})
 	},
 }
 
 var netconfigMarryCmd = &cobra.Command{
-	Use: "marry",
-	//Aliases: []string{"unblock"},
+	Use:   "marry",
 	Short: "Remove any outages",
 	Long: `
 Remove any outages and allow connections between all nodes
@@ -286,16 +252,11 @@ Remove any outages and allow connections between all nodes
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
-			util.PrintStringError("No previous build found")
-			os.Exit(1)
+			util.PrintErrorFatal(util.ErrNoPreviousBuild)
 		}
-		/*spinner := Spinner{}
-		spinner.SetText("Putting the network back together")
-		spinner.Run(100)
-		defer spinner.Kill()*/
-		util.JsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetId})
+		util.JsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetID})
 	},
 }
 

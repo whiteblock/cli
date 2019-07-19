@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	NoMaxArgs = -1
+	NoMaxArgs          = -1
+	ErrNoPreviousBuild = "No previous build found"
 )
 
 /**

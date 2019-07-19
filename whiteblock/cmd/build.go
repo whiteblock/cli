@@ -111,10 +111,6 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	}
 
 	buildArr := []string{}
-	if os.Stdin == nil && len(buildOpt) > 0 {
-		fmt.Println("Would drop into build wizard but is a non interactive context")
-		os.Exit(1)
-	}
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for i := 0; i < len(buildOpt); i++ {
