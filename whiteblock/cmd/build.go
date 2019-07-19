@@ -118,6 +118,9 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for i := 0; i < len(buildOpt); i++ {
+		if !util.IsTTY() {
+			util.PrintErrorFatal("missing build parameters and couldn't prompt")
+		}
 		fmt.Print(buildOpt[i] + ": ")
 		if !scanner.Scan() {
 			util.PrintErrorFatal(scanner.Err())
@@ -186,6 +189,9 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 
 	options := <-optionsChannel //Currently has a negative impact but will be positive in the future
 	if validators < 0 && hasParam(options, "validators") && !isAppend {
+		if !util.IsTTY() {
+			util.PrintErrorFatal("missing validators and couldn't prompt")
+		}
 		fmt.Print("validators: ")
 		if !scanner.Scan() {
 			util.PrintErrorFatal(scanner.Err())
@@ -215,6 +221,9 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 			util.PrintErrorFatal(err)
 		}
 	} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
+		if !util.IsTTY() {
+			util.PrintErrorFatal("not a tty")
+		}
 		//PARAMS
 		for i := 0; i < len(options); i++ {
 			key := options[i][0]

@@ -44,6 +44,9 @@ func GetAsBool(input string) (bool, error) {
 }
 
 func YesNoPrompt(msg string) bool {
+	if !IsTTY() {
+		PrintErrorFatal("not a tty. Did you forget to include -y in your script?")
+	}
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {

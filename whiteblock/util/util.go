@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -198,4 +200,8 @@ func CheckLoad() {
 	if load15 > conf.LoadWarnThreshold || load5 > conf.LoadWarnThreshold {
 		fmt.Println("Warning high cpu usage. Performance may become compromised")
 	}
+}
+
+func IsTTY() bool {
+	return terminal.IsTerminal(int(os.Stdout.Fd()))
 }
