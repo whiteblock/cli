@@ -55,11 +55,9 @@ func InvalidInteger(name string, value string, fatal bool) {
 
 func CheckIntegerBounds(cmd *cobra.Command, name string, val int, min int, max int) {
 	if val < min {
-		PrintStringError(fmt.Sprintf("The value given for %s, %d cannot be less than %d.", name, val, min))
-		os.Exit(1)
+		PrintErrorFatal(fmt.Sprintf("The value given for %s, %d cannot be less than %d.", name, val, min))
 	} else if val > max {
-		PrintStringError(fmt.Sprintf("The value given for %s, %d cannot be greater than %d.", name, val, max))
-		os.Exit(1)
+		PrintErrorFatal(fmt.Sprintf("The value given for %s, %d cannot be greater than %d.", name, val, max))
 	}
 }
 
