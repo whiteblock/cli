@@ -143,6 +143,10 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	} //Final blockchain definition. Will need to start another round of prompting
 	optionsChannel := make(chan [][]string, 1)
 	go func() {
+		if buildConf.Blockchain == "generic" {
+			optionsChannel <- [][]string{}
+			return
+		}
 		opt, err := fetchParams(buildConf.Blockchain)
 		if err != nil {
 			util.PrintErrorFatal(err)
