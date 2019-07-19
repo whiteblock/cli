@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
@@ -24,7 +23,7 @@ This command will read from a file to run a test.
 			util.PrintErrorFatal(err)
 		}
 
-		fmt.Println(util.Prettyp(string(b)))
+		util.Print(util.Prettyp(string(b)))
 
 		var cont map[string]interface{}
 		err = json.Unmarshal(b, &cont)
@@ -32,10 +31,10 @@ This command will read from a file to run a test.
 			util.PrintErrorFatal(err)
 		}
 
-		fmt.Println(cont["build"])
-		fmt.Println(cont["netconfig"])
-		fmt.Println(cont["rpc"])
-		fmt.Println(cont["tests"])
+		util.Print(cont["build"])
+		util.Print(cont["netconfig"])
+		util.Print(cont["rpc"])
+		util.Print(cont["tests"])
 
 		util.JsonRpcCallAndPrint("add_commands", cont["rpc"])
 		res, err := util.JsonRpcCall("build", cont["build"])

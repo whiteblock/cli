@@ -52,7 +52,7 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 		}
 	}
 
-	fmt.Println("Build Started Successfully.")
+	util.Print("Build Started Successfully.")
 	fmt.Printf("Testnet ID : %v\n", buildReply)
 
 	//Store the in progress builds temporary id until the build finishes
@@ -129,7 +129,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 			buildArr = append(buildArr, defOpt[i])
 		} else {
 			i--
-			fmt.Println("Value required")
+			util.Print("Value required")
 			continue
 		}
 	}
@@ -312,7 +312,7 @@ var buildAttachCmd = &cobra.Command{
 		var buildID string
 		err := util.GetP("in_progress_build_id", &buildID)
 		if err != nil || len(buildID) == 0 {
-			fmt.Println("No in progress build found. Use build command to deploy a blockchain.")
+			util.Print("No in progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
 		buildAttach(buildID)
@@ -337,7 +337,7 @@ var previousCmd = &cobra.Command{
 		}
 		util.Print(prevBuild)
 		if previousYesAll || util.YesNoPrompt("Build from previous?") {
-			fmt.Println("building from previous configuration")
+			util.Print("building from previous configuration")
 			buildStart(prevBuild, false)
 			return
 		}

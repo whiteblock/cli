@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
+	"io/ioutil"
+	"os"
 )
 
 var confCmd = &cobra.Command{
@@ -14,24 +12,6 @@ var confCmd = &cobra.Command{
 	Use:    "config",
 	Short:  "Configuration file for default parameters for future builds.",
 	Run:    util.PartialCommand,
-}
-
-var resetConfCmd = &cobra.Command{
-	Hidden: true,
-	Use:    "reset",
-	Short:  "Reset the config file.",
-	Long: `
-This command will rest the configuration file when called.
-	`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		cwd := os.Getenv("HOME")
-		err := os.RemoveAll(cwd + "/.config/whiteblock/config.json")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		fmt.Println("Configuration file has been reset. Run a command to be prompted to create a new one.")
-	},
 }
 
 var showConfCmd = &cobra.Command{
@@ -46,14 +26,14 @@ var showConfCmd = &cobra.Command{
 		cwd := os.Getenv("HOME")
 		b, err := ioutil.ReadFile(cwd + "/.config/whiteblock/config.json")
 		if err != nil {
-			fmt.Println("No configuration file could be found. One will be automatically generated once a successful build has been built. Please refer to the command: 'whiteblock build -h' for help")
+			util.PrintErrorFatal("No configuration file could be found. One will be automatically generated once a successful build has been built. Please refer to the command: 'whiteblock build -h' for help")
 			return
 		}
-		fmt.Println(util.Prettyp(string(b)))
+		util.Print(string(b))
 	},
 }
 
 func init() {
-	confCmd.AddCommand(resetConfCmd, showConfCmd)
+	confCmd.AddCommand(showConfCmd)
 	RootCmd.AddCommand(confCmd)
 }

@@ -105,7 +105,7 @@ func buildListener(testnetId string) {
 			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Progress == 100.0 {
 			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", "Build", status.Progress)
-			fmt.Println("\a")
+			util.Print("\a")
 			mutex.Unlock()
 		} else {
 			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", status.Stage, status.Progress)

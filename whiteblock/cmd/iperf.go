@@ -72,7 +72,7 @@ func CaptureAndOutput(r io.Reader) {
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		m := scanner.Text()
-		fmt.Println(m)
+		util.Print(m)
 	}
 }
 
@@ -245,12 +245,12 @@ Params: sending node, receiving node
 			if bw != "" && udpEnabled {
 				_, err := strconv.Atoi(bw)
 				if err != nil {
-					fmt.Println("Invalid format given for bandwidth flag.")
+					util.Print("Invalid format given for bandwidth flag.")
 					return
 				}
 				iPerfcmd = iPerfcmd + " -b " + bw
 			} else if bw != "" && !udpEnabled {
-				fmt.Println("udp needs to be enabled to set bandwidth.")
+				util.Print("udp needs to be enabled to set bandwidth.")
 			}
 			if dualEnabled {
 				iPerfcmd = iPerfcmd + " -d "

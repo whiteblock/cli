@@ -106,7 +106,7 @@ Response: stdout and stderr of the blockchain process
 
 		for {
 			scanner.Scan()
-			fmt.Println(scanner.Text())
+			util.Print(scanner.Text())
 		}
 	},
 }

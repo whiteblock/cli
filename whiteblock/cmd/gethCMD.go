@@ -61,8 +61,8 @@ func addContract(contract Contract) error {
 func checkContractDir() {
 	cwd := os.Getenv("HOME")
 	if _, err := os.Stat(cwd + "/smart-contracts/"); os.IsNotExist(err) {
-		fmt.Println("'smart-contracts' directory could not be found. Creating the directory 'smart-contracts' in home directory.")
-		fmt.Println("Preparing the dependencies to deploy smart contracts.")
+		util.Print("'smart-contracts' directory could not be found. Creating the directory 'smart-contracts' in home directory.")
+		util.Print("Preparing the dependencies to deploy smart contracts.")
 		err := os.MkdirAll(cwd+"/smart-contracts/", 0755)
 		if err != nil {
 			log.Fatalf("could not create directory: %s", err)
@@ -97,23 +97,23 @@ func checkContractDir() {
 func checkContractFiles(fileName string) bool {
 	cwd := os.Getenv("HOME")
 	if _, err := os.Stat(cwd + "/smart-contracts/node_modules"); err != nil {
-		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		util.Print("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
 		return false
 	}
 	if _, err := os.Stat(cwd + "/smart-contracts/package.json"); err != nil {
-		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		util.Print("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
 		return false
 	}
 	if _, err := os.Stat(cwd + "/smart-contracts/compile.js"); err != nil {
-		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		util.Print("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
 		return false
 	}
 	if _, err := os.Stat(cwd + "/smart-contracts/deploy.js"); err != nil {
-		fmt.Println("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
+		util.Print("Smartcontracts have not been initialized. Please run 'geth solc init' to deploy a smart contract.")
 		return false
 	}
 	if _, err := os.Stat(cwd + "/smart-contracts/" + fileName); err != nil {
-		fmt.Println(fileName + " is not in the directory 'smart-contracts'. Please make sure that the file is located in the directory.")
+		util.Print(fileName + " is not in the directory 'smart-contracts'. Please make sure that the file is located in the directory.")
 		return false
 	}
 	return true
@@ -151,17 +151,17 @@ func installNpmDeps() {
 	}
 	// fmt.Printf("%s", output)
 
-	fmt.Println("\rDependencies has been successfully generated.")
+	util.Print("\rDependencies has been successfully generated.")
 }
 
 func deployContract(fileName, IP string) string {
-	fmt.Println("Deploying Smart Contract: " + fileName)
+	util.Print("Deploying Smart Contract: " + fileName)
 	cwd := os.Getenv("HOME")
 	deployCmd := exec.Command("node", "deploy.js", fileName, IP)
 	deployCmd.Dir = cwd + "/smart-contracts/"
 	output, err := deployCmd.Output()
 	if err != nil {
-		fmt.Println(err)
+		util.Print(err)
 	}
 	fmt.Printf("%s", output)
 	return fmt.Sprintf("%s", output)
@@ -190,10 +190,10 @@ var gethSolcInitCmd = &cobra.Command{
 Init initialize the smart-contracts directory and will download all the necessary dependencies. This may take some time as the files are being pulled. All smart contracts should be put into the 'smart-contracts' directory.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Checking Directory")
+		util.Print("Checking Directory")
 		checkContractDir()
 		installNpmDeps()
-		fmt.Println("'smart-contracts' directory is initializd and smart contract deployment is now available.")
+		util.Print("'smart-contracts' directory is initializd and smart contract deployment is now available.")
 	},
 }
 

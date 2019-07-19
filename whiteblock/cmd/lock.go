@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"time"
@@ -27,7 +26,7 @@ This call will block until a unique lock has been acquired on the endpoint
 		for {
 			res, err := util.JsonRpcCall("lock", []interface{}{})
 			if err == nil {
-				fmt.Println(util.Prettyp(res.(string)))
+				util.Print(res)
 				break
 			}
 			time.Sleep(time.Second * 10)

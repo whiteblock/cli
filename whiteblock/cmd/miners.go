@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"time"
@@ -39,7 +38,7 @@ Response: The number of nodes which successfully received the signal to start mi
 			util.PrintErrorFatal(err)
 		}
 		if noCheck {
-			fmt.Println("Miner is starting")
+			util.Print("Miner is starting")
 		}
 		DagReady := false
 		for !DagReady {
@@ -54,10 +53,10 @@ Response: The number of nodes which successfully received the signal to start mi
 			}
 			time.Sleep(time.Millisecond * 100)
 		}
-		//fmt.Println("\rDAG has been successfully generated.")
+		//util.Print("\rDAG has been successfully generated.")
 		spinner.Kill()
 		time.Sleep(time.Millisecond * 100)
-		fmt.Println("\rDAG has been successfully generated.")
+		util.Print("\rDAG has been successfully generated.")
 	},
 }
 

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
@@ -64,7 +63,7 @@ Optional Parameters:
 		}*/
 
 		if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
-			fmt.Println("Required flags were not provided. Please input the required flags.")
+			util.Print("Required flags were not provided. Please input the required flags.")
 			cmd.Help()
 			return
 		}
@@ -74,7 +73,7 @@ Optional Parameters:
 			switch previousBuild.Blockchain {
 			case "eos":
 				if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
-					fmt.Println("Required flags were not provided. Please input the required flags.")
+					util.Print("Required flags were not provided. Please input the required flags.")
 					return
 				}
 				command = "eos::send_transaction"
@@ -119,7 +118,7 @@ Optional Parameters:
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if !cmd.Flags().Changed("tps") { //TPS will always be required
-			fmt.Println("No \"tps\" flag has been provided. Please input the tps flag with a value.")
+			util.Print("No \"tps\" flag has been provided. Please input the tps flag with a value.")
 			cmd.Help()
 			return
 		}
@@ -178,19 +177,19 @@ Optional Parameters:
 		case "eos":
 			//error handling for invalid flags
 			if valueFlag != 0 {
-				fmt.Println("Invalid \"valueFlag\" flag has been provided.")
+				util.Print("Invalid \"valueFlag\" flag has been provided.")
 				cmd.Help()
 				return
 			}
 			if tpsFlag == 0 {
-				fmt.Println("No \"txsFlag\" flag has been provided. Please input the tps flag with a value.")
+				util.Print("No \"txsFlag\" flag has been provided. Please input the tps flag with a value.")
 				cmd.Help()
 				return
 			}
 			if txSizeFlag >= 174 {
 				params = append(params, strconv.Itoa(txSizeFlag))
 			} else if txSizeFlag > 0 && txSizeFlag < 174 {
-				fmt.Println("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
+				util.Print("Transaction size value is too small. The minimum size of a transaction is 174 bytes.")
 				return
 			}
 		default:
@@ -211,9 +210,9 @@ Stops the sending of transactions if transactions are currently being sent
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := util.JsonRpcCall("state::kill", []string{})
 		if res != nil && res.(float64) == 0 && err == nil {
-			fmt.Println("Transactions stopped successfully")
+			util.Print("Transactions stopped successfully")
 		} else {
-			fmt.Println("There was an error stopping transactions")
+			util.Print("There was an error stopping transactions")
 		}
 	},
 }
