@@ -32,7 +32,7 @@ func buildListener(testnetId string) {
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Printf("\r\n%v\r\n", res)
+		util.Printf("\r\n%v\r\n", res)
 		os.Exit(0)
 	}()
 
@@ -53,7 +53,7 @@ func buildListener(testnetId string) {
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
-				fmt.Printf("\r\n%v\r\n", res)
+				util.Printf("\r\n%v\r\n", res)
 				signal.Reset(syscall.SIGTSTP)
 				syscall.Kill(syscall.Getpid(), syscall.SIGSTOP)
 				signal.Notify(pauseChan, syscall.SIGTSTP)
@@ -63,7 +63,7 @@ func buildListener(testnetId string) {
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
-				fmt.Printf("\r\n%v\r\n", res)
+				util.Printf("\r\n%v\r\n", res)
 			}
 		}
 	}()

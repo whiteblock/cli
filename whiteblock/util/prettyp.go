@@ -50,6 +50,6 @@ func Print(i interface{}) {
 	}
 }
 
-func Printf(format string,a ...interface{}) {
-	Print(fmt.Sprintf(format,a...))
+func Printf(format string, a ...interface{}) {
+	Print(fmt.Sprintf(format, a...))
 }
