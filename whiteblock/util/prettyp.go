@@ -49,3 +49,7 @@ func Print(i interface{}) {
 		fmt.Println(Prettypi(i))
 	}
 }
+
+func Printf(format string,a ...interface{}) {
+	Print(fmt.Sprintf(format,a...))
+}
