@@ -53,7 +53,7 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 	}
 
 	util.Print("Build Started Successfully.")
-	fmt.Printf("Testnet ID : %v\n", buildReply)
+	util.Printf("Testnet ID : %v\n", buildReply)
 
 	//Store the in progress builds temporary id until the build finishes
 	err = util.Set("in_progress_build_id", buildReply.(string))
@@ -249,7 +249,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 			case "bool":
 				val, err := util.GetAsBool(text)
 				if err != nil {
-					util.PrintStringError(err.Error())
+					util.PrintErrorFatal(err)
 					i--
 					continue
 				}
@@ -312,8 +312,7 @@ var buildAttachCmd = &cobra.Command{
 		var buildID string
 		err := util.GetP("in_progress_build_id", &buildID)
 		if err != nil || len(buildID) == 0 {
-			util.Print("No in progress build found. Use build command to deploy a blockchain.")
-			os.Exit(1)
+			util.PrintErrorFatal("No in progress build found. Use build command to deploy a blockchain.")
 		}
 		buildAttach(buildID)
 	},
