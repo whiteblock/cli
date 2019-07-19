@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
@@ -10,18 +11,19 @@ import (
 	"strings"
 )
 
-func GetRawProfileFromJwt(jwt string) ([]byte, error) {
+func GetProfileFromJwt(jwt string) (Profile, error) {
+	var out Profile
 	body := strings.NewReader("")
 	req, err := http.NewRequest("GET", conf.APIURL+"/agent", body)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", jwt))
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 
 	defer resp.Body.Close()
@@ -29,12 +31,13 @@ func GetRawProfileFromJwt(jwt string) ([]byte, error) {
 
 	_, err = buf.ReadFrom(resp.Body)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf(buf.String())
+		return out, fmt.Errorf(buf.String())
 	}
-	return []byte(buf.String()), nil
+	
+	return out,json.Unmarshal([]byte(buf.String()),&out)
 }
 
 var loginCmd = &cobra.Command{
@@ -49,28 +52,28 @@ var loginCmd = &cobra.Command{
 		if err != nil {
 			jwt = []byte(args[0])
 		}
-		rawProfile, err := GetRawProfileFromJwt(string(jwt))
+		prof, err := GetProfileFromJwt(string(jwt))
 		if err != nil {
 			util.PrintStringError("Given jwt is invalid")
 			util.PrintErrorFatal(err)
 		}
-		util.WriteStore("jwt", jwt)
-		util.WriteStore("profile", rawProfile)
+		util.Set("jwt", string(jwt))
+		util.Set("profile", prof)
 
 		if len(args) == 2 {
-			util.WriteStore("biome", []byte(args[1]))
+			util.Set("biome", args[1])
 		}
 
 		LoadProfile()
 		err = LoadBiomeAddress()
 		if err != nil {
-			util.DeleteStore("jwt")
-			util.DeleteStore("profile")
-			util.DeleteStore("biome")
+			util.Delete("jwt")
+			util.Delete("profile")
+			util.Delete("biome")
 			util.PrintErrorFatal(err)
 		}
 
-		fmt.Println("Login Success")
+		util.Print("Login Success")
 		fmt.Printf("Connected to endpoint: %s\n", conf.ServerAddr)
 	},
 }
@@ -82,10 +85,10 @@ var logoutCmd = &cobra.Command{
 	Short:   "Remove all auth stored",
 	Long:    "\nDeletes all stored auth\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.DeleteStore("jwt")
-		util.DeleteStore("profile")
-		util.DeleteStore("biome")
-		cmd.Println("You have been logged off successfully")
+		util.Delete("jwt")
+		util.Delete("profile")
+		util.Delete("biome")
+		util.Print("You have been logged off successfully")
 	},
 }
 

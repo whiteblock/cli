@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"os"
@@ -24,8 +23,7 @@ var RootCmd = &cobra.Command{
 
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		util.PrintErrorFatal(err)
 	}
 }
 
@@ -46,11 +44,11 @@ func init() {
 	//RootCmd.PersistentFlags().StringVarP(&serverAddr, "server-addr", "a", "localhost:5000", "server address with port 5000")
 	RootCmd.AddCommand(completionCmd)
 	//Possibly update this on load.
-	if util.StoreExists("profile") {
+	if util.Exists("profile") {
 
 		err := LoadProfile() //Load the profile into the profile global
 		if err != nil {
-			util.DeleteStore("profile")
+			util.Delete("profile")
 			util.PrintErrorFatal(err)
 		}
 

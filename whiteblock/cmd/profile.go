@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -51,28 +51,53 @@ type Profile struct {
 }*/
 
 func LoadProfile() error {
-	rawProfile, err := util.ReadStore("profile")
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(rawProfile, &profile)
-	if err != nil {
-		return err
-	}
+	return util.GetP("profile",&profile)
+}
 
-	return nil
+func GetBiome(org Organization) (map[string]interface{},error) {
+	if len(org.Biomes) == 0 {
+		return nil,fmt.Errorf("No available biomes")
+	}
+	if len(org.Biomes) == 1 {// There is only one biome so just choose that one
+		return org.Biomes[0], nil
+	}
+	//Dont bother searching for biome if biome is not defined
+	if !util.Exists("biome") {
+		biomeChoices := []string{}
+		for _,biome := range org.Biomes {
+			biomeChoices = append(biomeChoices, biome["alias"].(string))
+		}
+		index := util.OptionListPrompt("Please select a biome",biomeChoices)
+		util.Set("biome",org.Biomes[index]["id"])
+		
+		return org.Biomes[index], nil
+
+	}
+	var biomeName string
+	err := util.GetP("biome",&biomeName)
+	if err != nil {
+		return nil,err
+	}
+	i := 0
+	//Allow for automatic detect of organization id
+	biomeId, err := strconv.Atoi(biomeName)
+	isBiomeId := (err == nil)
+
+	for i = 0; i < len(org.Biomes); i++ {
+		if (isBiomeId && int(org.Biomes[i]["id"].(float64)) == biomeId) ||
+			(!isBiomeId && org.Biomes[i]["alias"].(string) == biomeName) {
+			return org.Biomes[i], nil
+		}
+	}
+	return nil, fmt.Errorf("could not find biome")	
 }
 
 func LoadBiomeAddress() error {
 	var profile Profile
 	var org Organization
 	//Grab organization
-	if util.StoreExists("profile") {
-		rawOrgKey, err := util.ReadStore("profile")
-		if err != nil {
-			return err
-		}
-		err = json.Unmarshal(rawOrgKey, &profile)
+	if util.Exists("profile") {
+		err := util.GetP("profile", &profile)
 		if err != nil {
 			return err
 		}
@@ -80,36 +105,11 @@ func LoadBiomeAddress() error {
 	} else {
 		return fmt.Errorf("no profile data")
 	}
-
-	var biome map[string]interface{}
-	if len(org.Biomes) == 0 {
-		return fmt.Errorf("No available biomes")
-	}
-	//Dont bother searching for biome if biome is not defined
-	if !util.StoreExists("biome") {
-		//TODO, improve this
-		biome = org.Biomes[0]
-	} else {
-		rawBiomeName, err := util.ReadStore("biome")
-		if err != nil {
-			return err
-		}
-		biomeName := string(rawBiomeName)
-		i := 0
-		//Allow for automatic detect of organization id
-		biomeId, err := strconv.Atoi(biomeName)
-		isBiomeId := (err == nil)
-
-		for i = 0; i < len(org.Biomes); i++ {
-			if (isBiomeId && int(org.Biomes[i]["id"].(float64)) == biomeId) ||
-				(!isBiomeId && org.Biomes[i]["alias"].(string) == biomeName) {
-				biome = org.Biomes[i]
-				break
-			}
-		}
-		if i == len(org.Biomes) {
-			return fmt.Errorf("Could not find biome")
-		}
+	util.Print(org)
+	log.WithFields(log.Fields{"org":org}).Debug("got the org data")
+	biome,err := GetBiome(org)
+	if err != nil {
+		return err
 	}
 	conf.ServerAddr = biome["host"].(string) + ":5001"
 	return nil

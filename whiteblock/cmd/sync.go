@@ -19,11 +19,11 @@ var syncCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		err = util.WriteStore(".previous_build_id", []byte(res.(map[string]interface{})["id"].(string)))
+		err = util.Set("previous_build_id", res.(map[string]interface{})["id"].(string))
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		cmd.Println("synced up with the latest build")
+		util.Print("synced up with the latest build")
 	},
 }
 

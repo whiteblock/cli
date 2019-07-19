@@ -66,7 +66,7 @@ func YesNoPrompt(msg string) bool {
 	panic("should never reach")
 }
 
-func OptionListPrompt(msg string, options []string) string {
+func OptionListPrompt(msg string, options []string) int {
 	if !IsTTY() {
 		PrintErrorFatal("not a TTY, failed to give option prompt")
 	}
@@ -92,7 +92,7 @@ func OptionListPrompt(msg string, options []string) string {
 			fmt.Println("option does not exist")
 			continue
 		}
-		return options[selection]
+		return selection
 	}
 	panic("should never reach")
 }

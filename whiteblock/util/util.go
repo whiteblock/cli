@@ -83,9 +83,10 @@ func HttpRequest(method string, url string, bodyData string) ([]byte, error) {
 }
 
 func CreateAuthNHeader() (string, error) {
-	if StoreExists("jwt") {
-		res, err := ReadStore("jwt")
-		return fmt.Sprintf("Bearer %s", string(res)), err
+	if Exists("jwt") {
+		var jwt string
+		err := GetP("jwt",&jwt)
+		return fmt.Sprintf("Bearer %s", string(jwt)), err
 	}
 	res, err := ioutil.ReadFile("/etc/secrets/biome-service-account.jwt")
 	token := strings.TrimSpace(string(res))

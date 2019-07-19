@@ -23,10 +23,10 @@ var (
 	envFlag        map[string]string
 )
 
-func buildAttach(buildId string) {
-	buildListener(buildId)
-	err := util.WriteStore(".previous_build_id", []byte(buildId))
-	util.DeleteStore(".in_progress_build_id")
+func buildAttach(buildID string) {
+	buildListener(buildID)
+	err := util.Set("previous_build_id", buildID)
+	util.Delete("in_progress_build_id")
 
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -56,7 +56,7 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 	fmt.Printf("Testnet ID : %v\n", buildReply)
 
 	//Store the in progress builds temporary id until the build finishes
-	err = util.WriteStore(".in_progress_build_id", []byte(buildReply.(string)))
+	err = util.Set("in_progress_build_id", buildReply.(string))
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
@@ -309,12 +309,13 @@ var buildAttachCmd = &cobra.Command{
 	Long:    "\nAttach to a current in progress build process\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId, err := util.ReadStore(".in_progress_build_id")
-		if err != nil || len(buildId) == 0 {
+		var buildID string
+		err := util.GetP("in_progress_build_id",&buildID)
+		if err != nil || len(buildID) == 0 {
 			fmt.Println("No in progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
 		}
-		buildAttach(string(buildId))
+		buildAttach(buildID)
 	},
 }
 
@@ -334,8 +335,7 @@ var previousCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
-		fmt.Println(util.Prettypi(prevBuild))
+		util.Print(prevBuild)
 		if previousYesAll || util.YesNoPrompt("Build from previous?") {
 			fmt.Println("building from previous configuration")
 			buildStart(prevBuild, false)
@@ -351,13 +351,13 @@ var buildStopCmd = &cobra.Command{
 	Long:    "\nBuild stops the current building process.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId, err := util.ReadStore(".in_progress_build_id")
-		if err != nil || len(buildId) == 0 {
-			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
-			os.Exit(1)
+		var buildID string
+		err := util.GetP("in_progress_build_id",&buildID)
+		if err != nil || len(buildID) == 0 {
+			util.PrintErrorFatal("No in-progress build found. Use build command to deploy a blockchain.")
 		}
-		defer util.DeleteStore(".in_progress_build_id")
-		util.JsonRpcCallAndPrint("stop_build", []string{string(buildId)})
+		defer util.Delete("in_progress_build_id")
+		util.JsonRpcCallAndPrint("stop_build", []interface{}{buildID})
 	},
 }
 
@@ -367,12 +367,12 @@ var buildFreezeCmd = &cobra.Command{
 	Short:   "Pause a build",
 	Long:    "Pause a build",
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId, err := util.ReadStore(".in_progress_build_id")
-		if err != nil || len(buildId) == 0 {
-			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
-			os.Exit(1)
+		var buildID string
+		err := util.GetP("in_progress_build_id",&buildID)
+		if err != nil || len(buildID) == 0 {
+			util.PrintErrorFatal("No in-progress build found. Use build command to deploy a blockchain.")
 		}
-		util.JsonRpcCallAndPrint("freeze_build", []string{string(buildId)})
+		util.JsonRpcCallAndPrint("freeze_build", []string{buildID})
 	},
 }
 
@@ -382,13 +382,13 @@ var buildUnfreezeCmd = &cobra.Command{
 	Short:   "Unpause a build",
 	Long:    "Unpause a build",
 	Run: func(cmd *cobra.Command, args []string) {
-		buildId, err := util.ReadStore(".in_progress_build_id")
-		if err != nil || len(buildId) == 0 {
-			fmt.Println("No in-progress build found. Use build command to deploy a blockchain.")
-			os.Exit(1)
+		var buildID string
+		err := util.GetP("in_progress_build_id",&buildID)
+		if err != nil || len(buildID) == 0 {
+			util.PrintErrorFatal("No in-progress build found. Use build command to deploy a blockchain.")
 		}
-		util.JsonRpcCallAndPrint("unfreeze_build", []string{string(buildId)})
-		buildAttach(string(buildId))
+		util.JsonRpcCallAndPrint("unfreeze_build", []string{buildID})
+		buildAttach(buildID)
 	},
 }
 

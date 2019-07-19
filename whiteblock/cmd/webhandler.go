@@ -27,7 +27,7 @@ func buildListener(testnetId string) {
 	signal.Notify(sigChan, syscall.SIGINT) //Stop the build on SIGINT
 	go func() {
 		<-sigChan
-		defer util.DeleteStore(".in_progress_build_id")
+		defer util.Delete("in_progress_build_id")
 		res, err := util.JsonRpcCall("stop_build", []string{testnetId})
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -87,25 +87,20 @@ func buildListener(testnetId string) {
 	defer c.Close()
 
 	c.On("error", func(h *gosocketio.Channel, args string) {
-		util.PrintStringError(args)
-		os.Exit(1)
+		util.PrintErrorFatal(args)
 	})
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
 		var status BuildStatus
 		err := json.Unmarshal([]byte(args), &status)
 		if err != nil {
-			util.PrintStringError(args)
-			os.Exit(1)
+			util.PrintErrorFatal(args)
 		}
 		if status.Frozen {
 			fmt.Printf("\nBuild is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
 		} else if status.Error != nil {
 			fmt.Println() //move to the next line
-			what := status.Error["what"]
-			util.PrintStringError(what)
-			os.Exit(1)
-			mutex.Unlock()
+			util.PrintErrorFatal(status.Error["what"])
 		} else if status.Progress == 0.0 {
 			fmt.Printf("Sending build context to Whiteblock\r")
 		} else if status.Progress == 100.0 {
