@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"os"
 	"sort"
 )
 
@@ -55,7 +53,7 @@ var getTestnetIDCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Println(testnetID)
+		util.Print(testnetID)
 	},
 }
 
@@ -69,7 +67,7 @@ var getBuildCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		fmt.Println(util.Prettypi(prevBuild))
+		util.Print(prevBuild)
 	},
 }
 
@@ -84,7 +82,7 @@ var getSupportedCmd = &cobra.Command{
 		util.JsonRpcCallP("get_supported_blockchains", []string{}, &blockchains)
 		sortedBlockchains := sort.StringSlice(blockchains)
 		sortedBlockchains.Sort()
-		fmt.Println(util.Prettypi([]string(sortedBlockchains)))
+		util.Print([]string(sortedBlockchains))
 	},
 }
 
@@ -119,7 +117,7 @@ var getNodesCmd = &cobra.Command{
 				out = append(out, rawNode)
 			}
 		}
-		fmt.Println(util.Prettypi(out))
+		util.Print(out)
 	},
 }
 
@@ -264,8 +262,7 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 	blockNum := util.CheckAndConvertInt(args[0], "block number")
 
 	if blockNum < 1 {
-		util.PrintStringError("Unable to get block information from block 0. Please provide a block number greater than 0.")
-		os.Exit(1)
+		util.PrintErrorFatal("Unable to get block information from block 0. Please provide a block number greater than 0.")
 	}
 	/*res, err := util.JsonRpcCall("get_block_number", []string{})
 	if err != nil {
@@ -295,7 +292,7 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	fmt.Println(util.Prettypi(res))
+	util.Print(res)
 }
 
 var getBlockCmd = &cobra.Command{
@@ -424,11 +421,11 @@ Response: JSON representation of the contract information.
 		var contracts []interface{}
 		err := util.ReadTestnetStore("contracts", &contracts)
 		if err != nil {
-			util.PrintStringError("No smart contract has been deployed yet." +
+			util.PrintErrorFatal("No smart contract has been deployed yet." +
 				" Please use the command 'whiteblock geth solc deploy <smart contract> to deploy a smart contract.")
-			os.Exit(1)
+
 		}
-		fmt.Println(util.Prettypi(contracts))
+		util.Print(contracts)
 	},
 }
 

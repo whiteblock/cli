@@ -87,6 +87,7 @@ func LoadBiomeAddress() error {
 	}
 	//Dont bother searching for biome if biome is not defined
 	if !util.StoreExists("biome") {
+		//TODO, improve this
 		biome = org.Biomes[0]
 	} else {
 		rawBiomeName, err := util.ReadStore("biome")

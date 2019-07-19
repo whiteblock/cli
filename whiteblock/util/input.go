@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -61,6 +62,37 @@ func YesNoPrompt(msg string) bool {
 			continue
 		}
 		return res
+	}
+	panic("should never reach")
+}
+
+func OptionListPrompt(msg string, options []string) string {
+	if !IsTTY() {
+		PrintErrorFatal("not a TTY, failed to give option prompt")
+	}
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		fmt.Println(msg)
+		for i, option := range options {
+			fmt.Printf("[%d] %s\n", i, option)
+		}
+		fmt.Printf("\nenter your selection: ")
+
+		if !scanner.Scan() {
+			PrintErrorFatal(scanner.Err())
+		}
+		userResponse := scanner.Text()
+		selection, err := strconv.Atoi(userResponse)
+		if err != nil {
+			InvalidInteger("selection", userResponse, false)
+			continue
+		}
+		if selection >= len(options) || selection < 0 {
+			fmt.Println("option does not exist")
+			continue
+		}
+		return options[selection]
 	}
 	panic("should never reach")
 }

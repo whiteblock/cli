@@ -6,24 +6,11 @@ import (
 	"github.com/gorilla/rpc/v2/json2"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 	"strings"
 )
 
 func JsonRpcCallAndPrint(method string, params interface{}) {
 	reply, err := JsonRpcCall(method, params)
-	switch reply.(type) {
-	case string:
-		_, noPretty := os.LookupEnv("NO_PRETTY")
-		if noPretty {
-			fmt.Println(reply.(string))
-		} else {
-			fmt.Printf("\033[97m%s\033[0m\n", reply.(string))
-		}
-
-		return
-	}
-
 	if err != nil {
 		jsonError, ok := err.(*json2.Error)
 		if ok && jsonError.Data != nil {
@@ -31,13 +18,12 @@ func JsonRpcCallAndPrint(method string, params interface{}) {
 			if err != nil {
 				PrintErrorFatal(err)
 			}
-			PrintStringError(string(res))
-			os.Exit(1)
+			PrintErrorFatal(string(res))
 		} else {
 			PrintErrorFatal(err)
 		}
 	}
-	fmt.Println(Prettypi(reply))
+	Print(reply)
 }
 func JsonRpcCallP(method string, params interface{}, out interface{}) error {
 	res, err := JsonRpcCall(method, params)
