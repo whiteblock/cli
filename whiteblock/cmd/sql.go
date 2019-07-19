@@ -62,7 +62,7 @@ Response: JSON representation of the table list in the database
 
 		err = json.Unmarshal(data, &tables)
 
-		fmt.Println(util.Prettypi(tables))
+		util.Print(tables)
 	},
 }
 
@@ -112,16 +112,14 @@ This command will run a SQL query to the database to retrieve structured log dat
 			outRows = append(outRows, response.Rows...)
 		}
 
-		fmt.Println(
-			util.Prettypi(
-				struct {
-					Schema interface{}     `json:"schema"`
-					Rows   [][]interface{} `json:"rows"`
-				}{
-					Schema: response.Schema,
-					Rows:   outRows,
-				},
-			),
+		util.Print(
+			struct {
+				Schema interface{}     `json:"schema"`
+				Rows   [][]interface{} `json:"rows"`
+			}{
+				Schema: response.Schema,
+				Rows:   outRows,
+			},
 		)
 	},
 }

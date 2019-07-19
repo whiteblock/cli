@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/util"
 )
 
 const (
@@ -14,7 +15,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Get whiteblock CLI client version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(RootCmd.Use + " " + VERSION)
+		util.Println(RootCmd.Use + " " + VERSION)
 	},
 }
 
