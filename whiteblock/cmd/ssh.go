@@ -6,7 +6,6 @@ import (
 	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sys/unix"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -33,14 +32,9 @@ SSH will allow the user to go into the container where the specified node exists
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		nodeNumber, err := strconv.Atoi(args[0])
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		if nodeNumber >= len(nodes) {
-			util.PrintStringError("Node number too high")
-			os.Exit(1)
-		}
+		nodeNumber := util.CheckAndConvertInt(args[0], "node")
+		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
+
 		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10"}
 		verbose, err := cmd.Flags().GetBool("verbose")
