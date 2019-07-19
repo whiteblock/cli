@@ -7,7 +7,6 @@ import (
 	"golang.org/x/sys/unix"
 	"log"
 	"os"
-	"strconv"
 )
 
 var pingCmd = &cobra.Command{
@@ -26,14 +25,9 @@ Params: sending node, receiving node
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		sendingNodeNumber, err := strconv.Atoi(args[0])
-		if err != nil {
-			util.InvalidInteger("sending node number", args[0], true)
-		}
-		receivingNodeNumber, err := strconv.Atoi(args[1])
-		if err != nil {
-			util.InvalidInteger("receiving node number", args[1], true)
-		}
+		sendingNodeNumber := util.CheckAndConvertInt(args[0], "sending node number")
+		receivingNodeNumber := util.CheckAndConvertInt(args[1], "receiving node number")
+
 		util.CheckIntegerBounds(cmd, "sending node number", sendingNodeNumber, 0, len(nodes)-1)
 		util.CheckIntegerBounds(cmd, "receiving node number", receivingNodeNumber, 0, len(nodes)-1)
 

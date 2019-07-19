@@ -7,7 +7,6 @@ import (
 	"golang.org/x/sys/unix"
 	"log"
 	"os"
-	"strconv"
 )
 
 var scpCmd = &cobra.Command{
@@ -22,22 +21,17 @@ Params: node number, file/dir source, file/dir destination
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 3, 3)
-
 		nodes, err := GetNodes()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		nodeNumber, err := strconv.Atoi(args[0])
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		if nodeNumber >= len(nodes) {
-			util.PrintStringError("Node number too high")
-			os.Exit(1)
-		}
-		err = unix.Exec("/usr/bin/scp", []string{"scp", "-i", "/home/master-secrets/id.master", "-r", "-o", "UserKnownHostsFile=/dev/null",
-			"-o", "StrictHostKeyChecking no", args[1], "root@" + fmt.Sprintf(nodes[nodeNumber].IP) + ":" + args[2]}, os.Environ())
-		log.Fatal(err)
+		nodeNumber := util.CheckAndConvertInt(args[0], "node")
+		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
+
+		log.Fatal(unix.Exec("/usr/bin/scp", []string{"scp", "-i", "/home/master-secrets/id.master",
+			"-r", "-o", "UserKnownHostsFile=/dev/null",
+			"-o", "StrictHostKeyChecking no", args[1],
+			"root@" + fmt.Sprintf(nodes[nodeNumber].IP) + ":" + args[2]}, os.Environ()))
 	},
 }
 
