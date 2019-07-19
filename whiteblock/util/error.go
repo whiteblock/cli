@@ -22,8 +22,7 @@ func CheckArguments(cmd *cobra.Command, args []string, min int, max int) {
 		if min == 1 {
 			plural = ""
 		}
-		PrintStringError(fmt.Sprintf("Invalid number of arguments. Expected exactly %d argument%s. Given %d.", min, plural, len(args)))
-		os.Exit(1)
+		PrintErrorFatal(fmt.Sprintf("Invalid number of arguments. Expected exactly %d argument%s. Given %d.", min, plural, len(args)))
 	}
 	if len(args) < min {
 		fmt.Println(cmd.UsageString())
@@ -31,8 +30,7 @@ func CheckArguments(cmd *cobra.Command, args []string, min int, max int) {
 		if min == 1 {
 			plural = ""
 		}
-		PrintStringError(fmt.Sprintf("Missing arguments. Expected atleast %d argument%s. Given %d.", min, plural, len(args)))
-		os.Exit(1)
+		PrintErrorFatal(fmt.Sprintf("Missing arguments. Expected atleast %d argument%s. Given %d.", min, plural, len(args)))
 	}
 	if max != NoMaxArgs && len(args) > max {
 		fmt.Println(cmd.UsageString())
@@ -40,8 +38,7 @@ func CheckArguments(cmd *cobra.Command, args []string, min int, max int) {
 		if max == 1 {
 			plural = ""
 		}
-		PrintStringError(fmt.Sprintf("Too many arguments. Expected atmost %d argument%s. Given %d.", max, plural, len(args)))
-		os.Exit(1)
+		PrintErrorFatal(fmt.Sprintf("Too many arguments. Expected atmost %d argument%s. Given %d.", max, plural, len(args)))
 	}
 }
 
