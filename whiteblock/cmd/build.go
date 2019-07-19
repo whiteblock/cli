@@ -310,7 +310,7 @@ var buildAttachCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		var buildID string
-		err := util.GetP("in_progress_build_id",&buildID)
+		err := util.GetP("in_progress_build_id", &buildID)
 		if err != nil || len(buildID) == 0 {
 			fmt.Println("No in progress build found. Use build command to deploy a blockchain.")
 			os.Exit(1)
@@ -352,7 +352,7 @@ var buildStopCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		var buildID string
-		err := util.GetP("in_progress_build_id",&buildID)
+		err := util.GetP("in_progress_build_id", &buildID)
 		if err != nil || len(buildID) == 0 {
 			util.PrintErrorFatal("No in-progress build found. Use build command to deploy a blockchain.")
 		}
@@ -368,7 +368,7 @@ var buildFreezeCmd = &cobra.Command{
 	Long:    "Pause a build",
 	Run: func(cmd *cobra.Command, args []string) {
 		var buildID string
-		err := util.GetP("in_progress_build_id",&buildID)
+		err := util.GetP("in_progress_build_id", &buildID)
 		if err != nil || len(buildID) == 0 {
 			util.PrintErrorFatal("No in-progress build found. Use build command to deploy a blockchain.")
 		}
@@ -383,7 +383,7 @@ var buildUnfreezeCmd = &cobra.Command{
 	Long:    "Unpause a build",
 	Run: func(cmd *cobra.Command, args []string) {
 		var buildID string
-		err := util.GetP("in_progress_build_id",&buildID)
+		err := util.GetP("in_progress_build_id", &buildID)
 		if err != nil || len(buildID) == 0 {
 			util.PrintErrorFatal("No in-progress build found. Use build command to deploy a blockchain.")
 		}

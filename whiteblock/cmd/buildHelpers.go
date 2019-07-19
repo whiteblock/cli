@@ -13,7 +13,7 @@ import (
 //"github.com/sirupsen/logrus"
 func getPreviousBuildId() (string, error) {
 	var buildID string
-	err := util.GetP("previous_build_id",&buildID)
+	err := util.GetP("previous_build_id", &buildID)
 	if err != nil || len(buildID) == 0 {
 		return "", fmt.Errorf("No previous build. Use build command to deploy a blockchain, " +
 			"or run `whiteblock sync` if you already have a blockchain deployed.")

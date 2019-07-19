@@ -36,8 +36,8 @@ func GetProfileFromJwt(jwt string) (Profile, error) {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return out, fmt.Errorf(buf.String())
 	}
-	
-	return out,json.Unmarshal([]byte(buf.String()),&out)
+
+	return out, json.Unmarshal([]byte(buf.String()), &out)
 }
 
 var loginCmd = &cobra.Command{

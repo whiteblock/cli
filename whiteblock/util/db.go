@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	db   *sql.DB
-	mux  sync.Mutex
+	db  *sql.DB
+	mux sync.Mutex
 )
 
 func getDB() {
@@ -93,7 +93,7 @@ func GetP(key string, v interface{}) error {
 
 func Exists(key string) bool {
 	var out interface{}
-	return (GetP(key,&out) == nil)
+	return (GetP(key, &out) == nil)
 }
 
 //Delete deletes the value stored at key

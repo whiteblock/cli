@@ -2,7 +2,6 @@ package util
 
 import ()
 
-
 func ReadTestnetStore(name string, outptr interface{}) error {
 	return JsonRpcCallP("state::get", []interface{}{name}, outptr)
 }

@@ -68,7 +68,7 @@ func buildListener(testnetId string) {
 		}
 	}()
 
-	var mutex = &sync.Mutex{}
+	mutex := &sync.Mutex{}
 	mutex.Lock()
 	c, err := func() (*gosocketio.Client, error) {
 		if strings.HasSuffix(conf.ServerAddr, "5000") { //5000 is http
