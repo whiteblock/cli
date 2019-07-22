@@ -77,8 +77,6 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	blockchainEnabled := len(blockchainFlag) > 0
 	nodesEnabled := nodesFlag > 0
 
-	defaultCpus := ""
-	defaultMemory := ""
 	buildConf.Resources = []build.Resources{build.Resources{Cpus: "", Memory: ""}}
 	buildConf.Params = map[string]interface{}{}
 	buildConf.Extras = map[string]interface{}{}
@@ -89,7 +87,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 		util.PrintErrorFatal(err)
 	}
 
-	cpusEnabled, memoryEnabled := build.HandleResources(cmd, args, &buildConf)
+	build.HandleResources(cmd, args, &buildConf)
 
 	buildOpt := []string{}
 	defOpt := []string{}
@@ -104,16 +102,6 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 		allowEmpty = append(allowEmpty, false)
 		buildOpt = append(buildOpt, fmt.Sprintf("nodes(%d)", buildConf.Nodes))
 		defOpt = append(defOpt, fmt.Sprintf("%d", buildConf.Nodes))
-	}
-	if !cpusEnabled {
-		allowEmpty = append(allowEmpty, true)
-		buildOpt = append(buildOpt, "cpus"+tern((defaultCpus == ""), "(empty for no limit)", " ("+defaultCpus+")"))
-		defOpt = append(defOpt, fmt.Sprintf(defaultCpus))
-	}
-	if !memoryEnabled {
-		allowEmpty = append(allowEmpty, true)
-		buildOpt = append(buildOpt, "memory"+tern((defaultMemory == ""), "(empty for no limit)", " ("+defaultMemory+")"))
-		defOpt = append(defOpt, fmt.Sprintf(defaultMemory))
 	}
 
 	buildArr := []string{}
@@ -168,15 +156,6 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 			util.InvalidInteger("nodes", buildArr[offset], true)
 		}
 		offset++
-	}
-
-	if !cpusEnabled {
-		buildConf.Resources[0].Cpus = buildArr[offset]
-		offset++
-	}
-	if !memoryEnabled {
-		buildConf.Resources[0].Memory = buildArr[offset]
-		//offset++
 	}
 
 	if len(serversFlag) > 0 {
@@ -420,8 +399,8 @@ func addBuildFlagsToCommand(cmd *cobra.Command) {
 	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	cmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
 	cmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
-	cmd.Flags().StringP("cpus", "c", "", "specify number of cpus")
-	cmd.Flags().StringP("memory", "m", "", "specify memory allocated")
+	cmd.Flags().StringP("cpus", "c", "0", "specify number of cpus")
+	cmd.Flags().StringP("memory", "m", "0", "specify memory allocated")
 	cmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
 	cmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
 	cmd.Flags().StringSliceP("image", "i", []string{}, "image tag")

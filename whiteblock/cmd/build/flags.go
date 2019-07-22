@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -34,11 +33,9 @@ func HandlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
 func HandleDockerAuthFlags(cmd *cobra.Command, args []string, conf *Config) {
 	if cmd.Flags().Changed("docker-password") != cmd.Flags().Changed("docker-username") {
 		if cmd.Flags().Changed("docker-password") {
-			util.PrintStringError("you must also provide --docker-password with --docker-username")
-		} else {
-			util.PrintStringError("you must also provide --docker-username with --docker-password")
+			util.PrintErrorFatal("you must also provide --docker-password with --docker-username")
 		}
-		os.Exit(1)
+		util.PrintErrorFatal("you must also provide --docker-username with --docker-password")
 	}
 	if !cmd.Flags().Changed("docker-password") {
 		return //The auth flags have not been set
