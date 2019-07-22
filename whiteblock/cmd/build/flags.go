@@ -270,6 +270,17 @@ func HandleRepoBuild(cmd *cobra.Command, args []string, conf *Config) {
 	}
 }
 
+func addPortMapping(portMapping map[int][]string, conf *Config) {
+	firstResources := conf.Resources[0]
+	for conf.Nodes > len(conf.Resources) {
+		conf.Resources = append(conf.Resources, firstResources)
+	}
+	for node, mappings := range portMapping {
+		conf.Resources[node].Ports = mappings
+		log.WithFields(log.Fields{"node": node, "ports": mappings}).Trace("adding the port mapping")
+	}
+}
+
 func HandlePortMapping(cmd *cobra.Command, args []string, conf *Config) {
 	if !cmd.Flags().Changed("expose-port-mapping") {
 		return
@@ -279,20 +290,36 @@ func HandlePortMapping(cmd *cobra.Command, args []string, conf *Config) {
 		util.PrintErrorFatal(err)
 	}
 
-	firstResources := conf.Resources[0]
-	for conf.Nodes > len(conf.Resources) {
-		conf.Resources = append(conf.Resources, firstResources)
-	}
 	parsedPortMapping, err := util.ParseIntToStringSlice(portMapping)
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
+	addPortMapping(parsedPortMapping, conf)
 
-	for node, mappings := range parsedPortMapping {
-		conf.Resources[node].Ports = mappings
-		log.WithFields(log.Fields{"node": node, "ports": mappings}).Trace("adding the port mapping")
-	}
 }
 
-/*func HandleExposeAllBuildFlag()
-cmd.Flags().Int32Slice("expose-all",[],"expose a port linearly for all nodes")*/
+func HandleExposeAllBuildFlag(cmd *cobra.Command, args []string, conf *Config, offset int) {
+	if !cmd.Flags().Changed("expose-all") {
+		return
+	}
+	portsToExpose, err := cmd.Flags().GetIntSlice("expose-all")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	portMapping := map[int][]string{}
+	usedPort := map[int]bool{}
+	for i := 0; i < conf.Nodes; i++ {
+		portMapping[i] = []string{}
+		for _, portToExpose := range portsToExpose {
+			portToBind := portToExpose + i + offset
+			_, used := usedPort[portToBind]
+			if used {
+				util.PrintErrorFatal(
+					fmt.Sprintf("would duplicate exposed port %d. Too many nodes to run auto expose", portToExpose))
+			}
+			portMapping[i] = append(portMapping[i], fmt.Sprintf("%d:%d", portToBind, portToExpose))
+		}
+	}
+	addPortMapping(portMapping, conf)
+}

@@ -68,6 +68,12 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	var err error
 	util.CheckArguments(cmd, args, 0, 0)
 	buildConf, _ := getPreviousBuild() //Errors are ok with this.
+
+	previousNumberNodes := 0
+	if isAppend {
+		previousNumberNodes = buildConf.Nodes
+	}
+
 	blockchainEnabled := len(blockchainFlag) > 0
 	nodesEnabled := nodesFlag > 0
 
@@ -288,6 +294,8 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	}
 
 	build.HandlePortMapping(cmd, args, &buildConf)
+	build.HandleExposeAllBuildFlag(cmd, args, &buildConf, previousNumberNodes)
+
 	log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
 	build.SanitizeBuild(&buildConf)
 	buildStart(buildConf, isAppend)
@@ -434,7 +442,7 @@ func addBuildFlagsToCommand(cmd *cobra.Command) {
 
 	cmd.Flags().String("git-repo", "", "build from a git repo")
 	cmd.Flags().String("git-repo-branch", "", "specify the branch to build from in a git repo")
-	cmd.Flags().UintSlice("expose-all", []uint{}, "expose a port linearly for all nodes")
+	cmd.Flags().IntSlice("expose-all", []int{}, "expose a port linearly for all nodes")
 	//META FLAGS
 	cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
 }
