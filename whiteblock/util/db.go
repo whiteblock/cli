@@ -7,12 +7,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 	"os"
-	"sync"
 )
 
 var (
-	db  *sql.DB
-	mux sync.Mutex
+	db *sql.DB
 )
 
 func getDB() {
@@ -21,6 +19,7 @@ func getDB() {
 	// Check if the file exists, if not create the file dir
 	_, err := os.Stat(dataLoc)
 	if os.IsNotExist(err) {
+		os.MkdirAll(conf.StoreDirectory, 0755)
 		_, err := os.Create(dataLoc)
 		if err != nil {
 			log.Error(err)
