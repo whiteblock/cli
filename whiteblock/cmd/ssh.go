@@ -10,12 +10,15 @@ import (
 )
 
 type Node struct {
-	ID        string `json:"id"`
-	TestNetID string `json:"testnetId"`
-	Server    int    `json:"server"`
-	LocalID   int    `json:"localId"`
-	IP        string `json:"ip"`
-	Label     string `json:"label"`
+	ID           string            `json:"id"`
+	TestNetID    string            `json:"testnetId"`
+	Server       int               `json:"server"`
+	LocalID      int               `json:"localId"`
+	IP           string            `json:"ip"`
+	Label        string            `json:"label"`
+	Image        string            `json:"image"`
+	Protocol     string            `json:"protocol"`
+	PortMappings map[string]string `json:"portMappings,omitonempty"`
 }
 
 var sshCmd = &cobra.Command{
