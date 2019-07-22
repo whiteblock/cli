@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
@@ -30,6 +31,7 @@ func getPreviousBuild() (build.Config, error) {
 	if err != nil {
 		return build.Config{}, err
 	}
+	log.WithFields(log.Fields{"fetched": prevBuild}).Debug("fetched the previous build")
 
 	tmp, err := json.Marshal(prevBuild)
 	if err != nil {
