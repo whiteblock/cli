@@ -66,13 +66,14 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	var err error
 	util.CheckArguments(cmd, args, 0, 0)
-	buildConf, err := getPreviousBuild() //Errors are ok with this.
+	buildConf, _ := getPreviousBuild() //Errors are ok with this.
 
 	previousNumberNodes := 0
 	if isAppend {
+		nodes, err := GetNodes()
 		log.WithFields(log.Fields{"nodes": buildConf.Nodes,
 			"err": err}).Debug("getting node number from previous build")
-		previousNumberNodes = buildConf.Nodes
+		previousNumberNodes = len(nodes)
 	}
 
 	blockchainEnabled := len(blockchainFlag) > 0
