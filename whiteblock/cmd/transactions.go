@@ -17,6 +17,7 @@ var (
 	toFlag       string
 	fromFlag     string
 	nodeFlag     string
+	dataFlag	 string
 )
 
 var txCmd = &cobra.Command{
@@ -37,9 +38,28 @@ The primary use of these methods is to be able to send one line commands through
 testing script that will be able to automate transaction tests.
 */
 
+var sendTxCmd = &cobra.Command{
+	// Hidden: true,
+	Use:   "send <command>",
+	Short: "Send a single transaction",
+	Long: `
+Send will allow the user to send a transaction 
+
+Usage:
+	whiteblock tx send <command> [flags]
+	whiteblock tx send [command] 
+
+Available Commands:
+	single   Send a single transaction from an account to another account
+	to       Send transaction data to an account
+	`,
+	Run: util.PartialCommand,
+}
+
 var sendSingleTxCmd = &cobra.Command{
 	// Hidden: true,
-	Use:   "send",
+	Use:   "single",
+	Aliases: []string{""},
 	Short: "Sends a single transaction",
 	Long: `
 The user must specify the flags that will be used for sending transactions.
@@ -51,8 +71,7 @@ Required Parameters:
 	
 Optional Parameters:
 	eos:  --symbol [symbol=SYS] --code [code=eosio.token] --memo [memo=]
-
-`,
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		command := ""
 		params := []string{}
@@ -82,6 +101,33 @@ Optional Parameters:
 				util.ClientNotSupported(previousBuild.Blockchain)
 			}
 		*/
+		util.JsonRpcCallAndPrint(command, params)
+	},
+}
+
+var sendToTxCmd = &cobra.Command{
+	// Hidden: true,
+	Use: "to",
+	Short: "Send transaction data to an account",
+	Long: `
+The user must specify the flags that will be used for sending transaction data.
+Send a transaction data to an account.
+
+Required Parameters: 
+	--destination <address> --value <amount> --data <transaction data>
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		command := ""
+		params := []string{}
+
+		if !(len(toFlag) > 0) || valueFlag == 0 || !(len(dataFlag) > 0)  {
+			util.Print("Required flags were not provided. Please input the required flags.")
+			cmd.Help()
+			return
+		}
+		command = "eth::send_to"
+		params = []string{toFlag, strconv.Itoa(valueFlag), dataFlag}
+
 		util.JsonRpcCallAndPrint(command, params)
 	},
 }
@@ -226,6 +272,10 @@ func init() {
 	sendSingleTxCmd.Flags().StringVarP(&gasPriceFlag, "gasprice", "p", "", "specify gas price for tx")
 	sendSingleTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
 
+	sendToTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
+	sendToTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
+	sendToTxCmd.Flags().StringVarP(&dataFlag, "data", "d", "", "transaction data")
+
 	startStreamTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
 	startStreamTxCmd.Flags().IntP("size", "s", 0, "size of the transaction in bytes")
 	startStreamTxCmd.Flags().IntP("tps", "t", 0, "transactions per second")
@@ -237,7 +287,8 @@ func init() {
 	startBurstTxCmd.Flags().IntVarP(&txsFlag, "txs", "t", 0, "transactions per second")
 	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
 
+	sendTxCmd.AddCommand(sendSingleTxCmd, sendToTxCmd)
 	startTxCmd.AddCommand(startStreamTxCmd, startBurstTxCmd)
-	txCmd.AddCommand(sendSingleTxCmd, startTxCmd, stopTxCmd)
+	txCmd.AddCommand(sendTxCmd, startTxCmd, stopTxCmd)
 	RootCmd.AddCommand(txCmd)
 }
