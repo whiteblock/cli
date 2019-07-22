@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	serversFlag    string
 	blockchainFlag string
 	nodesFlag      int
 	paramsFile     string
@@ -158,20 +157,6 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 		offset++
 	}
 
-	if len(serversFlag) > 0 {
-		serversInter := strings.Split(serversFlag, ",")
-		buildConf.Servers = []int{}
-		for _, serverStr := range serversInter {
-			serverNum, err := strconv.Atoi(serverStr)
-			if err != nil {
-				util.InvalidInteger("servers", serverStr, true)
-			}
-			buildConf.Servers = append(buildConf.Servers, serverNum)
-		}
-	} else if len(buildConf.Servers) == 0 {
-		buildConf.Servers = getServer()
-	}
-
 	options := <-optionsChannel //Currently has a negative impact but will be positive in the future
 	if validators < 0 && hasParam(options, "validators") && !isAppend {
 		if !util.IsTTY() {
@@ -262,6 +247,8 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	if err == nil && fbg {
 		buildConf.Extras["freezeAfterInfrastructure"] = true
 	}
+
+	build.HandleServersFlag(cmd, args, &buildConf)
 	build.HandlePullFlag(cmd, args, &buildConf)
 	build.HandleForceUnlockFlag(cmd, args, &buildConf)
 	build.HandleDockerAuthFlags(cmd, args, &buildConf)
@@ -394,8 +381,8 @@ var buildAppendCmd = &cobra.Command{
 	},
 }
 
-func addBuildFlagsToCommand(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&serversFlag, "servers", "s", "", "display server options")
+func addBuildFlagsToCommand(cmd *cobra.Command, isAppend bool) {
+	cmd.Flags().IntSliceP("servers", "s", []int{}, "manually choose the server options")
 	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	cmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
 	cmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
@@ -423,12 +410,15 @@ func addBuildFlagsToCommand(cmd *cobra.Command) {
 	cmd.Flags().String("git-repo-branch", "", "specify the branch to build from in a git repo")
 	cmd.Flags().IntSlice("expose-all", []int{}, "expose a port linearly for all nodes")
 	//META FLAGS
-	cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
+	if !isAppend {
+		cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
+	}
+
 }
 
 func init() {
-	addBuildFlagsToCommand(buildCmd)
-	addBuildFlagsToCommand(buildAppendCmd)
+	addBuildFlagsToCommand(buildCmd, false)
+	addBuildFlagsToCommand(buildAppendCmd, true)
 
 	previousCmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 

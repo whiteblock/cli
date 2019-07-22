@@ -44,3 +44,20 @@ func SanitizeBuild(conf *Config) {
 		conf.Images[i] = strings.Trim(conf.Images[i], "\r\t\v\n ")
 	}
 }
+
+func getServer() []int {
+	idList := make([]int, 0)
+	res, err := util.JsonRpcCall("get_servers", []string{})
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	servers := res.(map[string]interface{})
+	serverID := 0
+	for _, v := range servers {
+		serverID = int(v.(map[string]interface{})["id"].(float64))
+		//move this and take out break statement if instance has multiple servers
+		idList = append(idList, serverID)
+		break
+	}
+	return idList
+}

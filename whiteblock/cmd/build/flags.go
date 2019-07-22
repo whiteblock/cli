@@ -11,26 +11,26 @@ import (
 	"strings"
 )
 
-func HandleForceUnlockFlag(cmd *cobra.Command, args []string, conf *Config) {
+func HandleForceUnlockFlag(cmd *cobra.Command, args []string, bconf *Config) {
 
 	fbg, err := cmd.Flags().GetBool("force-unlock")
 	if err == nil && fbg {
-		conf.Extras["forceUnlock"] = true
+		bconf.Extras["forceUnlock"] = true
 	}
 }
 
-func HandlePullFlag(cmd *cobra.Command, args []string, conf *Config) {
-	_, ok := conf.Extras["prebuild"]
+func HandlePullFlag(cmd *cobra.Command, args []string, bconf *Config) {
+	_, ok := bconf.Extras["prebuild"]
 	if !ok {
-		conf.Extras["prebuild"] = map[string]interface{}{}
+		bconf.Extras["prebuild"] = map[string]interface{}{}
 	}
 	fbg, err := cmd.Flags().GetBool("force-docker-pull")
 	if err == nil && fbg {
-		conf.Extras["prebuild"].(map[string]interface{})["pull"] = true
+		bconf.Extras["prebuild"].(map[string]interface{})["pull"] = true
 	}
 }
 
-func HandleDockerAuthFlags(cmd *cobra.Command, args []string, conf *Config) {
+func HandleDockerAuthFlags(cmd *cobra.Command, args []string, bconf *Config) {
 	if cmd.Flags().Changed("docker-password") != cmd.Flags().Changed("docker-username") {
 		if cmd.Flags().Changed("docker-password") {
 			util.PrintErrorFatal("you must also provide --docker-password with --docker-username")
@@ -41,9 +41,9 @@ func HandleDockerAuthFlags(cmd *cobra.Command, args []string, conf *Config) {
 		return //The auth flags have not been set
 	}
 
-	_, ok := conf.Extras["prebuild"]
+	_, ok := bconf.Extras["prebuild"]
 	if !ok {
-		conf.Extras["prebuild"] = map[string]interface{}{}
+		bconf.Extras["prebuild"] = map[string]interface{}{}
 	}
 	username, err := cmd.Flags().GetString("docker-username")
 	if err != nil {
@@ -53,21 +53,21 @@ func HandleDockerAuthFlags(cmd *cobra.Command, args []string, conf *Config) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	conf.Extras["prebuild"].(map[string]interface{})["auth"] = map[string]string{
+	bconf.Extras["prebuild"].(map[string]interface{})["auth"] = map[string]string{
 		"username": username,
 		"password": password,
 	}
 
 }
 
-func HandleImageFlag(cmd *cobra.Command, args []string, conf *Config) {
+func HandleImageFlag(cmd *cobra.Command, args []string, bconf *Config) {
 
 	imageFlag, err := cmd.Flags().GetStringSlice("image")
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
 
-	conf.Images = make([]string, conf.Nodes)
+	bconf.Images = make([]string, bconf.Nodes)
 	images, potentialImage, err := util.UnrollStringSliceToMapIntString(imageFlag, "=")
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -81,20 +81,20 @@ func HandleImageFlag(cmd *cobra.Command, args []string, conf *Config) {
 		imgDefault = potentialImage[0]
 		log.WithFields(log.Fields{"image": imgDefault}).Debug("given default image")
 	}
-	baseImage := getImage(conf.Blockchain, "stable", imgDefault)
+	baseImage := getImage(bconf.Blockchain, "stable", imgDefault)
 
-	for i := 0; i < conf.Nodes; i++ {
+	for i := 0; i < bconf.Nodes; i++ {
 
-		conf.Images[i] = baseImage
+		bconf.Images[i] = baseImage
 		image, exists := images[i]
 		if exists {
 			log.WithFields(log.Fields{"image": image}).Trace("image exists")
-			conf.Images[i] = image
+			bconf.Images[i] = image
 		}
 	}
 }
 
-func HandleFilesFlag(cmd *cobra.Command, args []string, conf *Config) {
+func HandleFilesFlag(cmd *cobra.Command, args []string, bconf *Config) {
 	filesFlag, err := cmd.Flags().GetStringSlice("template")
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -103,7 +103,7 @@ func HandleFilesFlag(cmd *cobra.Command, args []string, conf *Config) {
 		return
 	}
 
-	conf.Files = make([]map[string]string, conf.Nodes)
+	bconf.Files = make([]map[string]string, bconf.Nodes)
 	defaults := map[string]string{}
 	for _, tfileIn := range filesFlag {
 		tuple := strings.SplitN(tfileIn, ";", 3) //support both delim in future
@@ -133,23 +133,23 @@ func HandleFilesFlag(cmd *cobra.Command, args []string, conf *Config) {
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		if index < 0 || index >= conf.Nodes {
+		if index < 0 || index >= bconf.Nodes {
 			util.PrintErrorFatal(fmt.Errorf("Index is out of range for -t flag"))
 		}
-		conf.Files[index] = map[string]string{}
-		conf.Files[index][tuple[1]] = base64.StdEncoding.EncodeToString(data)
+		bconf.Files[index] = map[string]string{}
+		bconf.Files[index][tuple[1]] = base64.StdEncoding.EncodeToString(data)
 	}
 
-	if conf.Extras == nil {
-		conf.Extras = map[string]interface{}{}
+	if bconf.Extras == nil {
+		bconf.Extras = map[string]interface{}{}
 	}
-	if _, ok := conf.Extras["defaults"]; !ok {
-		conf.Extras["defaults"] = map[string]interface{}{}
+	if _, ok := bconf.Extras["defaults"]; !ok {
+		bconf.Extras["defaults"] = map[string]interface{}{}
 	}
-	conf.Extras["defaults"].(map[string]interface{})["files"] = defaults
+	bconf.Extras["defaults"].(map[string]interface{})["files"] = defaults
 }
 
-func HandleSSHOptions(cmd *cobra.Command, args []string, conf *Config) {
+func HandleSSHOptions(cmd *cobra.Command, args []string, bconf *Config) {
 	if !cmd.Flags().Changed("user-ssh-key") { //Don't bother if not specified
 		return
 	}
@@ -159,14 +159,14 @@ func HandleSSHOptions(cmd *cobra.Command, args []string, conf *Config) {
 		util.PrintErrorFatal(err)
 	}
 
-	if conf.Extras == nil {
-		conf.Extras = map[string]interface{}{}
+	if bconf.Extras == nil {
+		bconf.Extras = map[string]interface{}{}
 	}
-	if _, ok := conf.Extras["postbuild"]; !ok {
-		conf.Extras["postbuild"] = map[string]interface{}{}
+	if _, ok := bconf.Extras["postbuild"]; !ok {
+		bconf.Extras["postbuild"] = map[string]interface{}{}
 	}
-	if _, ok := conf.Extras["postbuild"].(map[string]interface{})["ssh"]; !ok {
-		conf.Extras["postbuild"].(map[string]interface{})["ssh"] = map[string]interface{}{}
+	if _, ok := bconf.Extras["postbuild"].(map[string]interface{})["ssh"]; !ok {
+		bconf.Extras["postbuild"].(map[string]interface{})["ssh"] = map[string]interface{}{}
 	}
 	pubKeys := []string{}
 	for _, pubKeyFile := range sshPubKeys {
@@ -177,10 +177,10 @@ func HandleSSHOptions(cmd *cobra.Command, args []string, conf *Config) {
 		pubKeys = append(pubKeys, string(data))
 	}
 
-	conf.Extras["postbuild"].(map[string]interface{})["ssh"].(map[string]interface{})["pubKeys"] = pubKeys
+	bconf.Extras["postbuild"].(map[string]interface{})["ssh"].(map[string]interface{})["pubKeys"] = pubKeys
 }
 
-func HandleDockerfile(cmd *cobra.Command, args []string, conf *Config) {
+func HandleDockerfile(cmd *cobra.Command, args []string, bconf *Config) {
 	filePath, err := cmd.Flags().GetString("dockerfile")
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -193,18 +193,18 @@ func HandleDockerfile(cmd *cobra.Command, args []string, conf *Config) {
 		util.PrintErrorFatal(err)
 	}
 
-	if conf.Extras == nil {
-		conf.Extras = map[string]interface{}{}
+	if bconf.Extras == nil {
+		bconf.Extras = map[string]interface{}{}
 	}
 
-	if _, ok := conf.Extras["prebuild"]; !ok {
-		conf.Extras["prebuild"] = map[string]interface{}{}
+	if _, ok := bconf.Extras["prebuild"]; !ok {
+		bconf.Extras["prebuild"] = map[string]interface{}{}
 	}
-	conf.Extras["prebuild"].(map[string]interface{})["build"] = true
-	conf.Extras["prebuild"].(map[string]interface{})["dockerfile"] = base64.StdEncoding.EncodeToString(data)
+	bconf.Extras["prebuild"].(map[string]interface{})["build"] = true
+	bconf.Extras["prebuild"].(map[string]interface{})["dockerfile"] = base64.StdEncoding.EncodeToString(data)
 }
 
-func HandleStartLoggingAtBlock(cmd *cobra.Command, args []string, conf *Config) {
+func HandleStartLoggingAtBlock(cmd *cobra.Command, args []string, bconf *Config) {
 	if !cmd.Flags().Changed("start-logging-at-block") { //Don't bother if not specified
 		return
 	}
@@ -213,11 +213,11 @@ func HandleStartLoggingAtBlock(cmd *cobra.Command, args []string, conf *Config) 
 	if err != nil {
 		log.Trace("there was an error with the flag")
 	} else {
-		conf.Meta["startBlock"] = startBlock
+		bconf.Meta["startBlock"] = startBlock
 	}
 }
 
-func HandleResources(cmd *cobra.Command, args []string, conf *Config) (givenCPU bool, givenMem bool) {
+func HandleResources(cmd *cobra.Command, args []string, bconf *Config) (givenCPU bool, givenMem bool) {
 	givenCPU = cmd.Flags().Changed("cpus")
 	givenMem = cmd.Flags().Changed("memory")
 
@@ -230,55 +230,55 @@ func HandleResources(cmd *cobra.Command, args []string, conf *Config) (givenCPU 
 		util.PrintErrorFatal(err)
 	}
 	if cpus != "0" {
-		conf.Resources[0].Cpus = cpus
+		bconf.Resources[0].Cpus = cpus
 	}
 	if memory != "0" {
-		conf.Resources[0].Memory = memory
+		bconf.Resources[0].Memory = memory
 	}
 	return
 }
 
-func HandleRepoBuild(cmd *cobra.Command, args []string, conf *Config) {
+func HandleRepoBuild(cmd *cobra.Command, args []string, bconf *Config) {
 	if !cmd.Flags().Changed("git-repo") {
 		return
 	}
-	if conf.Extras == nil {
-		conf.Extras = map[string]interface{}{}
+	if bconf.Extras == nil {
+		bconf.Extras = map[string]interface{}{}
 	}
 
-	if _, ok := conf.Extras["prebuild"]; !ok {
-		conf.Extras["prebuild"] = map[string]interface{}{}
+	if _, ok := bconf.Extras["prebuild"]; !ok {
+		bconf.Extras["prebuild"] = map[string]interface{}{}
 	}
-	conf.Extras["prebuild"].(map[string]interface{})["build"] = true
+	bconf.Extras["prebuild"].(map[string]interface{})["build"] = true
 
 	repo, err := cmd.Flags().GetString("git-repo")
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
 
-	conf.Extras["prebuild"].(map[string]interface{})["repo"] = repo
+	bconf.Extras["prebuild"].(map[string]interface{})["repo"] = repo
 	if cmd.Flags().Changed("git-repo-branch") {
 		branch, err := cmd.Flags().GetString("git-repo-branch")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 		log.Trace("given a git repo branch")
-		conf.Extras["prebuild"].(map[string]interface{})["branch"] = branch
+		bconf.Extras["prebuild"].(map[string]interface{})["branch"] = branch
 	}
 }
 
-func addPortMapping(portMapping map[int][]string, conf *Config) {
-	firstResources := conf.Resources[0]
-	for conf.Nodes > len(conf.Resources) {
-		conf.Resources = append(conf.Resources, firstResources)
+func addPortMapping(portMapping map[int][]string, bconf *Config) {
+	firstResources := bconf.Resources[0]
+	for bconf.Nodes > len(bconf.Resources) {
+		bconf.Resources = append(bconf.Resources, firstResources)
 	}
 	for node, mappings := range portMapping {
-		conf.Resources[node].Ports = mappings
+		bconf.Resources[node].Ports = mappings
 		log.WithFields(log.Fields{"node": node, "ports": mappings}).Trace("adding the port mapping")
 	}
 }
 
-func HandlePortMapping(cmd *cobra.Command, args []string, conf *Config) {
+func HandlePortMapping(cmd *cobra.Command, args []string, bconf *Config) {
 	if !cmd.Flags().Changed("expose-port-mapping") {
 		return
 	}
@@ -291,11 +291,11 @@ func HandlePortMapping(cmd *cobra.Command, args []string, conf *Config) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	addPortMapping(parsedPortMapping, conf)
+	addPortMapping(parsedPortMapping, bconf)
 
 }
 
-func HandleExposeAllBuildFlag(cmd *cobra.Command, args []string, conf *Config, offset int) {
+func HandleExposeAllBuildFlag(cmd *cobra.Command, args []string, bconf *Config, offset int) {
 	if !cmd.Flags().Changed("expose-all") {
 		return
 	}
@@ -306,7 +306,7 @@ func HandleExposeAllBuildFlag(cmd *cobra.Command, args []string, conf *Config, o
 
 	portMapping := map[int][]string{}
 	usedPort := map[int]bool{}
-	for i := 0; i < conf.Nodes; i++ {
+	for i := 0; i < bconf.Nodes; i++ {
 		portMapping[i] = []string{}
 		for _, portToExpose := range portsToExpose {
 			portToBind := portToExpose + i + offset
@@ -318,5 +318,17 @@ func HandleExposeAllBuildFlag(cmd *cobra.Command, args []string, conf *Config, o
 			portMapping[i] = append(portMapping[i], fmt.Sprintf("%d:%d", portToBind, portToExpose))
 		}
 	}
-	addPortMapping(portMapping, conf)
+	addPortMapping(portMapping, bconf)
+}
+
+func HandleServersFlag(cmd *cobra.Command, args []string, bconf *Config) {
+	if !cmd.Flags().Changed("servers") {
+		bconf.Servers = getServer()
+		return
+	}
+	servers, err := cmd.Flags().GetIntSlice("servers")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	bconf.Servers = servers
 }
