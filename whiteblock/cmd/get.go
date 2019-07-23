@@ -121,6 +121,30 @@ var getNodesCmd = &cobra.Command{
 	},
 }
 
+var getNodesExternalCmd = &cobra.Command{
+	Use:     "external",
+	Aliases: []string{"externals", "exposed"},
+	Short:   "Get the port mappings of the nodes",
+	Long:    "\nGet the port mappings of the nodes\n",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		nodes, err := GetNodes()
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		out := []map[string]interface{}{}
+		for _, node := range nodes {
+			out = append(out, map[string]interface{}{
+				"id":           node.ID,
+				"absNum":       node.AbsoluteNum,
+				"portMappings": node.PortMappings,
+				"protocol":     node.Protocol,
+			})
+		}
+		util.Print(out)
+	},
+}
+
 var getRunningCmd = &cobra.Command{
 	Use:   "running",
 	Short: "Running will check if a test is running.",
@@ -430,6 +454,7 @@ Response: JSON representation of the contract information.
 }
 
 func init() {
+	getNodesCmd.AddCommand(getNodesExternalCmd)
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
 		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd)

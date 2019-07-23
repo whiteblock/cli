@@ -14,6 +14,7 @@ type Node struct {
 	TestNetID    string            `json:"testnetId"`
 	Server       int               `json:"server"`
 	LocalID      int               `json:"localId"`
+	AbsoluteNum  int               `json:"absNum"`
 	IP           string            `json:"ip"`
 	Label        string            `json:"label"`
 	Image        string            `json:"image"`
