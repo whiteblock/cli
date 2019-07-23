@@ -265,7 +265,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	build.HandlePortMapping(cmd, args, &buildConf)
 	build.HandleExposeAllBuildFlag(cmd, args, &buildConf, previousNumberNodes)
 
-	log.WithFields(log.Fields{"build": buildConf}).Trace("sending the build request")
+	log.WithFields(log.Fields{"build": buildConf, "dest": conf.ServerAddr, "api": conf.APIURL}).Trace("sending the build request")
 	build.SanitizeBuild(&buildConf)
 	buildStart(buildConf, isAppend)
 }
