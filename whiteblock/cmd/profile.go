@@ -68,7 +68,7 @@ func GetBiome(org Organization) (map[string]interface{}, error) {
 			biomeChoices = append(biomeChoices, biome["alias"].(string))
 		}
 		index := util.OptionListPrompt("Please select a biome", biomeChoices)
-		util.Set("biome", org.Biomes[index]["id"])
+		util.Set("biome", fmt.Sprint(org.Biomes[index]["id"]))
 
 		return org.Biomes[index], nil
 
@@ -105,7 +105,6 @@ func LoadBiomeAddress() error {
 	} else {
 		return fmt.Errorf("no profile data")
 	}
-	util.Print(org)
 	log.WithFields(log.Fields{"org": org}).Debug("got the org data")
 	biome, err := GetBiome(org)
 	if err != nil {
