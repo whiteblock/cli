@@ -17,7 +17,7 @@ func getImage(blockchain string, imageType string, defaultImage string) string {
 	if err != nil {
 		b, err = ioutil.ReadFile(usr.HomeDir + "/cli/etc/whiteblock.json")
 		if err != nil {
-			b, err = util.HttpRequest("GET", "http://74.207.246.122/releases/cli/v1.5.7/whiteblock.json", "")
+			b, err = util.HttpRequest("GET", "https://storage.googleapis.com/genesis-public/cli/dev/etc/whiteblock.json", "")
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
