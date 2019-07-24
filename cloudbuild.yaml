@@ -2,7 +2,9 @@
 # https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
 substitutions:
   _BINARY: whiteblock
+  _IMAGES_FILE: whiteblock.json
   _BINARY_PATH: /cli/whiteblock/whiteblock
+  _IMAGES_PATH: /cli/etc/whiteblock.json
   _PROJECT: cli
   _IMAGE: 'gcr.io/whiteblock/cli'
 timeout: '45m'
@@ -28,12 +30,21 @@ steps:
 # create container based off image (but don't run)
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'create', '--name', 'output', '$_IMAGE:$COMMIT_SHA' ]
+# copy out the binary
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'cp', 'output:$_BINARY_PATH', 'binary-output' ]
+# copy the whiteblock.json file
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'cp', 'output:$_IMAGES_PATH', 'images-file' ]
 # copy binary to public bucket
 - name: 'gcr.io/cloud-builders/gsutil'
   args: [ 'cp', 'binary-output', 'gs://genesis-public/$_PROJECT/$COMMIT_SHA/bin/linux/amd64/$_BINARY' ]
 - name: 'gcr.io/cloud-builders/gsutil'
   args: [ 'cp', 'binary-output', 'gs://genesis-public/$_PROJECT/$BRANCH_NAME/bin/linux/amd64/$_BINARY' ]
+
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: [ 'cp', 'images-file', 'gs://genesis-public/$_PROJECT/$COMMIT_SHA/bin/linux/amd64/$_IMAGES_FILE' ]
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: [ 'cp', 'images-file', 'gs://genesis-public/$_PROJECT/$BRANCH_NAME/bin/linux/amd64/$_IMAGES_FILE' ]
 
 images: [ '$_IMAGE:$COMMIT_SHA', '$_IMAGE:$BRANCH_NAME']
