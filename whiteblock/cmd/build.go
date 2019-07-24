@@ -258,6 +258,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	build.HandleSSHOptions(cmd, args, &buildConf)
 	build.HandleDockerfile(cmd, args, &buildConf)
 	build.HandleRepoBuild(cmd, args, &buildConf)
+	build.HandleBoundCPUs(cmd, args, &buildConf)
 	if !isAppend {
 		build.HandleStartLoggingAtBlock(cmd, args, &buildConf)
 	}
@@ -415,6 +416,7 @@ func addBuildFlagsToCommand(cmd *cobra.Command, isAppend bool) {
 	//META FLAGS
 	if !isAppend {
 		cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
+		cmd.Flags().Int("bound-cpus", -1, "specify number of bound cpus")
 	}
 
 }

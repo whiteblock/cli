@@ -15,7 +15,9 @@ type Config struct {
 }
 
 type Resources struct {
-	Cpus   string   `json:"cpus"`
-	Memory string   `json:"memory"`
-	Ports  []string `json:"ports"`
+	Cpus      string   `json:"cpus"`
+	Memory    string   `json:"memory"`
+	Ports     []string `json:"ports"`
+	Volumes   []string `json:"volumes"`
+	BoundCPUs []int    `json:"boundCPUs,omitonempty"`
 }

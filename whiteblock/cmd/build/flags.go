@@ -332,3 +332,25 @@ func HandleServersFlag(cmd *cobra.Command, args []string, bconf *Config) {
 	}
 	bconf.Servers = servers
 }
+
+func HandleBoundCPUs(cmd *cobra.Command, args []string, bconf *Config) {
+	if !cmd.Flags().Changed("bound-cpus") {
+		return
+	}
+	firstResources := bconf.Resources[0]
+	for bconf.Nodes > len(bconf.Resources) {
+		bconf.Resources = append(bconf.Resources, firstResources)
+	}
+	numCPUs, err := cmd.Flags().GetInt("bound-cpus")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	cpuNo := 0
+	for i := range bconf.Resources {
+		bconf.Resources[i].BoundCPUs = []int{}
+		for j := 0; j < numCPUs; j++ {
+			bconf.Resources[i].BoundCPUs = append(bconf.Resources[i].BoundCPUs, cpuNo)
+			cpuNo++
+		}
+	}
+}
