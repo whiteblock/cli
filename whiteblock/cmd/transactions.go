@@ -299,6 +299,7 @@ func init() {
 	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
 
 	startTxCmd.AddCommand(startStreamTxCmd, startBurstTxCmd)
-	txCmd.AddCommand(sendSingleTxCmd, sendToTxCmd, startTxCmd, stopTxCmd)
+	txCmd.AddCommand(sendSingleTxCmd, startTxCmd, stopTxCmd)
+	sendSingleTxCmd.AddCommand(sendToTxCmd)
 	RootCmd.AddCommand(txCmd)
 }
