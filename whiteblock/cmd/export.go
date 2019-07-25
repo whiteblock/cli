@@ -67,7 +67,7 @@ func handleChunks(testnetID string, node Node, logName string, rawChunks string,
 	return outChunks
 }
 
-func handleExportLogs(testnetID string, node Node, rawRes string, sem *semaphore.Weighted) (interface{}, map[string][]string) {
+func handleExportLogs(testnetID string, node Node, rawRes string, sem *semaphore.Weighted) (interface{}, map[string][]string) { // TODO no touchy
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(rawRes), &res)
 	if err != nil {
@@ -121,7 +121,7 @@ func convertBlockNumber(blockNumber interface{}) int64 {
 	panic("shouldn't reach")
 }
 
-func handleExportBlocks(testnetID string, node string, rawRes string, coveredBlockNumbers *map[int64]struct{}, sem *semaphore.Weighted) (interface{}, []string) {
+func handleExportBlocks(testnetID string, rawRes string, coveredBlockNumbers *map[int64]struct{}, sem *semaphore.Weighted) (interface{}, []string) {
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(rawRes), &res)
 	if err != nil {
@@ -148,7 +148,7 @@ func handleExportBlocks(testnetID string, node string, rawRes string, coveredBlo
 		go func(blockNumber interface{}, i int) {
 			defer wg.Done()
 			defer sem.Release(1)
-			ep := fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks/%v", conf.APIURL, testnetID, node, blockNumber)
+			ep := fmt.Sprintf("%s/testnets/%s/blocks", conf.APIURL, testnetID)
 			log.WithFields(log.Fields{"ep": ep}).Debug("fetching the block data")
 			var res string
 			var err error
@@ -241,11 +241,17 @@ func appendBlocks(items []string, firstCall bool, f *os.File) {
 	}
 }
 
+func handleExportHeadStates(testnetID string, rawRes string, coveredBlockNumbers *map[int64]struct{}, sem *semaphore.Weighted) (interface{}, []string) {
+
+}
+
 var exportCmd = &cobra.Command{
 	Hidden: true,
 	Use:    "export [testnet id]",
-	Short:  "Export stuff",
-	Long:   "Export stuff",
+	Short:  "Export block and head-state data",
+	Long:   `
+This command will export structured block and head-state data
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		spinner := Spinner{txt: "fetching the block and log data"}
@@ -354,19 +360,19 @@ var exportCmd = &cobra.Command{
 					for {
 						var ep string
 						if nextToken == nil {
-							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", conf.APIURL, testnetID, node.ID)
+							ep = fmt.Sprintf("%s/testnets/%s/blocks", conf.APIURL, testnetID)
 						} else {
-							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", conf.APIURL, testnetID, node.ID,
+							ep = fmt.Sprintf("%s/testnets/%s/blocks?next=%v", conf.APIURL, testnetID,
 								url.QueryEscape(nextToken.(string)))
 						}
-						log.WithFields(log.Fields{"ep": ep}).Debug("fetching the log chunks")
+						log.WithFields(log.Fields{"ep": ep}).Debug("fetching the log chunks") // TODO is this an accurate debug message? shouldn't it be `fetching the blocks`
 						res, err := util.JwtHTTPRequest("GET", ep, "")
 						if err != nil {
 							util.PrintErrorFatal(err)
 						}
 						log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetched the blocks")
 
-						nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, &coveredBlockNumbers, sem)
+						nextToken, blocks = handleExportBlocks(testnetID, res, &coveredBlockNumbers, sem)
 						appendBlocks(blocks, first, files[i])
 						first = false
 
@@ -386,6 +392,66 @@ var exportCmd = &cobra.Command{
 			}
 		}()
 		wg.Wait()
+
+
+		wg.Add(2) // TODO should this wait longer?
+		go func() {
+			defer wg.Done()
+			var nextToken interface{}
+			var headStates []string
+
+			files := []*os.File{}
+			for _, node := range nodes {
+
+				f, err := os.Create(fmt.Sprintf("%s/%s/head-states.json", outputDir, node.ID))
+				if err != nil {
+					util.PrintErrorFatal(err)
+				}
+				files = append(files, f)
+			}
+
+			for i, node := range nodes {
+				wg.Add(1)
+				go func(node Node, i int) {
+					defer wg.Done()
+					coveredBlockNumbers := map[int64]struct{}{}
+					first := true
+					for {
+						var ep string
+						if nextToken == nil {
+							ep = fmt.Sprintf("%s/testnets/%s/head-states", conf.APIURL, testnetID)
+						} else {
+							ep = fmt.Sprintf("%s/testnets/%s/head-states?next=%v", conf.APIURL, testnetID,
+								url.QueryEscape(nextToken.(string)))
+						}
+						log.WithFields(log.Fields{"ep": ep}).Debug("fetching the head states") // TODO is this an accurate debug message? shouldn't it be `fetching the blocks`
+						res, err := util.JwtHTTPRequest("GET", ep, "")
+						if err != nil {
+							util.PrintErrorFatal(err)
+						}
+						log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetched the head states")
+
+						nextToken, headStates = handleExportHeadStates(testnetID, res, &coveredBlockNumbers, sem)
+						appendBlocks(headStates, first, files[i])
+						first = false
+
+						if nextToken == nil {
+							break
+						}
+					}
+					_, err = files[i].Write([]byte("]"))
+					if err != nil {
+						util.PrintErrorFatal(err)
+					}
+					err = files[i].Close()
+					if err != nil {
+						util.PrintErrorFatal(err)
+					}
+				}(node, i)
+			}
+		}()
+		wg.Wait()
+
 		/*for _,node := range nodes {
 			ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks",testnetID,node.ID)
 			util.Print(ep)
