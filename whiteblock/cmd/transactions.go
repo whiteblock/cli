@@ -108,14 +108,9 @@ Required Parameters:
 			cmd.Help()
 			return
 		}
-		if !cmd.Flags().Changed("data") { 
-			util.PrintStringError("No \"data\" flag has been provided. Please input the flag with a value.")
-			cmd.Help()
-			return
-		}
 
 		// Collect the params for the cmd
-		command := "eth::send_to"
+		command := "send_to"
 		var params []interface{}
 
 		destination, err := cmd.Flags().GetString("destination")
