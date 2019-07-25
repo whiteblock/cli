@@ -86,7 +86,7 @@ Optional Parameters:
 
 var sendToTxCmd = &cobra.Command{
 	// Hidden: true,
-	Use: "send to",
+	Use: "to",
 	Short: "Send transaction data to an account",
 	Long: `
 The user must specify the flags that will be used for sending transaction data.
