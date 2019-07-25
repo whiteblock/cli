@@ -65,8 +65,8 @@ Optional Parameters:
 			cmd.Help()
 			return
 		}
-		command = "eth::send_transaction"
-		params = []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
+		command := "eth::send_transaction"
+		params := []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
 		/*
 			switch previousBuild.Blockchain {
 			case "eos":
@@ -115,14 +115,14 @@ Required Parameters:
 		}
 
 		// Collect the params for the cmd
-		command = "eth::send_to"
+		command := "eth::send_to"
 		var params []interface{}
 
 		destination, err := cmd.Flags().GetString("destination")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		params := append(params, destination)
+		params = append(params, destination)
 		
 
 		value, err := cmd.Flags().GetString("value") // value in string to hold bigger value than unit64
@@ -283,9 +283,9 @@ func init() {
 	sendSingleTxCmd.Flags().StringVarP(&gasPriceFlag, "gasprice", "p", "", "specify gas price for tx")
 	sendSingleTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
 
-	sendToTxCmd.Flags().StringVarP("destination", "d", "", "where the transaction will be sent to")
-	sendToTxCmd.Flags().IntVarP("value", "v", "", "amount to send in transaction")
-	sendToTxCmd.Flags().StringVarP("data", "d", "", "transaction data")
+	sendToTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
+	sendToTxCmd.Flags().StringP("value", "v", "", "amount to send in transaction")
+	sendToTxCmd.Flags().String("data", "", "transaction data")
 
 	startStreamTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
 	startStreamTxCmd.Flags().IntP("size", "s", 0, "size of the transaction in bytes")
