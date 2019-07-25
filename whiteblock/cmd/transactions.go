@@ -17,7 +17,6 @@ var (
 	toFlag       string
 	fromFlag     string
 	nodeFlag     string
-	dataFlag	 string
 )
 
 var txCmd = &cobra.Command{
@@ -38,31 +37,13 @@ The primary use of these methods is to be able to send one line commands through
 testing script that will be able to automate transaction tests.
 */
 
-var sendTxCmd = &cobra.Command{
-	// Hidden: true,
-	Use:   "send <command>",
-	Short: "Send a single transaction",
-	Long: `
-Send will allow the user to send a transaction 
-
-Usage:
-	whiteblock tx send <command> [flags]
-	whiteblock tx send [command] 
-
-Available Commands:
-	single   Send a single transaction from an account to another account
-	to       Send transaction data to an account
-	`,
-	Run: util.PartialCommand,
-}
-
 var sendSingleTxCmd = &cobra.Command{
 	// Hidden: true,
-	Use:   "single",
-	Aliases: []string{""},
-	Short: "Sends a single transaction",
+	Use:   "send",
+	Short: "Send a transaction between two accounts",
 	Long: `
 The user must specify the flags that will be used for sending transactions.
+
 Send a transaction between two accounts.
 
 Required Parameters: 
@@ -73,8 +54,6 @@ Optional Parameters:
 	eos:  --symbol [symbol=SYS] --code [code=eosio.token] --memo [memo=]
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		command := ""
-		params := []string{}
 
 		/*previousBuild, err := getPreviousBuild()
 		if err != nil {
@@ -82,7 +61,7 @@ Optional Parameters:
 		}*/
 
 		if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
-			util.Print("Required flags were not provided. Please input the required flags.")
+			util.PrintStringError("Required flags were not provided. Please input the required flags.")
 			cmd.Help()
 			return
 		}
@@ -107,7 +86,7 @@ Optional Parameters:
 
 var sendToTxCmd = &cobra.Command{
 	// Hidden: true,
-	Use: "to",
+	Use: "send to",
 	Short: "Send transaction data to an account",
 	Long: `
 The user must specify the flags that will be used for sending transaction data.
@@ -117,16 +96,48 @@ Required Parameters:
 	--destination <address> --value <amount> --data <transaction data>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		command := ""
-		params := []string{}
 
-		if !(len(toFlag) > 0) || valueFlag == 0 || !(len(dataFlag) > 0)  {
-			util.Print("Required flags were not provided. Please input the required flags.")
+		// Check required flags
+		if !cmd.Flags().Changed("destination") { 
+			util.PrintStringError("No \"destination\" flag has been provided. Please input the flag with a value.")
 			cmd.Help()
 			return
 		}
+		if !cmd.Flags().Changed("value") { 
+			util.PrintStringError("No \"value\" flag has been provided. Please input the flag with a value.")
+			cmd.Help()
+			return
+		}
+		if !cmd.Flags().Changed("data") { 
+			util.PrintStringError("No \"data\" flag has been provided. Please input the flag with a value.")
+			cmd.Help()
+			return
+		}
+
+		// Collect the params for the cmd
 		command = "eth::send_to"
-		params = []string{toFlag, strconv.Itoa(valueFlag), dataFlag}
+		var params []interface{}
+
+		destination, err := cmd.Flags().GetString("destination")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params := append(params, destination)
+		
+
+		value, err := cmd.Flags().GetString("value") // value in string to hold bigger value than unit64
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params = append(params, value)
+
+		data, err := cmd.Flags().GetString("data")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params = append(params, data)
+
+		log.WithFields(log.Fields{"params": params}).Debug("Sending the request to send_to cmd")
 
 		util.JsonRpcCallAndPrint(command, params)
 	},
@@ -272,9 +283,9 @@ func init() {
 	sendSingleTxCmd.Flags().StringVarP(&gasPriceFlag, "gasprice", "p", "", "specify gas price for tx")
 	sendSingleTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
 
-	sendToTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")
-	sendToTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
-	sendToTxCmd.Flags().StringVarP(&dataFlag, "data", "d", "", "transaction data")
+	sendToTxCmd.Flags().StringVarP("destination", "d", "", "where the transaction will be sent to")
+	sendToTxCmd.Flags().IntVarP("value", "v", "", "amount to send in transaction")
+	sendToTxCmd.Flags().StringVarP("data", "d", "", "transaction data")
 
 	startStreamTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
 	startStreamTxCmd.Flags().IntP("size", "s", 0, "size of the transaction in bytes")
@@ -287,8 +298,7 @@ func init() {
 	startBurstTxCmd.Flags().IntVarP(&txsFlag, "txs", "t", 0, "transactions per second")
 	startBurstTxCmd.Flags().IntVarP(&valueFlag, "value", "v", -1, "amount to send in transaction")
 
-	sendTxCmd.AddCommand(sendSingleTxCmd, sendToTxCmd)
 	startTxCmd.AddCommand(startStreamTxCmd, startBurstTxCmd)
-	txCmd.AddCommand(sendTxCmd, startTxCmd, stopTxCmd)
+	txCmd.AddCommand(sendSingleTxCmd, sendToTxCmd, startTxCmd, stopTxCmd)
 	RootCmd.AddCommand(txCmd)
 }
