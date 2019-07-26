@@ -76,31 +76,11 @@ Required Parameters:
 	Run: func(cmd *cobra.Command, args []string) {
 		util.RequireFlags(cmd, "destination", "value")
 
-		// Collect the params for the cmd
-		command := "send_to"
-		var params []interface{}
-
-		destination, err := cmd.Flags().GetString("destination")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		params = append(params, destination)
-
-		value, err := cmd.Flags().GetString("value") // value in string to hold bigger value than unit64
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		params = append(params, value)
-
-		data, err := cmd.Flags().GetString("data")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		params = append(params, data)
-
-		log.WithFields(log.Fields{"params": params}).Debug("Sending the request to send_to cmd")
-
-		util.JsonRpcCallAndPrint(command, params)
+		util.JsonRpcCallAndPrint("send_to", []interface{}{
+			util.GetStringFlagValue(cmd, "destination"),
+			util.GetStringFlagValue(cmd, "value"),
+			util.GetStringFlagValue(cmd, "data"),
+		})
 	},
 }
 
@@ -227,7 +207,6 @@ Optional Parameters:
 }
 
 var stopTxCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "stop",
 	Short: "Stop transactions",
 	Long: `
@@ -255,7 +234,7 @@ func init() {
 
 	sendToTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
 	sendToTxCmd.Flags().StringP("value", "v", "", "amount to send in transaction")
-	sendToTxCmd.Flags().String("data", "", "transaction data")
+	sendToTxCmd.Flags().String("data", "0x0", "transaction data")
 
 	startStreamTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
 	startStreamTxCmd.Flags().IntP("size", "s", -1, "size of the transaction in bytes")

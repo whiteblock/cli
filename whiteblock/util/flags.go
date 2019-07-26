@@ -12,3 +12,11 @@ func RequireFlags(cmd *cobra.Command, flags ...string) {
 		}
 	}
 }
+
+func GetStringFlagValue(cmd *cobra.Command, flag string) string {
+	out, err := cmd.Flags().GetString(flag)
+	if err != nil {
+		PrintErrorFatal(err)
+	}
+	return out
+}
