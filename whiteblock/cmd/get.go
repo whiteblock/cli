@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"sort"
+	"strconv"
 )
 
 func GetNodes() ([]Node, error) {
@@ -280,14 +281,41 @@ Response: JSON representation of network statistics
 Work underway on generalized use commands to consolidate all the different
 commands separated by blockchains.
 */
+func getBlockJsonRpcCall(rpc string, args []string) {
+	res, err := util.JsonRpcCall(rpc, args)
+	if err != nil { //try a few nodes
+		nodes, er := GetNodes()
+		if er != nil {
+			util.PrintErrorFatal(er)
+		}
+		for i := range nodes {
+			res, err = util.JsonRpcCall(rpc, []interface{}{args[0], i})
+			if err == nil {
+				break
+			}
+		}
+	}
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	util.Print(res)
+}
 
 func getBlockCobra(cmd *cobra.Command, args []string) {
 	util.CheckArguments(cmd, args, 1, 1)
-	blockNum := util.CheckAndConvertInt(args[0], "block number")
-
-	if blockNum < 1 {
-		util.PrintErrorFatal("Unable to get block information from block 0. Please provide a block number greater than 0.")
+	out, err := strconv.ParseInt(args[0], 0, 32) //Check if the input is an integer-> block number
+	if err != nil {
+		// Block Hash
+		getBlockJsonRpcCall("get_block_by_hash", args)
+	} else {
+		// Block number
+		blockNum := int(out)
+		if blockNum < 1 {
+			util.PrintErrorFatal("Unable to get block information from block 0. Please provide a block number greater than 0.")
+		}
+		getBlockJsonRpcCall("get_block", args)
 	}
+
 	/*res, err := util.JsonRpcCall("get_block_number", []string{})
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -299,24 +327,6 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 			" Please use the command 'whiteblock miner start' to start generating blocks.")
 		os.Exit(1)
 	}*/
-
-	res, err := util.JsonRpcCall("get_block", args)
-	if err != nil { //try a few nodes
-		nodes, er := GetNodes()
-		if er != nil {
-			util.PrintErrorFatal(er)
-		}
-		for i := range nodes {
-			res, err = util.JsonRpcCall("get_block", []interface{}{args[0], i})
-			if err == nil {
-				break
-			}
-		}
-	}
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-	util.Print(res)
 }
 
 var getBlockCmd = &cobra.Command{
