@@ -133,6 +133,11 @@ The user will need to run the command tx stop to stop running transactions.
 			util.PrintErrorFatal(err)
 		}
 
+		newForm, err := cmd.Flags().GetBool("new")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
 		//value parameter
 		value, err := cmd.Flags().GetInt("value")
 		if err != nil {
@@ -144,7 +149,13 @@ The user will need to run the command tx stop to stop running transactions.
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		mode,err := cmd.Flags().GetString("mode")
+
+		if !newForm {
+			util.JsonRpcCallAndPrint("run_constant_tps", []interface{}{tps, valueInEth, size})
+			return
+		}
+
+		mode, err := cmd.Flags().GetString("mode")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -152,8 +163,9 @@ The user will need to run the command tx stop to stop running transactions.
 			"tps":    tps,
 			"value":  valueInEth,
 			"txSize": size,
-			"mode": mode,
+			"mode":   mode,
 		}
+
 		dest, err := cmd.Flags().GetString("destination")
 		if err != nil {
 			util.PrintErrorFatal(err)
