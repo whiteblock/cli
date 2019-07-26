@@ -20,7 +20,6 @@ var (
 )
 
 var txCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "tx <command>",
 	Short: "Run transaction commands.",
 	Long: `
@@ -38,7 +37,6 @@ testing script that will be able to automate transaction tests.
 */
 
 var sendSingleTxCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "send",
 	Short: "Send a transaction between two accounts",
 	Long: `
@@ -54,38 +52,18 @@ Optional Parameters:
 	eos:  --symbol [symbol=SYS] --code [code=eosio.token] --memo [memo=]
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		/*previousBuild, err := getPreviousBuild()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}*/
-
 		if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
 			util.PrintStringError("Required flags were not provided. Please input the required flags.")
 			cmd.Help()
 			return
 		}
-		command := "eth::send_transaction"
+		command := "send_transaction"
 		params := []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
-		/*
-			switch previousBuild.Blockchain {
-			case "eos":
-				if !(len(nodeFlag) > 0) || !(len(toFlag) > 0) || !(len(fromFlag) > 0) || valueFlag == 0 {
-					util.Print("Required flags were not provided. Please input the required flags.")
-					return
-				}
-				command = "eos::send_transaction"
-				params = []string{nodeFlag, fromFlag, toFlag, strconv.Itoa(valueFlag)}
-			default:
-				util.ClientNotSupported(previousBuild.Blockchain)
-			}
-		*/
 		util.JsonRpcCallAndPrint(command, params)
 	},
 }
 
 var sendToTxCmd = &cobra.Command{
-	// Hidden: true,
 	Use:   "to",
 	Short: "Send transaction data to an account",
 	Long: `
@@ -96,18 +74,7 @@ Required Parameters:
 	--destination <address> --value <amount> --data <transaction data>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Check required flags
-		if !cmd.Flags().Changed("destination") {
-			util.PrintStringError("No \"destination\" flag has been provided. Please input the flag with a value.")
-			cmd.Help()
-			return
-		}
-		if !cmd.Flags().Changed("value") {
-			util.PrintStringError("No \"value\" flag has been provided. Please input the flag with a value.")
-			cmd.Help()
-			return
-		}
+		util.RequireFlags(cmd, "destination", "value")
 
 		// Collect the params for the cmd
 		command := "send_to"
@@ -149,64 +116,61 @@ The user must specify the flags that will be used for sending transactions.
 }
 
 var startStreamTxCmd = &cobra.Command{
-	// Hidden: true,
 	Use:     "stream",
 	Short:   "Send continuous transactions",
 	Aliases: []string{"cont", "continuous"},
 	Long: `
-The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
-This command will start sending a continual stream of transactions according to the given flags. Stream will send transactions as a continuous flow of tps. The user will need to run the command tx stop to stop running transactions.
-
-Required Parameters: 
-	ethereum:  --tps <tps> --value <amount>
-	eos:  --tps <tps> 
-
-Optional Parameters:
-	ethereum:  --destination [address]
-	eos:  --size [tx size]
-	`,
+This command will start sending a continual stream of transactions according to the given flags. 
+Stream will send transactions as a continuous flow of tps. 
+The user will need to run the command tx stop to stop running transactions.
+`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		util.RequireFlags(cmd, "tps")
 
-		if !cmd.Flags().Changed("tps") { //TPS will always be required
-			util.Print("No \"tps\" flag has been provided. Please input the tps flag with a value.")
-			cmd.Help()
-			return
-		}
 		tps, err := cmd.Flags().GetInt("tps")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		params := []interface{}{strconv.Itoa(tps)}
+
 		//value parameter
 		value, err := cmd.Flags().GetInt("value")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		toEth := strconv.Itoa(value) + "000000000000000000"
-		params = append(params, toEth)
+		valueInEth := strconv.Itoa(value) + "000000000000000000"
 
 		size, err := cmd.Flags().GetInt("size")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		params = append(params, size)
+		mode,err := cmd.Flags().GetString("mode")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params := map[string]interface{}{
+			"tps":    tps,
+			"value":  valueInEth,
+			"txSize": size,
+			"mode": mode,
+		}
 		dest, err := cmd.Flags().GetString("destination")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+
 		if len(dest) > 0 {
-			params = append(params, dest)
+			params["destination"] = dest
 		}
 		log.WithFields(log.Fields{"params": params}).Debug("Sending the request to start sending tx")
-		util.JsonRpcCallAndPrint("run_constant_tps", params)
+		util.JsonRpcCallAndPrint("run_constant_tps", []interface{}{params})
 	},
 }
 
 var startBurstTxCmd = &cobra.Command{
-	// Hidden: true,
-	Use:   "burst",
-	Short: "Send burst transactions",
+	Hidden: true,
+	Use:    "burst",
+	Short:  "Send burst transactions",
 	Long: `
 The user must specify the blockchain flag as well as any other flags that will be used for sending transactions.
 This command will send a burst of transactions. Additional flags are optional. Burst will send one burst of transactions to the blockchain to fill the transaction pool.
@@ -263,7 +227,7 @@ Stops the sending of transactions if transactions are currently being sent
 		if res != nil && res.(float64) == 0 && err == nil {
 			util.Print("Transactions stopped successfully")
 		} else {
-			util.Print("There was an error stopping transactions")
+			util.PrintErrorFatal("There was an error stopping transactions")
 		}
 	},
 }
@@ -282,9 +246,11 @@ func init() {
 	sendToTxCmd.Flags().String("data", "", "transaction data")
 
 	startStreamTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
-	startStreamTxCmd.Flags().IntP("size", "s", 0, "size of the transaction in bytes")
+	startStreamTxCmd.Flags().IntP("size", "s", -1, "size of the transaction in bytes")
 	startStreamTxCmd.Flags().IntP("tps", "t", 0, "transactions per second")
 	startStreamTxCmd.Flags().IntP("value", "v", -1, "amount to send in transaction")
+	startStreamTxCmd.Flags().String("mode", "", "the tx send mode: nr,default")
+	startStreamTxCmd.Flags().Bool("new", false, "use the new tx format")
 	startStreamTxCmd.MarkFlagRequired("tps")
 
 	startBurstTxCmd.Flags().StringVarP(&toFlag, "destination", "d", "", "where the transaction will be sent to")

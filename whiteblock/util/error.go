@@ -65,6 +65,16 @@ func ClientNotSupported(client string) {
 	PrintErrorFatal(fmt.Sprintf("This function is not supported for %s.", client))
 }
 
+func MalformedUsageError(cmd *cobra.Command, err interface{}) {
+	fmt.Println(cmd.UsageString())
+	PrintErrorFatal(err)
+}
+
+func FlagNotProvidedError(cmd *cobra.Command, flagName string) {
+	fmt.Println(cmd.UsageString())
+	PrintErrorFatal(fmt.Sprintf(`missing required flag: "%s"`, flagName))
+}
+
 func PrintErrorFatal(err interface{}) {
 	PrintStringError(fmt.Sprint(err))
 	os.Exit(1)
