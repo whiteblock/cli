@@ -20,3 +20,11 @@ func GetStringFlagValue(cmd *cobra.Command, flag string) string {
 	}
 	return out
 }
+
+func GetIntFlagValue(cmd *cobra.Command, flag string) int {
+	out, err := cmd.Flags().GetInt(flag)
+	if err != nil {
+		PrintErrorFatal(err)
+	}
+	return out
+}

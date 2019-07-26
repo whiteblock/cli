@@ -52,14 +52,15 @@ Optional Parameters:
 	eos:  --symbol [symbol=SYS] --code [code=eosio.token] --memo [memo=]
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
-			util.PrintStringError("Required flags were not provided. Please input the required flags.")
-			cmd.Help()
-			return
-		}
-		command := "send_transaction"
-		params := []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
-		util.JsonRpcCallAndPrint(command, params)
+		util.RequireFlags(cmd, "from", "destination", "gas", "gasprice", "value")
+
+		util.JsonRpcCallAndPrint("send_transaction", []interface{}{
+			util.GetStringFlagValue(cmd, "from"),
+			util.GetStringFlagValue(cmd, "destination"),
+			util.GetStringFlagValue(cmd, "gas"),
+			util.GetStringFlagValue(cmd, "gasprice"),
+			strconv.Itoa(util.GetIntFlagValue(cmd, "value")),
+		})
 	},
 }
 
@@ -108,49 +109,28 @@ The user will need to run the command tx stop to stop running transactions.
 	Run: func(cmd *cobra.Command, args []string) {
 		util.RequireFlags(cmd, "tps")
 
-		tps, err := cmd.Flags().GetInt("tps")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-
+		tps := util.GetIntFlagValue(cmd, "tps")
 		newForm, err := cmd.Flags().GetBool("new")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		//value parameter
-		value, err := cmd.Flags().GetInt("value")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		valueInEth := strconv.Itoa(value) + "000000000000000000"
-
-		size, err := cmd.Flags().GetInt("size")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		valueInEth := strconv.Itoa(util.GetIntFlagValue(cmd, "value")) + "000000000000000000"
+		size := util.GetIntFlagValue(cmd, "size")
 
 		if !newForm {
 			util.JsonRpcCallAndPrint("run_constant_tps", []interface{}{tps, valueInEth, size})
 			return
 		}
 
-		mode, err := cmd.Flags().GetString("mode")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
 		params := map[string]interface{}{
 			"tps":    tps,
 			"value":  valueInEth,
 			"txSize": size,
-			"mode":   mode,
+			"mode":   util.GetStringFlagValue(cmd, "mode"),
 		}
 
-		dest, err := cmd.Flags().GetString("destination")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-
+		dest := util.GetStringFlagValue(cmd, "destination")
 		if len(dest) > 0 {
 			params["destination"] = dest
 		}
