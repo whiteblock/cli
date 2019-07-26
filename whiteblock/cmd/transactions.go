@@ -40,9 +40,10 @@ testing script that will be able to automate transaction tests.
 var sendSingleTxCmd = &cobra.Command{
 	// Hidden: true,
 	Use:   "send",
-	Short: "Sends a single transaction",
+	Short: "Send a transaction between two accounts",
 	Long: `
 The user must specify the flags that will be used for sending transactions.
+
 Send a transaction between two accounts.
 
 Required Parameters: 
@@ -51,11 +52,8 @@ Required Parameters:
 	
 Optional Parameters:
 	eos:  --symbol [symbol=SYS] --code [code=eosio.token] --memo [memo=]
-
-`,
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		command := ""
-		params := []string{}
 
 		/*previousBuild, err := getPreviousBuild()
 		if err != nil {
@@ -63,12 +61,12 @@ Optional Parameters:
 		}*/
 
 		if !(len(toFlag) > 0) || !(len(fromFlag) > 0) || !(len(gasFlag) > 0) || !(len(gasPriceFlag) > 0) || valueFlag == 0 {
-			util.Print("Required flags were not provided. Please input the required flags.")
+			util.PrintStringError("Required flags were not provided. Please input the required flags.")
 			cmd.Help()
 			return
 		}
-		command = "eth::send_transaction"
-		params = []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
+		command := "eth::send_transaction"
+		params := []string{fromFlag, toFlag, gasFlag, gasPriceFlag, strconv.Itoa(valueFlag)}
 		/*
 			switch previousBuild.Blockchain {
 			case "eos":
@@ -82,6 +80,60 @@ Optional Parameters:
 				util.ClientNotSupported(previousBuild.Blockchain)
 			}
 		*/
+		util.JsonRpcCallAndPrint(command, params)
+	},
+}
+
+var sendToTxCmd = &cobra.Command{
+	// Hidden: true,
+	Use: "to",
+	Short: "Send transaction data to an account",
+	Long: `
+The user must specify the flags that will be used for sending transaction data.
+Send a transaction data to an account.
+
+Required Parameters: 
+	--destination <address> --value <amount> --data <transaction data>
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		// Check required flags
+		if !cmd.Flags().Changed("destination") { 
+			util.PrintStringError("No \"destination\" flag has been provided. Please input the flag with a value.")
+			cmd.Help()
+			return
+		}
+		if !cmd.Flags().Changed("value") { 
+			util.PrintStringError("No \"value\" flag has been provided. Please input the flag with a value.")
+			cmd.Help()
+			return
+		}
+
+		// Collect the params for the cmd
+		command := "send_to"
+		var params []interface{}
+
+		destination, err := cmd.Flags().GetString("destination")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params = append(params, destination)
+		
+
+		value, err := cmd.Flags().GetString("value") // value in string to hold bigger value than unit64
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params = append(params, value)
+
+		data, err := cmd.Flags().GetString("data")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		params = append(params, data)
+
+		log.WithFields(log.Fields{"params": params}).Debug("Sending the request to send_to cmd")
+
 		util.JsonRpcCallAndPrint(command, params)
 	},
 }
@@ -226,6 +278,10 @@ func init() {
 	sendSingleTxCmd.Flags().StringVarP(&gasPriceFlag, "gasprice", "p", "", "specify gas price for tx")
 	sendSingleTxCmd.Flags().IntVarP(&valueFlag, "value", "v", 0, "amount to send in transaction")
 
+	sendToTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
+	sendToTxCmd.Flags().StringP("value", "v", "", "amount to send in transaction")
+	sendToTxCmd.Flags().String("data", "", "transaction data")
+
 	startStreamTxCmd.Flags().StringP("destination", "d", "", "where the transaction will be sent to")
 	startStreamTxCmd.Flags().IntP("size", "s", 0, "size of the transaction in bytes")
 	startStreamTxCmd.Flags().IntP("tps", "t", 0, "transactions per second")
@@ -239,5 +295,6 @@ func init() {
 
 	startTxCmd.AddCommand(startStreamTxCmd, startBurstTxCmd)
 	txCmd.AddCommand(sendSingleTxCmd, startTxCmd, stopTxCmd)
+	sendSingleTxCmd.AddCommand(sendToTxCmd)
 	RootCmd.AddCommand(txCmd)
 }
