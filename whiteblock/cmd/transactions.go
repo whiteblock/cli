@@ -86,7 +86,7 @@ Optional Parameters:
 
 var sendToTxCmd = &cobra.Command{
 	// Hidden: true,
-	Use: "to",
+	Use:   "to",
 	Short: "Send transaction data to an account",
 	Long: `
 The user must specify the flags that will be used for sending transaction data.
@@ -98,12 +98,12 @@ Required Parameters:
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// Check required flags
-		if !cmd.Flags().Changed("destination") { 
+		if !cmd.Flags().Changed("destination") {
 			util.PrintStringError("No \"destination\" flag has been provided. Please input the flag with a value.")
 			cmd.Help()
 			return
 		}
-		if !cmd.Flags().Changed("value") { 
+		if !cmd.Flags().Changed("value") {
 			util.PrintStringError("No \"value\" flag has been provided. Please input the flag with a value.")
 			cmd.Help()
 			return
@@ -118,7 +118,6 @@ Required Parameters:
 			util.PrintErrorFatal(err)
 		}
 		params = append(params, destination)
-		
 
 		value, err := cmd.Flags().GetString("value") // value in string to hold bigger value than unit64
 		if err != nil {
