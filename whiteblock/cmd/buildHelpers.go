@@ -1,66 +1,11 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
 	"strings"
 )
-
-//"github.com/sirupsen/logrus"
-func getPreviousBuildId() (string, error) {
-	var buildID string
-	err := util.GetP("previous_build_id", &buildID)
-	if err != nil || len(buildID) == 0 {
-		return "", fmt.Errorf("No previous build. Use build command to deploy a blockchain, " +
-			"or run `whiteblock sync` if you already have a blockchain deployed.")
-	}
-	return buildID, nil
-}
-
-func getPreviousBuild() (build.Config, error) {
-	buildId, err := getPreviousBuildId()
-	if err != nil {
-		return build.Config{}, err
-	}
-
-	prevBuild, err := util.JsonRpcCall("get_build", []string{buildId})
-	if err != nil {
-		return build.Config{}, err
-	}
-	log.WithFields(log.Fields{"fetched": prevBuild}).Debug("fetched the previous build")
-
-	tmp, err := json.Marshal(prevBuild)
-	if err != nil {
-		return build.Config{}, err
-	}
-
-	var out build.Config
-	return out, json.Unmarshal(tmp, &out)
-}
-
-func fetchPreviousBuild() (build.Config, error) {
-	buildId, err := getPreviousBuildId()
-	if err != nil {
-		return build.Config{}, err
-	}
-
-	prevBuild, err := util.JsonRpcCall("get_last_build", []string{buildId})
-	if err != nil {
-		return build.Config{}, err
-	}
-
-	tmp, err := json.Marshal(prevBuild)
-	if err != nil {
-		return build.Config{}, err
-	}
-
-	var out build.Config
-	return out, json.Unmarshal(tmp, &out)
-}
 
 func hasParam(params [][]string, param string) bool {
 	for _, p := range params {

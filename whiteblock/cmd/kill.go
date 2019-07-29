@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 )
 
@@ -15,11 +16,7 @@ var killCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		testnetId, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		util.JsonRpcCallAndPrint("kill_node", []interface{}{testnetId, args[0]})
+		util.JsonRpcCallAndPrint("kill_node", []interface{}{build.GetPreviousBuildID(), args[0]})
 	},
 }
 

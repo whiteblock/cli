@@ -4,17 +4,14 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"sort"
 	"strconv"
 )
 
 func GetNodes() ([]Node, error) {
-	testnetId, err := getPreviousBuildId()
-	if err != nil {
-		return nil, err
-	}
-	res, err := util.JsonRpcCall("nodes", []string{testnetId})
+	res, err := util.JsonRpcCall("nodes", []string{build.GetPreviousBuildID()})
 	if err != nil {
 		return nil, err
 	}
@@ -50,11 +47,7 @@ var getTestnetIDCmd = &cobra.Command{
 	Short:   "Get the last stored testnet id",
 	Long:    "\nGet the last stored testnet id.\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		util.Print(testnetID)
+		util.Print(build.GetPreviousBuildID())
 	},
 }
 
@@ -64,7 +57,7 @@ var getBuildCmd = &cobra.Command{
 	Short:   "Get the last applied build",
 	Long:    "\nGet the last applied build.\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		prevBuild, err := getPreviousBuild()
+		prevBuild, err := build.GetPreviousBuild()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
@@ -94,15 +87,8 @@ var getNodesCmd = &cobra.Command{
 	Long:    "\nNodes will output all of the nodes in the current network.\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		all, err := cmd.Flags().GetBool("all")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		if all {
+		testnetID := build.GetPreviousBuildID()
+		if util.GetBoolFlagValue(cmd, "all") {
 			util.JsonRpcCallAndPrint("status_nodes", []string{testnetID})
 			return
 		}

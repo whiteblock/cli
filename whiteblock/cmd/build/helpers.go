@@ -2,6 +2,8 @@ package build
 
 import (
 	"encoding/json"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
 	"os/user"
@@ -60,4 +62,64 @@ func getServer() []int {
 		break
 	}
 	return idList
+}
+
+func getPreviousBuildID() (string, error) {
+	var buildID string
+	err := util.GetP("previous_build_id", &buildID)
+	if err != nil || len(buildID) == 0 {
+		return "", fmt.Errorf("No previous build. Use build command to deploy a blockchain, " +
+			"or run `whiteblock sync` if you already have a blockchain deployed.")
+	}
+	return buildID, nil
+}
+
+//"github.com/sirupsen/logrus"
+func GetPreviousBuildID() string {
+	res, err := getPreviousBuildID()
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	return res
+}
+
+func GetPreviousBuild() (Config, error) {
+	buildId, err := getPreviousBuildID()
+	if err != nil {
+		return Config{}, err
+	}
+
+	prevBuild, err := util.JsonRpcCall("get_build", []string{buildId})
+	if err != nil {
+		return Config{}, err
+	}
+	log.WithFields(log.Fields{"fetched": prevBuild}).Debug("fetched the previous build")
+
+	tmp, err := json.Marshal(prevBuild)
+	if err != nil {
+		return Config{}, err
+	}
+
+	var out Config
+	return out, json.Unmarshal(tmp, &out)
+}
+
+func FetchPreviousBuild() (Config, error) {
+	buildId, err := getPreviousBuildID()
+	if err != nil {
+		return Config{}, err
+	}
+
+	prevBuild, err := util.JsonRpcCall("get_last_build", []string{buildId})
+	if err != nil {
+		return Config{}, err
+	}
+
+	tmp, err := json.Marshal(prevBuild)
+	if err != nil {
+		return Config{}, err
+	}
+
+	var out Config
+	return out, json.Unmarshal(tmp, &out)
 }

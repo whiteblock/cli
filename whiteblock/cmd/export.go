@@ -6,6 +6,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/sync/semaphore"
 	"io/ioutil"
@@ -276,7 +277,7 @@ var exportCmd = &cobra.Command{
 
 		var testnetID string
 		if len(args) == 0 {
-			testnetID, err = getPreviousBuildId()
+			testnetID = build.GetPreviousBuildID()
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
@@ -487,10 +488,8 @@ func fetchDataLocally(dir string, startBlock int, singleNodeMode bool) {
 		log.WithFields(log.Fields{"node": i, "block number": blockHeights[i]}).Trace("got the block height for the node")
 	}
 	wg := sync.WaitGroup{}
-	testnetID, err := getPreviousBuildId()
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
+	testnetID := build.GetPreviousBuildID()
+
 	for i, blockHeight := range blockHeights {
 		wg.Add(1)
 		go func(blockHeight int, i int) {

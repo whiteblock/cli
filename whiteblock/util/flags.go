@@ -28,3 +28,11 @@ func GetIntFlagValue(cmd *cobra.Command, flag string) int {
 	}
 	return out
 }
+
+func GetBoolFlagValue(cmd *cobra.Command, flag string) bool {
+	out, err := cmd.Flags().GetBool(flag)
+	if err != nil {
+		PrintErrorFatal(err)
+	}
+	return out
+}

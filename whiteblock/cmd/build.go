@@ -36,10 +36,7 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 	var buildReply interface{}
 	var err error
 	if isAppend {
-		buildReply, err = getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		buildReply = build.GetPreviousBuildID()
 		_, err = util.JsonRpcCall("add_nodes", []interface{}{buildReply, buildConfig})
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -66,7 +63,7 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	var err error
 	util.CheckArguments(cmd, args, 0, 0)
-	buildConf, _ := getPreviousBuild() //Errors are ok with this.
+	buildConf, _ := build.GetPreviousBuild() //Errors are ok with this.
 
 	previousNumberNodes := 0
 	if isAppend {
@@ -308,7 +305,7 @@ var previousCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		prevBuild, err := getPreviousBuild()
+		prevBuild, err := build.GetPreviousBuild()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}

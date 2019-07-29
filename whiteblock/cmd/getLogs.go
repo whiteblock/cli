@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/crypto/ssh"
 	"io"
@@ -26,10 +27,7 @@ Response: stdout and stderr of the blockchain process
 	//tail -f --zero-terminated /output.log
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		testNetId, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		testNetId := build.GetPreviousBuildID()
 		n, err := strconv.Atoi(args[0])
 
 		if err != nil {
@@ -121,17 +119,14 @@ var getLogAllCmd = &cobra.Command{
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		testNetId, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+
 		tailval, err := cmd.Flags().GetInt("tail")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 		for i := range nodes {
 			util.JsonRpcCallAndPrint("log", map[string]interface{}{
-				"testnetId": testNetId,
+				"testnetId": build.GetPreviousBuildID(),
 				"node":      i,
 				"lines":     tailval,
 			})

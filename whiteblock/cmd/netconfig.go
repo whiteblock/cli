@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
 )
@@ -38,10 +39,6 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 		limit := util.GetIntFlagValue(cmd, "limit")
 
 		util.CheckArguments(cmd, args, 1, 1)
-		testnetId, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
 
 		netInfo := make(map[string]interface{})
 		node := util.CheckAndConvertInt(args[0], "node")
@@ -62,7 +59,7 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 			netInfo["rate"] = rateStr
 		}
 		networkConf := []interface{}{
-			testnetId,
+			build.GetPreviousBuildID(),
 			netInfo,
 		}
 
@@ -81,10 +78,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
 		netInfo := make(map[string]interface{})
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+
 		delay := util.GetIntFlagValue(cmd, "delay")
 		rateFlag := util.GetIntFlagValue(cmd, "bandwidth")
 		limit := util.GetIntFlagValue(cmd, "limit")
@@ -104,7 +98,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 		}
 
 		networkConf := []interface{}{
-			testnetID,
+			build.GetPreviousBuildID(),
 			netInfo,
 		}
 
@@ -122,11 +116,7 @@ Netconfig clear will reset all emulation and turn off all persisiting network co
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal("No previous build found")
-		}
-		util.JsonRpcCallAndPrint("netem_delete", []interface{}{testnetID})
+		util.JsonRpcCallAndPrint("netem_delete", []interface{}{build.GetPreviousBuildID()})
 	},
 }
 
@@ -140,11 +130,7 @@ Netconfig get will fetch the current network conditions
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal("No previous build found")
-		}
-		util.JsonRpcCallAndPrint("netem_get", []interface{}{testnetID})
+		util.JsonRpcCallAndPrint("netem_get", []interface{}{build.GetPreviousBuildID()})
 	},
 }
 
@@ -158,11 +144,7 @@ Get a json array of the connections which are blocked.
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal("No previous build found")
-		}
-		outArgs := []interface{}{testnetID}
+		outArgs := []interface{}{build.GetPreviousBuildID()}
 		if len(args) == 1 {
 			outArgs = append(outArgs, args[0])
 		}
@@ -178,11 +160,7 @@ var netconfigGetPartitionsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(util.ErrNoPreviousBuild)
-		}
-		util.JsonRpcCallAndPrint("get_partitions", []interface{}{testnetID})
+		util.JsonRpcCallAndPrint("get_partitions", []interface{}{build.GetPreviousBuildID()})
 	},
 }
 
@@ -196,12 +174,8 @@ Allow the given pair of nodes to connect
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 2, 2)
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(util.ErrNoPreviousBuild)
-		}
 		util.JsonRpcCallAndPrint("remove_outage", []interface{}{
-			testnetID,
+			build.GetPreviousBuildID(),
 			util.CheckAndConvertInt(args[0], "node1"),
 			util.CheckAndConvertInt(args[1], "node2")})
 	},
@@ -217,12 +191,8 @@ Prevent the given pair of nodes from connecting
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 2, 2)
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(util.ErrNoPreviousBuild)
-		}
 		util.JsonRpcCallAndPrint("make_outage", []interface{}{
-			testnetID,
+			build.GetPreviousBuildID(),
 			util.CheckAndConvertInt(args[0], "node1"),
 			util.CheckAndConvertInt(args[1], "node2")})
 	},
@@ -237,16 +207,11 @@ Partition the given nodes from the rest of the network
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
-		testnetId, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(util.ErrNoPreviousBuild)
-		}
 		nodes := []int{}
 		for i, arg := range args {
 			nodes = append(nodes, util.CheckAndConvertInt(arg, fmt.Sprintf("argument %d", i)))
 		}
-		util.JsonRpcCallAndPrint("partition_outage", []interface{}{testnetId, nodes})
+		util.JsonRpcCallAndPrint("partition_outage", []interface{}{build.GetPreviousBuildID(), nodes})
 	},
 }
 
@@ -259,11 +224,7 @@ Remove any outages and allow connections between all nodes
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
-		testnetID, err := getPreviousBuildId()
-		if err != nil {
-			util.PrintErrorFatal(util.ErrNoPreviousBuild)
-		}
-		util.JsonRpcCallAndPrint("remove_all_outages", []interface{}{testnetID})
+		util.JsonRpcCallAndPrint("remove_all_outages", []interface{}{build.GetPreviousBuildID()})
 	},
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"strconv"
 )
@@ -155,7 +156,7 @@ Optional Parameters:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		params := []string{strconv.Itoa(txsFlag)}
-		previousBuild, err := getPreviousBuild()
+		previousBuild, err := build.GetPreviousBuild()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
