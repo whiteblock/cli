@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"os"
 )
 
 var jsonrpcCall = &cobra.Command{
@@ -17,11 +16,8 @@ var jsonrpcCall = &cobra.Command{
 			util.PrintErrorFatal(err)
 		}
 		nodeNumber := util.CheckAndConvertInt(args[0], "node number")
+		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
-		if nodeNumber >= len(nodes) {
-			util.PrintStringError("Node number too high")
-			os.Exit(1)
-		}
 		util.JsonRpcCallAndPrint("jsonrpc_call", args)
 	},
 }

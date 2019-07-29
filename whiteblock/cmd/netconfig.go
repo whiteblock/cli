@@ -32,6 +32,11 @@ var netconfigSetCmd = &cobra.Command{
 Netconfig set will introduce persisting network conditions for testing to a specific node. Please indicate the proper flags with the amount to set.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		delay := util.GetIntFlagValue(cmd, "delay")
+		rate := util.GetIntFlagValue(cmd, "bandwidth")
+		limit := util.GetIntFlagValue(cmd, "limit")
+
 		util.CheckArguments(cmd, args, 1, 1)
 		testnetId, err := getPreviousBuildId()
 		if err != nil {
@@ -42,19 +47,19 @@ Netconfig set will introduce persisting network conditions for testing to a spec
 		node := util.CheckAndConvertInt(args[0], "node")
 
 		netInfo["node"] = node
-		if limitFlag != 1000 {
-			netInfo["limit"] = limitFlag
+		if limit != 1000 {
+			netInfo["limit"] = limit
 		}
 		if lossFlag > 0.0 {
 			netInfo["loss"] = lossFlag
 		}
-		if delayFlag > 0 {
-			netInfo["delay"] = delayFlag * 1000
+		if delay > 0 {
+			netInfo["delay"] = delay * 1000
 		}
-		if rateFlag > 0 {
-			rate := strconv.Itoa(rateFlag)
-			rate = rate + "mbps"
-			netInfo["rate"] = rate
+		if rate > 0 {
+			rateStr := strconv.Itoa(rate)
+			rateStr = rateStr + "mbps"
+			netInfo["rate"] = rateStr
 		}
 		networkConf := []interface{}{
 			testnetId,
@@ -76,19 +81,21 @@ Netconfig all will introduce persisting network conditions for testing to all no
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 0)
 		netInfo := make(map[string]interface{})
-		testnetId, err := getPreviousBuildId()
+		testnetID, err := getPreviousBuildId()
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-
-		if limitFlag != 1000 {
-			netInfo["limit"] = limitFlag
+		delay := util.GetIntFlagValue(cmd, "delay")
+		rateFlag := util.GetIntFlagValue(cmd, "bandwidth")
+		limit := util.GetIntFlagValue(cmd, "limit")
+		if limit != 1000 {
+			netInfo["limit"] = limit
 		}
 		if lossFlag > 0.0 {
 			netInfo["loss"] = lossFlag
 		}
-		if delayFlag > 0 {
-			netInfo["delay"] = (delayFlag * 1000) / 2
+		if delay > 0 {
+			netInfo["delay"] = (delay * 1000) / 2
 		}
 		if rateFlag > 0 {
 			rate := strconv.Itoa(rateFlag)
@@ -97,7 +104,7 @@ Netconfig all will introduce persisting network conditions for testing to all no
 		}
 
 		networkConf := []interface{}{
-			testnetId,
+			testnetID,
 			netInfo,
 		}
 

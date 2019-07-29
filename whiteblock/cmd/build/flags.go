@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
-	"strconv"
 	"strings"
 )
 
@@ -45,17 +44,10 @@ func HandleDockerAuthFlags(cmd *cobra.Command, args []string, bconf *Config) {
 	if !ok {
 		bconf.Extras["prebuild"] = map[string]interface{}{}
 	}
-	username, err := cmd.Flags().GetString("docker-username")
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-	password, err := cmd.Flags().GetString("docker-password")
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
+
 	bconf.Extras["prebuild"].(map[string]interface{})["auth"] = map[string]string{
-		"username": username,
-		"password": password,
+		"username": util.GetStringFlagValue(cmd, "docker-username"),
+		"password": util.GetStringFlagValue(cmd, "docker-password"),
 	}
 
 }
@@ -129,10 +121,7 @@ func HandleFilesFlag(cmd *cobra.Command, args []string, bconf *Config) {
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-		index, err := strconv.Atoi(tuple[0])
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		index := util.CheckAndConvertInt(tuple[0], "node number provided to -t")
 		if index < 0 || index >= bconf.Nodes {
 			util.PrintErrorFatal(fmt.Errorf("Index is out of range for -t flag"))
 		}
@@ -181,10 +170,11 @@ func HandleSSHOptions(cmd *cobra.Command, args []string, bconf *Config) {
 }
 
 func HandleDockerfile(cmd *cobra.Command, args []string, bconf *Config) {
-	filePath, err := cmd.Flags().GetString("dockerfile")
-	if err != nil {
-		util.PrintErrorFatal(err)
+	if !cmd.Flags().Changed("dockerfile") {
+		return
 	}
+
+	filePath := util.GetStringFlagValue(cmd, "dockerfile")
 	if len(filePath) == 0 {
 		return
 	}
@@ -251,17 +241,11 @@ func HandleRepoBuild(cmd *cobra.Command, args []string, bconf *Config) {
 	}
 	bconf.Extras["prebuild"].(map[string]interface{})["build"] = true
 
-	repo, err := cmd.Flags().GetString("git-repo")
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
+	repo := util.GetStringFlagValue(cmd, "git-repo")
 
 	bconf.Extras["prebuild"].(map[string]interface{})["repo"] = repo
 	if cmd.Flags().Changed("git-repo-branch") {
-		branch, err := cmd.Flags().GetString("git-repo-branch")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		branch := util.GetStringFlagValue(cmd, "git-repo-branch")
 		log.Trace("given a git repo branch")
 		bconf.Extras["prebuild"].(map[string]interface{})["branch"] = branch
 	}
