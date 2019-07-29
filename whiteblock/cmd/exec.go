@@ -11,7 +11,7 @@ var execCmd = &cobra.Command{
 	Short:  "Execute a function call",
 	Long:   "\nMainly for internal and debug purposes.\n",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint(args[0], args[1:])
+		util.JsonRpcCallAndPrint(args[0], util.ArgsToJSON(args[1:]))
 	},
 }
 

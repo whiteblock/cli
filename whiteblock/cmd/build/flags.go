@@ -64,9 +64,9 @@ func HandleImageFlag(cmd *cobra.Command, args []string, bconf *Config) {
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
-	//fmt.Printf("IMAGES=%#v\n",images)
+
 	if len(potentialImage) > 1 {
-		util.PrintErrorFatal(fmt.Errorf("Too many default images"))
+		util.PrintErrorFatal("too many default images")
 	}
 	imgDefault := ""
 	if len(potentialImage) == 1 {
@@ -198,13 +198,7 @@ func HandleStartLoggingAtBlock(cmd *cobra.Command, args []string, bconf *Config)
 	if !cmd.Flags().Changed("start-logging-at-block") { //Don't bother if not specified
 		return
 	}
-
-	startBlock, err := cmd.Flags().GetInt("start-logging-at-block")
-	if err != nil {
-		log.Trace("there was an error with the flag")
-	} else {
-		bconf.Meta["startBlock"] = startBlock
-	}
+	bconf.Meta["startBlock"] = util.GetIntFlagValue(cmd, "start-logging-at-block")
 }
 
 func HandleResources(cmd *cobra.Command, args []string, bconf *Config) (givenCPU bool, givenMem bool) {
@@ -325,10 +319,7 @@ func HandleBoundCPUs(cmd *cobra.Command, args []string, bconf *Config) {
 	for bconf.Nodes > len(bconf.Resources) {
 		bconf.Resources = append(bconf.Resources, firstResources)
 	}
-	numCPUs, err := cmd.Flags().GetInt("bound-cpus")
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
+	numCPUs := util.GetIntFlagValue(cmd, "bound-cpus")
 	cpuNo := 0
 	for i := range bconf.Resources {
 		bconf.Resources[i].BoundCPUs = []int{}
