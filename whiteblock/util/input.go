@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -95,4 +96,19 @@ func OptionListPrompt(msg string, options []string) int {
 		return selection
 	}
 	panic("should never reach")
+}
+
+func ArgsToJSON(args []string) []interface{} {
+	out := []interface{}{}
+
+	for _, arg := range args {
+		var conv interface{}
+		err := json.Unmarshal([]byte(arg), &conv)
+		if err != nil {
+			out = append(out, arg)
+		} else {
+			out = append(out, conv)
+		}
+	}
+	return out
 }

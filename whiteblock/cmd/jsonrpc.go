@@ -18,7 +18,7 @@ var jsonrpcCall = &cobra.Command{
 		nodeNumber := util.CheckAndConvertInt(args[0], "node number")
 		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
-		util.JsonRpcCallAndPrint("jsonrpc_call", args)
+		util.JsonRpcCallAndPrint("jsonrpc_call", util.ArgsToJSON(args))
 	},
 }
 
