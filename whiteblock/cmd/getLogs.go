@@ -8,7 +8,6 @@ import (
 	"github.com/whiteblock/cli/whiteblock/util"
 	"golang.org/x/crypto/ssh"
 	"io"
-	"strconv"
 	"syscall"
 	"unsafe"
 )
@@ -28,33 +27,18 @@ Response: stdout and stderr of the blockchain process
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
 		testNetId := build.GetPreviousBuildID()
-		n, err := strconv.Atoi(args[0])
+		n := util.CheckAndConvertInt(args[0], "node number")
 
-		if err != nil {
-			util.InvalidInteger("node", args[0], true)
-		}
-
-		follow, err := cmd.Flags().GetBool("follow")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		if !follow {
-			tailval, err := cmd.Flags().GetInt("tail")
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
+		if !util.GetBoolFlagValue(cmd, "follow") {
 			util.JsonRpcCallAndPrint("log", map[string]interface{}{
 				"testnetId": testNetId,
 				"node":      n,
-				"lines":     tailval,
+				"lines":     util.GetIntFlagValue(cmd, "tail"),
 			})
 			return
 		}
 		//Forward the output from tail -f
-		nodes, err := GetNodes()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		nodes := GetNodes()
 		util.CheckIntegerBounds(cmd, "node", n, 0, len(nodes)-1)
 
 		client, err := util.NewSshClient(fmt.Sprintf(nodes[n].IP))
@@ -115,33 +99,22 @@ var getLogAllCmd = &cobra.Command{
 	Long: `Gets all of the logs
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		nodes, err := GetNodes()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-
-		tailval, err := cmd.Flags().GetInt("tail")
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		nodes := GetNodes()
 		for i := range nodes {
 			util.JsonRpcCallAndPrint("log", map[string]interface{}{
 				"testnetId": build.GetPreviousBuildID(),
 				"node":      i,
-				"lines":     tailval,
+				"lines":     util.GetIntFlagValue(cmd, "tail"),
 			})
 		}
-
 	},
 }
 
 func init() {
-
 	getLogCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
 	getLogCmd.Flags().BoolP("follow", "f", false, "output appended data as the file grows")
-
-	getLogAllCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
 	getCmd.AddCommand(getLogCmd)
 
+	getLogAllCmd.Flags().IntP("tail", "t", -1, "Get only the last x lines")
 	getLogCmd.AddCommand(getLogAllCmd)
 }

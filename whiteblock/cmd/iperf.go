@@ -60,13 +60,6 @@ func getTermPixSize() (uint, uint) {
 	return uint(ws.Xpixel), uint(ws.Ypixel)
 }
 
-var (
-	bw          string
-	testTime    string
-	udpEnabled  bool
-	dualEnabled bool
-)
-
 func CaptureAndOutput(r io.Reader) {
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)
@@ -160,12 +153,15 @@ Params: sending node, receiving node
 		spinner.SetText("Setting Up Iperf")
 		spinner.Run(100)
 
-		nodes, err := GetNodes()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		nodes := GetNodes()
+
 		sendingNodeNumber := util.CheckAndConvertInt(args[0], "sending node number")
 		receivingNodeNumber := util.CheckAndConvertInt(args[1], "receiving node number")
+
+		udpEnabled := util.GetBoolFlagValue(cmd, "udp")
+		dualEnabled := util.GetBoolFlagValue(cmd, "dualtest")
+		bw := util.GetStringFlagValue(cmd, "bandwidth")
+		//testTime := util.GetStringFlagValue(cmd,"time")
 
 		util.CheckIntegerBounds(cmd, "sending node number", sendingNodeNumber, 0, len(nodes)-1)
 		util.CheckIntegerBounds(cmd, "receiving node number", receivingNodeNumber, 0, len(nodes)-1)
@@ -296,10 +292,10 @@ Params: sending node, receiving node
 }
 
 func init() {
-	iPerfCmd.Flags().StringVarP(&bw, "bandwidth", "b", "", "set target bandwidth in bits/sec (default 1 Mbit/sec); requires udp enabled")
-	iPerfCmd.Flags().BoolVarP(&dualEnabled, "dualtest", "d", false, "enable bidirectional test simultaneously")
-	iPerfCmd.Flags().StringVarP(&testTime, "time", "t", "", "how long to run test for")
-	iPerfCmd.Flags().BoolVarP(&udpEnabled, "udp", "u", false, "enable udp")
+	iPerfCmd.Flags().StringP("bandwidth", "b", "", "set target bandwidth in bits/sec (default 1 Mbit/sec); requires udp enabled")
+	iPerfCmd.Flags().BoolP("dualtest", "d", false, "enable bidirectional test simultaneously")
+	//iPerfCmd.Flags().StringP("time", "t", "", "how long to run test for")
+	iPerfCmd.Flags().BoolP("udp", "u", false, "enable udp")
 
 	RootCmd.AddCommand(iPerfCmd)
 }

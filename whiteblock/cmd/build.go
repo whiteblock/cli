@@ -67,7 +67,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 
 	previousNumberNodes := 0
 	if isAppend {
-		nodes, err := GetNodes()
+		nodes := GetNodes()
 		log.WithFields(log.Fields{"nodes": buildConf.Nodes,
 			"err": err}).Debug("getting node number from previous build")
 		previousNumberNodes = len(nodes)

@@ -469,10 +469,7 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 //only supports the main log and the block data
 func fetchDataLocally(dir string, startBlock int, singleNodeMode bool) {
 	sem := semaphore.NewWeighted(conf.MaxConns)
-	nodes, err := GetNodes()
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
+	nodes := GetNodes()
 	if len(nodes) < 1 {
 		return
 	}

@@ -218,20 +218,10 @@ Output: Deployed contract address
 		}
 
 		if checkContractFiles(args[1]) {
-			nodes, err := GetNodes()
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
+			nodes := GetNodes()
 
-			nodeNumber, err := strconv.Atoi(args[0])
-			if err != nil {
-				util.PrintErrorFatal(err)
-			}
-
-			if nodeNumber >= len(nodes) {
-				util.PrintStringError("Node number too high")
-				os.Exit(1)
-			}
+			nodeNumber := util.CheckAndConvertInt(args[0], "node number")
+			util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
 			nodeIP := nodes[nodeNumber].IP
 			deployContractOut := deployContract(args[1], nodeIP)
@@ -239,8 +229,7 @@ Output: Deployed contract address
 			log.WithFields(log.Fields{"out": deployContractOut}).Debug("deployed contract")
 			addrList := re.FindAllString(deployContractOut, -1)
 			if len(addrList) < 2 {
-				util.PrintStringError("There was an issue deploying the smart contract.")
-				os.Exit(1)
+				util.PrintErrorFatal("There was an issue deploying the smart contract.")
 			}
 			err = addContract(Contract{
 				DeployedNodeAddress: addrList[0],
@@ -263,19 +252,10 @@ Console will log into the geth console.
 Response: stdout of geth console`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		nodes, err := GetNodes()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		nodes := GetNodes()
+		nodeNumber := util.CheckAndConvertInt(args[0], "node number")
+		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
-		nodeNumber, err := strconv.Atoi(args[0])
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		if nodeNumber >= len(nodes) {
-			util.PrintStringError("Node number too high")
-			os.Exit(1)
-		}
 		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y",
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "-t", "geth", "attach", "/geth/geth.ipc"}, os.Environ()))

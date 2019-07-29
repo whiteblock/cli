@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/cmd/build"
@@ -10,18 +9,14 @@ import (
 	"strconv"
 )
 
-func GetNodes() ([]Node, error) {
-	res, err := util.JsonRpcCall("nodes", []string{build.GetPreviousBuildID()})
-	if err != nil {
-		return nil, err
-	}
-	tmp, err := json.Marshal(res)
-	if err != nil {
-		return nil, err
-	}
+func GetNodes() []Node {
 	var out []Node
-	log.WithFields(log.Fields{"res": res}).Trace("raw nodes")
-	return out, json.Unmarshal(tmp, &out)
+	err := util.JsonRpcCallP("nodes", []string{build.GetPreviousBuildID()}, &out)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	log.WithFields(log.Fields{"nodes": out}).Trace("raw nodes")
+	return out
 }
 
 var getCmd = &cobra.Command{
@@ -115,10 +110,7 @@ var getNodesExternalCmd = &cobra.Command{
 	Long:    "\nGet the port mappings of the nodes\n",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		nodes, err := GetNodes()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		nodes := GetNodes()
 		out := []map[string]interface{}{}
 		for _, node := range nodes {
 			out = append(out, map[string]interface{}{
@@ -270,10 +262,7 @@ commands separated by blockchains.
 func getBlockJsonRpcCall(rpc string, args []string) {
 	res, err := util.JsonRpcCall(rpc, args)
 	if err != nil { //try a few nodes
-		nodes, er := GetNodes()
-		if er != nil {
-			util.PrintErrorFatal(er)
-		}
+		nodes := GetNodes()
 		for i := range nodes {
 			res, err = util.JsonRpcCall(rpc, []interface{}{args[0], i})
 			if err == nil {

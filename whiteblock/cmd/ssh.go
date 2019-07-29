@@ -32,10 +32,7 @@ SSH will allow the user to go into the container where the specified node exists
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, -1)
 
-		nodes, err := GetNodes()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		nodes := GetNodes()
 		nodeNumber := util.CheckAndConvertInt(args[0], "node")
 		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
@@ -50,7 +47,6 @@ SSH will allow the user to go into the container where the specified node exists
 		}
 
 		sshArgs = append(sshArgs, "root@"+nodes[nodeNumber].IP)
-
 		sshArgs = append(sshArgs, args[1:]...)
 		log.WithFields(log.Fields{"command": strings.Join(sshArgs, " ")}).Trace("ssh")
 		log.Fatal(unix.Exec("/usr/bin/ssh", sshArgs, os.Environ()))

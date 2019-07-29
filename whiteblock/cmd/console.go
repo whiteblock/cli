@@ -18,10 +18,7 @@ Console will log into the client console.
 Response: stdout of client console`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
-		nodes, err := GetNodes()
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+		nodes := GetNodes()
 		nodeNumber := util.CheckAndConvertInt(args[0], "node")
 		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
