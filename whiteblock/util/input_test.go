@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -129,8 +128,25 @@ func TestYesNoPrompt(t *testing.T) {
 }
 
 func TestArgsToJSON(t *testing.T) {
-	args := []string{"blah:somethin", "test:somethin", "num:123", "uInt:0"}
+	var tests = []struct {
+		args     []string
+		expected []interface{}
+	}{
+		{
+			args:     []string{"blah", "somethin", "test", "somethin", "num", "123", "uInt", "0"},
+			expected: []interface{}{"blah", "somethin", "test", "somethin", "num", 123.0, "uInt", 0.0},
+		},
+		{
+			args:     []string{"blah", "somethin", "test", "123", "0", "false"},
+			expected: []interface{}{"blah", "somethin", "test", 123.0, 0.0, false},
+		},
+	}
 
-
-	fmt.Println(ArgsToJSON(args))
+	for i, tt := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			if !reflect.DeepEqual(ArgsToJSON(tt.args), tt.expected) {
+				t.Error("return value of ArgsToJSON does not match expected value")
+			}
+		})
+	}
 }
