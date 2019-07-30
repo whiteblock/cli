@@ -385,31 +385,37 @@ var exportCmd = &cobra.Command{
 		}
 
 		// Fetching head state from API end point /testnets/{testnet_id}/head-states
-		ep = fmt.Sprintf("%s/testnets/%s/head-states", conf.APIURL, testnetID)
+		ep = fmt.Sprintf("%s/testnets/%s/blocks", conf.APIURL, testnetID)
 		res, err = util.JwtHTTPRequest("GET", ep, "")
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
 
-		headStates := []interface{}
-		err = json.Unmarshal([]byte(res), &headStates)
+		var resJson  map[string]interface{}
+		err = json.Unmarshal([]byte(res), &resJson)
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
+		if resJson["items"] == nil {
+			log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("Is Empty.")
+			
+		} else {
+			headStates := resJson["items"].([]interface{})
 
-		out, err = json.Marshal(&headStates)
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+			out, err := json.Marshal(&headStates)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
 
-		f, err := os.Create(fmt.Sprintf("%s/head-states.json", outputDir))
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-		
-		_, err := f.Write([]byte(out))
-		if err != nil {
-			util.PrintErrorFatal(err)
+			f, err := os.Create(fmt.Sprintf("%s/head-states.json", outputDir))
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			
+			_, err = f.Write([]byte(out))
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
 		}
 
 		/* 
