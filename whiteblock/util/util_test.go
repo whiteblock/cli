@@ -1,7 +1,11 @@
 package util
 
 import (
+	"bytes"
+	"net/http"
+	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -24,14 +28,14 @@ func TestPartialCommand(t *testing.T) {
 	//	},
 	//}
 
-	// How to compare prints?
+	// TODO How to compare prints?
 
 }
 
-func TestCheckAndConvertInt_Successful(t *testing.T) {
+func TestCheckAndConvertInt(t *testing.T) {
 	var tests = []struct {
-		num string
-		name string
+		num      string
+		name     string
 		expected int
 	}{
 		{num: "5", name: "test", expected: 5},
@@ -45,5 +49,63 @@ func TestCheckAndConvertInt_Successful(t *testing.T) {
 				t.Error("return value of CheckAndConvertInt does not match expected value")
 			}
 		})
+	}
+}
+
+func TestCheckAndConvertInt64(t *testing.T) {
+	var tests = []struct {
+		num      string
+		name     string
+		expected int64
+	}{
+		{num: "5", name: "test", expected: 5},
+		{num: "158348", name: "test", expected: 158348},
+		{num: "0", name: "test", expected: 0},
+		{num: "2392347592347", name: "test", expected: 2392347592347},
+		{num: "-35", name: "test", expected: -35},
+	}
+
+	for i, tt := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			if CheckAndConvertInt64(tt.num, tt.name) != tt.expected {
+				t.Error("return value of CheckAndConvertInt does not match expected value")
+			}
+		})
+	}
+}
+
+func TestWrite(t *testing.T) {
+	path := "/tmp/testWrite"
+	data := []byte("blah")
+
+	if Write(path, data) != nil {
+		t.Error("return value of Write does not match expected value")
+	}
+}
+
+func TestHttpRequest(t *testing.T) {
+	method := "GET"
+	url := "https://this-page-intentionally-left-blank.org/"
+
+	out, err := HttpRequest(method, url, "")
+	if err != nil {
+		t.Error("could not complete HttpRequest", err)
+	}
+
+	req, err := http.NewRequest(method, url, strings.NewReader(""))
+	if err != nil {
+		t.Error("could not complete http request", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	defer resp.Body.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = buf.ReadFrom(resp.Body)
+	if err != nil {
+		t.Error("could not read from buffer", err)
+	}
+
+	if !reflect.DeepEqual(buf.Bytes(), out) {
+		t.Error("return value from HttpRequest does not match expected value")
 	}
 }
