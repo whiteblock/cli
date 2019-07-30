@@ -384,6 +384,35 @@ var exportCmd = &cobra.Command{
 			}(node)
 		}
 
+		// Fetching head state from API end point /testnets/{testnet_id}/head-states
+		ep = fmt.Sprintf("%s/testnets/%s/head-states", conf.APIURL, testnetID)
+		res, err = util.JwtHTTPRequest("GET", ep, "")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		headStates := []interface{}
+		err = json.Unmarshal([]byte(res), &headStates)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		out, err = json.Marshal(&headStates)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		f, err := os.Create(fmt.Sprintf("%s/head-states.json", outputDir))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		
+		_, err := f.Write([]byte(out))
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		/* 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -398,19 +427,19 @@ var exportCmd = &cobra.Command{
 			}
 			files = append(files, f)
 
-			/*for _, node := range nodes {
+			for _, node := range nodes {
 
 				f, err := os.Create(fmt.Sprintf("%s/%s/blocks.json", outputDir, node.ID))
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
 				files = append(files, f)
-			}*/
+			}
 
-			//for i, node := range nodes {
-			//	wg.Add(1)
-			//	go func(node Node, i int) {
-			//		defer wg.Done()
+			for i, node := range nodes {
+				wg.Add(1)
+				go func(node Node, i int) {
+					defer wg.Done()
 					coveredBlockNumbers := map[int64]struct{}{}
 					first := true
 					for {
@@ -444,10 +473,11 @@ var exportCmd = &cobra.Command{
 					if err != nil {
 						util.PrintErrorFatal(err)
 					}
-			//	}(node, i)
-			//}
+				}(node, i)
+			}
 		}()
-		wg.Wait()
+		wg.Wait() */
+
 		/*for _,node := range nodes {
 			ep := fmt.Sprintf("https://api.whiteblock.io/testnets/%s/nodes/%s/blocks",testnetID,node.ID)
 			util.Print(ep)
