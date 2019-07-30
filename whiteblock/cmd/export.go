@@ -122,6 +122,59 @@ func convertBlockNumber(blockNumber interface{}) int64 {
 	panic("shouldn't reach")
 }
 
+// API GET: /testnets/{testnet_id}/blocks:
+// Download the raw blocks seen on a given testnet in JSON format
+func handleRawBlocks(testnetID string, rawRes string, coveredBlockNumbers *map[int64]struct{}, sem *semaphore.Weighted) (interface{}, []string)  {
+	var res map[string]interface{}
+	err := json.Unmarshal([]byte(rawRes), &res)
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	blockNumbers := res["items"].([]interface{})
+
+	out := make([]string, len(blockNumbers))
+
+	wg := sync.WaitGroup{}
+	wg.Add(len(blockNumbers))
+	mux := sync.Mutex{}
+
+	ctx := context.TODO()
+	for i, blockNumber := range blockNumbers {
+		num := convertBlockNumber(blockNumber)
+		if _, ok := (*coveredBlockNumbers)[num]; ok {
+			wg.Done()
+			continue
+		}
+
+		(*coveredBlockNumbers)[num] = struct{}{}
+		sem.Acquire(ctx, 1)
+
+		go func(blockNumber interface{}, i int) {
+			defer wg.Done()
+			defer sem.Release(1)
+			ep := fmt.Sprintf("%s/testnets/%s/blocks/%v", conf.APIURL, testnetID, blockNumber)
+			log.WithFields(log.Fields{"ep": ep}).Debug("fetching the block data")
+			var res string
+			var err error
+			for it := 0; it < 10; it++ {
+				res, err = util.JwtHTTPRequest("GET", ep, "")
+				if err == nil {
+					break
+				}
+			}
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			mux.Lock()
+			out[i] = res
+			log.WithFields(log.Fields{"num": i, "blockNumber": blockNumber}).Trace("fetched a block")
+			mux.Unlock()
+		}(blockNumber, i)
+	}
+	wg.Wait()
+	return res["nextPageToken"], out
+}
+
 func handleExportBlocks(testnetID string, node string, rawRes string, coveredBlockNumbers *map[int64]struct{}, sem *semaphore.Weighted) (interface{}, []string) {
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(rawRes), &res)
@@ -209,8 +262,8 @@ func mergeDown(node Node, files map[string][]string) {
 
 }
 
-func appendBlocks(items []string, firstCall bool, f *os.File) {
-
+// Append the new blocks to the blocks.json file
+func writeBlocksToFile(items []string, firstCall bool, f *os.File) {
 	fInfo, err := f.Stat()
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -303,6 +356,7 @@ var exportCmd = &cobra.Command{
 		wg := sync.WaitGroup{}
 		wg.Add(len(nodes))
 
+		// Fetching log data from different nodes
 		for _, node := range nodes {
 			go func(node Node) {
 				defer wg.Done()
@@ -336,39 +390,46 @@ var exportCmd = &cobra.Command{
 			var nextToken interface{}
 			var blocks []string
 
+			// Fetching blocks data from state  
 			files := []*os.File{}
-			for _, node := range nodes {
+			f, err := os.Create(fmt.Sprintf("%s/blocks.json", outputDir))
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			files = append(files, f)
+
+			/*for _, node := range nodes {
 
 				f, err := os.Create(fmt.Sprintf("%s/%s/blocks.json", outputDir, node.ID))
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
 				files = append(files, f)
-			}
+			}*/
 
-			for i, node := range nodes {
-				wg.Add(1)
-				go func(node Node, i int) {
-					defer wg.Done()
+			//for i, node := range nodes {
+			//	wg.Add(1)
+			//	go func(node Node, i int) {
+			//		defer wg.Done()
 					coveredBlockNumbers := map[int64]struct{}{}
 					first := true
 					for {
 						var ep string
 						if nextToken == nil {
-							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks", conf.APIURL, testnetID, node.ID)
+							ep = fmt.Sprintf("%s/testnets/%s/blocks", conf.APIURL, testnetID)
 						} else {
-							ep = fmt.Sprintf("%s/testnets/%s/nodes/%s/blocks?next=%v", conf.APIURL, testnetID, node.ID,
-								url.QueryEscape(nextToken.(string)))
+							ep = fmt.Sprintf("%s/testnets/%s/blocks?next=%v", conf.APIURL, testnetID,
+												url.QueryEscape(nextToken.(string)) )
 						}
-						log.WithFields(log.Fields{"ep": ep}).Debug("fetching the log chunks")
+						log.WithFields(log.Fields{"ep": ep}).Debug("fetching the blocks")
 						res, err := util.JwtHTTPRequest("GET", ep, "")
 						if err != nil {
 							util.PrintErrorFatal(err)
 						}
 						log.WithFields(log.Fields{"ep": ep, "res": res}).Debug("fetched the blocks")
 
-						nextToken, blocks = handleExportBlocks(testnetID, node.ID, res, &coveredBlockNumbers, sem)
-						appendBlocks(blocks, first, files[i])
+						nextToken, blocks = handleRawBlocks(testnetID, res, &coveredBlockNumbers, sem)
+						writeBlocksToFile(blocks, first, files[i])
 						first = false
 
 						if nextToken == nil {
@@ -383,8 +444,8 @@ var exportCmd = &cobra.Command{
 					if err != nil {
 						util.PrintErrorFatal(err)
 					}
-				}(node, i)
-			}
+			//	}(node, i)
+			//}
 		}()
 		wg.Wait()
 		/*for _,node := range nodes {
@@ -398,6 +459,7 @@ var exportCmd = &cobra.Command{
 	},
 }
 
+// FETCH BLOCKS DATA LOCALLY 
 func GrabManyBlocks(sem *semaphore.Weighted, start int, end int) ([]string, error) {
 	out := make([]string, end-start)
 	var outErr error
@@ -450,7 +512,7 @@ func fetchBlockDataLocally(sem *semaphore.Weighted, node Node, blockHeight int, 
 			i -= diff
 			continue
 		}
-		appendBlocks(blocks, i == startBlock, fd)
+		writeBlocksToFile(blocks, i == startBlock, fd)
 		err = fd.Sync()
 		if err != nil {
 			util.PrintErrorFatal(err)
