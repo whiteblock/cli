@@ -109,3 +109,54 @@ func TestHttpRequest(t *testing.T) {
 		t.Error("return value from HttpRequest does not match expected value")
 	}
 }
+
+func TestCreateAuthNHeader(t *testing.T) {
+	// TODO test this
+}
+
+func TestJwtHTTPRequest(t *testing.T) {
+	// TODO test this
+}
+
+func TestUnrollStringSlicetoMapStringString(t *testing.T) {
+	var tests = []struct {
+		slices              []string
+		delim               string
+		expectedMap         map[int]string
+		expectedStringArray []string
+	}{
+		{
+			slices:              []string{"0/something", "1/something else", "no delim"},
+			delim:               "/",
+			expectedMap:         map[int]string{0: "something", 1: "something else"},
+			expectedStringArray: []string{"no delim"},
+		},
+		{
+			slices:              []string{"0/something", "1/something else"},
+			delim:               "/",
+			expectedMap:         map[int]string{0: "something", 1: "something else"},
+			expectedStringArray: []string{},
+		},
+	}
+
+	for i, tt := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			outMap, outString, err := UnrollStringSliceToMapIntString(tt.slices, tt.delim)
+			if err != nil {
+				t.Error("could not convert string slice to map[int]string", err)
+			}
+
+			if !reflect.DeepEqual(outMap, tt.expectedMap) || !reflect.DeepEqual(outString, tt.expectedStringArray) {
+				t.Error("return value of UnrollStringSliceToMapIntString does not match expected value")
+			}
+		})
+	}
+}
+
+func TestCheckLoad(t *testing.T) {
+	// TODO test this
+}
+
+func TestIsTTY(t *testing.T) {
+	// TODO test this
+}
