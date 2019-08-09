@@ -64,7 +64,7 @@ func getServer() []int {
 	return idList
 }
 
-func getPreviousBuildID() (string, error) {
+func GetPreviousBuildIDErr() (string, error) {
 	var buildID string
 	err := util.GetP("previous_build_id", &buildID)
 	if err != nil || len(buildID) == 0 {
@@ -76,7 +76,7 @@ func getPreviousBuildID() (string, error) {
 
 //"github.com/sirupsen/logrus"
 func GetPreviousBuildID() string {
-	res, err := getPreviousBuildID()
+	res, err := GetPreviousBuildIDErr()
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
@@ -84,7 +84,7 @@ func GetPreviousBuildID() string {
 }
 
 func GetPreviousBuild() (Config, error) {
-	buildId, err := getPreviousBuildID()
+	buildId, err := GetPreviousBuildIDErr()
 	if err != nil {
 		return Config{}, err
 	}
@@ -105,7 +105,7 @@ func GetPreviousBuild() (Config, error) {
 }
 
 func FetchPreviousBuild() (Config, error) {
-	buildId, err := getPreviousBuildID()
+	buildId, err := GetPreviousBuildIDErr()
 	if err != nil {
 		return Config{}, err
 	}
