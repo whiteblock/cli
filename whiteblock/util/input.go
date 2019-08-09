@@ -41,8 +41,9 @@ func GetAsBool(input string) (bool, error) {
 		fallthrough
 	case "1":
 		return true, nil
+	default:
+		return false, fmt.Errorf("Unknown option for boolean")
 	}
-	return false, fmt.Errorf("Unknown option for boolean")
 }
 
 func YesNoPrompt(msg string) bool {
