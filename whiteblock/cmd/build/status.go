@@ -12,7 +12,7 @@ type Status struct {
 	Frozen   bool                   `json:"frozen"`
 }
 
-func (status Status) Print() {
+func (status Status) Print() bool {
 	if status.Frozen {
 		fmt.Printf("\nBuild is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
 	} else if status.Error != nil {
@@ -23,7 +23,9 @@ func (status Status) Print() {
 	} else if status.Progress == 100.0 {
 		fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", "Build", status.Progress)
 		util.Print("\a")
+		return true
 	} else {
 		fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", status.Stage, status.Progress)
 	}
+	return false
 }

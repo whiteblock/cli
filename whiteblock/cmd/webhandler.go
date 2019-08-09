@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/graarh/golang-socketio"
 	"github.com/whiteblock/cli/whiteblock/util"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"os"
 	"os/signal"
 	"strings"
@@ -91,24 +91,13 @@ func buildListener(testnetId string) {
 	})
 
 	err = c.On("build_status", func(h *gosocketio.Channel, args string) {
-		var status BuildStatus
+		var status build.Status
 		err := json.Unmarshal([]byte(args), &status)
 		if err != nil {
 			util.PrintErrorFatal(args)
 		}
-		if status.Frozen {
-			fmt.Printf("\nBuild is currently frozen. Press Ctrl-\\ to drop into console. Run 'whiteblock build unfreeze' to resume. \r")
-		} else if status.Error != nil {
-			fmt.Println() //move to the next line
-			util.PrintErrorFatal(status.Error["what"])
-		} else if status.Progress == 0.0 {
-			fmt.Printf("Sending build context to Whiteblock\r")
-		} else if status.Progress == 100.0 {
-			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", "Build", status.Progress)
-			util.Print("\a")
+		if status.Print() {
 			mutex.Unlock()
-		} else {
-			fmt.Printf("\033[1m\033[K\033[31m%s\033[0m\t%f%% completed\r", status.Stage, status.Progress)
 		}
 	})
 	if err != nil {
