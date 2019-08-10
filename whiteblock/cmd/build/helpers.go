@@ -123,3 +123,23 @@ func FetchPreviousBuild() (Config, error) {
 	var out Config
 	return out, json.Unmarshal(tmp, &out)
 }
+
+//-1 means for all
+func processEnvKey(in string) (int, string) {
+	node := -1
+	index := 0
+	for i, char := range in {
+		if char < '0' || char > '9' {
+			index = i
+			break
+		}
+	}
+	if index == 0 {
+		return node, in
+	}
+
+	if index == len(in) {
+		util.PrintErrorFatal("Cannot have a numerical environment variable")
+	}
+	return util.CheckAndConvertInt(in[:index], "node"), in[index:len(in)]
+}

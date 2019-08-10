@@ -1,6 +1,6 @@
 package build
 
-import(
+import (
 	"fmt"
 	"github.com/whiteblock/cli/whiteblock/util"
 )

@@ -13,15 +13,6 @@ import (
 	"strings"
 )
 
-var (
-	blockchainFlag string
-	nodesFlag      int
-	paramsFile     string
-	validators     int
-	optionsFlag    map[string]string
-	envFlag        map[string]string
-)
-
 func buildAttach(buildID string) {
 	buildListener(buildID)
 	err := util.Set("previous_build_id", buildID)
@@ -63,6 +54,12 @@ func buildStart(buildConfig interface{}, isAppend bool) {
 func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	var err error
 	util.CheckArguments(cmd, args, 0, 0)
+
+	blockchainFlag := util.GetStringFlagValue(cmd, "blockchain")
+	nodesFlag := util.GetIntFlagValue(cmd, "nodes")
+	paramsFile := util.GetStringFlagValue(cmd, "file")
+	validators := util.GetIntFlagValue(cmd, "validators")
+
 	buildConf, _ := build.GetPreviousBuild() //Errors are ok with this.
 
 	previousNumberNodes := 0
@@ -173,12 +170,9 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 		}
 	}
 	build.HandleImageFlag(cmd, args, &buildConf)
-	if optionsFlag != nil {
-		buildConf.Params, err = processOptions(optionsFlag, options)
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-	} else if len(paramsFile) != 0 {
+	givenOpts := build.HandleOptions(cmd, args, &buildConf, options)
+
+	if len(paramsFile) != 0 {
 		f, err := os.Open(paramsFile)
 		if err != nil {
 			util.PrintErrorFatal(err)
@@ -190,7 +184,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 		if err != nil {
 			util.PrintErrorFatal(err)
 		}
-	} else if !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
+	} else if !givenOpts && !previousYesAll && !util.YesNoPrompt("Use default parameters?") {
 		if !util.IsTTY() {
 			util.PrintErrorFatal("not a tty")
 		}
@@ -234,20 +228,9 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	if validators >= 0 {
 		buildConf.Params["validators"] = validators
 	}
+	build.HandleFreezeBeforeGenesis(cmd, args, &buildConf)
 	build.HandleFilesFlag(cmd, args, &buildConf)
-
-	if envFlag != nil {
-		buildConf.Environments, err = processEnv(envFlag, buildConf.Nodes)
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
-	}
-
-	fbg, err := cmd.Flags().GetBool("freeze-before-genesis")
-	if err == nil && fbg {
-		buildConf.Extras["freezeAfterInfrastructure"] = true
-	}
-
+	build.HandleEnv(cmd, args, &buildConf)
 	build.HandleServersFlag(cmd, args, &buildConf)
 	build.HandlePullFlag(cmd, args, &buildConf)
 	build.HandleForceUnlockFlag(cmd, args, &buildConf)
@@ -256,13 +239,12 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	build.HandleDockerfile(cmd, args, &buildConf)
 	build.HandleRepoBuild(cmd, args, &buildConf)
 	build.HandleBoundCPUs(cmd, args, &buildConf)
-	if !isAppend {
-		build.HandleStartLoggingAtBlock(cmd, args, &buildConf)
-	}
-
 	build.HandlePortMapping(cmd, args, &buildConf)
 	build.HandleExposeAllBuildFlag(cmd, args, &buildConf, previousNumberNodes)
 
+	if !isAppend {
+		build.HandleStartLoggingAtBlock(cmd, args, &buildConf)
+	}
 	log.WithFields(log.Fields{"build": buildConf, "dest": conf.ServerAddr, "api": conf.APIURL}).Trace("sending the build request")
 	build.SanitizeBuild(&buildConf)
 	buildStart(buildConf, isAppend)
@@ -382,45 +364,9 @@ var buildAppendCmd = &cobra.Command{
 	},
 }
 
-func addBuildFlagsToCommand(cmd *cobra.Command, isAppend bool) {
-	cmd.Flags().IntSliceP("servers", "s", []int{}, "manually choose the server options")
-	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
-	cmd.Flags().StringVarP(&blockchainFlag, "blockchain", "b", "", "specify blockchain")
-	cmd.Flags().IntVarP(&nodesFlag, "nodes", "n", 0, "specify number of nodes")
-	cmd.Flags().StringP("cpus", "c", "0", "specify number of cpus")
-	cmd.Flags().StringP("memory", "m", "0", "specify memory allocated")
-	cmd.Flags().StringVarP(&paramsFile, "file", "f", "", "parameters file")
-	cmd.Flags().IntVarP(&validators, "validators", "v", -1, "set the number of validators")
-	cmd.Flags().StringSliceP("image", "i", []string{}, "image tag")
-	cmd.Flags().StringToStringVarP(&optionsFlag, "option", "o", nil, "blockchain specific options")
-	cmd.Flags().StringToStringVarP(&envFlag, "env", "e", nil, "set environment variables for the nodes")
-	cmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
-
-	cmd.Flags().String("docker-username", "", "docker auth username")
-	cmd.Flags().String("docker-password", "", "docker auth password. Note: this will be stored unencrypted while the build is in progress")
-	cmd.Flags().StringSlice("user-ssh-key", []string{}, "add an additional ssh key as authorized for the nodes."+
-		" Takes a file containing an ssh public key")
-
-	cmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
-	cmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
-	cmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
-	cmd.Flags().String("dockerfile", "", "build from a dockerfile")
-	cmd.Flags().StringSliceP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
-
-	cmd.Flags().String("git-repo", "", "build from a git repo")
-	cmd.Flags().String("git-repo-branch", "", "specify the branch to build from in a git repo")
-	cmd.Flags().IntSlice("expose-all", []int{}, "expose a port linearly for all nodes")
-	//META FLAGS
-	if !isAppend {
-		cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
-		cmd.Flags().Int("bound-cpus", -1, "specify number of bound cpus")
-	}
-
-}
-
 func init() {
-	addBuildFlagsToCommand(buildCmd, false)
-	addBuildFlagsToCommand(buildAppendCmd, true)
+	build.AddBuildFlagsToCommand(buildCmd, false)
+	build.AddBuildFlagsToCommand(buildAppendCmd, true)
 
 	previousCmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 

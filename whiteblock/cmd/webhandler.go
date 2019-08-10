@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"github.com/graarh/golang-socketio"
-	"github.com/whiteblock/cli/whiteblock/util"
 	"github.com/whiteblock/cli/whiteblock/cmd/build"
+	"github.com/whiteblock/cli/whiteblock/util"
 	"os"
 	"os/signal"
 	"strings"

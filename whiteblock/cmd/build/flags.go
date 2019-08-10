@@ -10,6 +10,122 @@ import (
 	"strings"
 )
 
+func AddBuildFlagsToCommand(cmd *cobra.Command, isAppend bool) {
+	cmd.Flags().IntSliceP("servers", "s", []int{}, "manually choose the server options")
+	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
+	cmd.Flags().StringP("blockchain", "b", "", "specify blockchain")
+	cmd.Flags().IntP("nodes", "n", 0, "specify number of nodes")
+	cmd.Flags().StringP("cpus", "c", "0", "specify number of cpus")
+	cmd.Flags().StringP("memory", "m", "0", "specify memory allocated")
+	cmd.Flags().StringP("file", "f", "", "parameters file")
+	cmd.Flags().IntP("validators", "v", -1, "set the number of validators")
+	cmd.Flags().StringSliceP("image", "i", []string{}, "image tag")
+	cmd.Flags().StringToStringP("option", "o", nil, "blockchain specific options")
+	cmd.Flags().StringToStringP("env", "e", nil, "set environment variables for the nodes")
+	cmd.Flags().StringSliceP("template", "t", nil, "set a custom file template")
+
+	cmd.Flags().String("docker-username", "", "docker auth username")
+	cmd.Flags().String("docker-password", "", "docker auth password. Note: this will be stored unencrypted while the build is in progress")
+	cmd.Flags().StringSlice("user-ssh-key", []string{}, "add an additional ssh key as authorized for the nodes."+
+		" Takes a file containing an ssh public key")
+
+	cmd.Flags().Bool("force-docker-pull", false, "Manually pull the image before the build")
+	cmd.Flags().Bool("force-unlock", false, "Forcefully stop and unlock the build process")
+	cmd.Flags().Bool("freeze-before-genesis", false, "indicate that the build should freeze before starting the genesis ceremony")
+	cmd.Flags().String("dockerfile", "", "build from a dockerfile")
+	cmd.Flags().StringSliceP("expose-port-mapping", "p", nil, "expose a port to the outside world -p 0=8545:8546")
+
+	cmd.Flags().String("git-repo", "", "build from a git repo")
+	cmd.Flags().String("git-repo-branch", "", "specify the branch to build from in a git repo")
+	cmd.Flags().IntSlice("expose-all", []int{}, "expose a port linearly for all nodes")
+	//META FLAGS
+	if !isAppend {
+		cmd.Flags().Int("start-logging-at-block", 0, "specify a later block number to start at")
+		cmd.Flags().Int("bound-cpus", -1, "specify number of bound cpus")
+	}
+
+}
+
+func HandleFreezeBeforeGenesis(cmd *cobra.Command, args []string, bconf *Config) {
+	if !cmd.Flags().Changed("freeze-before-genesis") {
+		return
+	}
+	fbg, err := cmd.Flags().GetBool("freeze-before-genesis")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	bconf.Extras["freezeAfterInfrastructure"] = fbg
+}
+
+func HandleEnv(cmd *cobra.Command, args []string, bconf *Config) {
+	if !cmd.Flags().Changed("env") {
+		return
+	}
+	envVars, err := cmd.Flags().GetStringToString("env")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+
+	bconf.Environments = make([]map[string]string, bconf.Nodes)
+	for i, _ := range bconf.Environments {
+		bconf.Environments[i] = make(map[string]string)
+	}
+	for k, v := range envVars {
+		node, key := processEnvKey(k)
+		if node == -1 {
+			for i, _ := range bconf.Environments {
+				bconf.Environments[i][key] = v
+			}
+			continue
+		}
+		bconf.Environments[node][key] = v
+	}
+}
+
+func HandleOptions(cmd *cobra.Command, args []string, bconf *Config, format [][]string) bool {
+	if !cmd.Flags().Changed("option") {
+		return false
+	}
+	givenOptions, err := cmd.Flags().GetStringToString("option")
+	if err != nil {
+		util.PrintErrorFatal(err)
+	}
+	bconf.Params = map[string]interface{}{}
+
+	for _, kv := range format {
+		name := kv[0]
+		key_type := kv[1]
+
+		val, ok := givenOptions[name]
+		if !ok {
+			continue
+		}
+		switch key_type {
+		case "string":
+			//needs to have filtering
+			bconf.Params[name] = val
+		case "[]string":
+			preprocessed := strings.Replace(val, " ", ",", -1)
+			bconf.Params[name] = strings.Split(preprocessed, ",")
+		case "int":
+			bconf.Params[name] = util.CheckAndConvertInt64(val, name)
+
+		case "bool":
+			switch val {
+			case "true":
+				fallthrough
+			case "yes":
+				bconf.Params[name] = true
+			case "false":
+				fallthrough
+			case "no":
+				bconf.Params[name] = false
+			}
+		}
+	}
+	return true
+}
+
 func HandleForceUnlockFlag(cmd *cobra.Command, args []string, bconf *Config) {
 
 	fbg, err := cmd.Flags().GetBool("force-unlock")

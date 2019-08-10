@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"strconv"
-	"strings"
 )
 
 func hasParam(params [][]string, param string) bool {
@@ -49,89 +47,4 @@ func tern(exp bool, res1 string, res2 string) string {
 		return res1
 	}
 	return res2
-}
-
-func processOptions(givenOptions map[string]string, format [][]string) (map[string]interface{}, error) {
-	out := map[string]interface{}{}
-
-	for _, kv := range format {
-		name := kv[0]
-		key_type := kv[1]
-
-		val, ok := givenOptions[name]
-		if !ok {
-			continue
-		}
-		switch key_type {
-		case "string":
-			//needs to have filtering
-			out[name] = val
-		case "[]string":
-			preprocessed := strings.Replace(val, " ", ",", -1)
-			out[name] = strings.Split(preprocessed, ",")
-		case "int":
-			val, err := strconv.ParseInt(val, 0, 64)
-			if err != nil {
-				return nil, err
-			}
-			out[name] = val
-
-		case "bool":
-			switch val {
-			case "true":
-				fallthrough
-			case "yes":
-				out[name] = true
-			case "false":
-				fallthrough
-			case "no":
-				out[name] = false
-			}
-		}
-	}
-	return out, nil
-}
-
-//-1 means for all
-func processEnvKey(in string) (int, string) {
-	node := -1
-	index := 0
-	for i, char := range in {
-		if char < '0' || char > '9' {
-			index = i
-			break
-		}
-	}
-	if index == 0 {
-		return node, in
-	}
-
-	if index == len(in) {
-		util.PrintErrorFatal("Cannot have a numerical environment variable")
-	}
-
-	var err error
-	node, err = strconv.Atoi(in[:index])
-	if err != nil {
-		util.PrintErrorFatal(err)
-	}
-	return node, in[index:len(in)]
-}
-
-func processEnv(envVars map[string]string, nodes int) ([]map[string]string, error) {
-	out := make([]map[string]string, nodes)
-	for i, _ := range out {
-		out[i] = make(map[string]string)
-	}
-	for k, v := range envVars {
-		node, key := processEnvKey(k)
-		if node == -1 {
-			for i, _ := range out {
-				out[i][key] = v
-			}
-			continue
-		}
-		out[node][key] = v
-	}
-	return out, nil
 }
