@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -106,11 +107,13 @@ func buildListener(testnetId string) {
 	if err.Error() == "There is a build already in progress" {
 		forceUnlock := util.YesNoPrompt("Another build is in progress. Would you like to override?")
 		if forceUnlock {
-			// TODO what happens here
+			build, err := util.JsonRpcCall("get_build", []string{testnetId})
+			fmt.Println(build)
+			fmt.Println(err)
 		}
 	}
 
-	if err != nil && err.Error() != "There is a build already in progress" { 
+	if err != nil && err.Error() != "There is a build already in progress" {
 		util.PrintErrorFatal(err)
 	}
 
