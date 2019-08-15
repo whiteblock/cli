@@ -127,11 +127,6 @@ func HandleOptions(cmd *cobra.Command, args []string, bconf *Config, format [][]
 }
 
 func HandleForceUnlockFlag(cmd *cobra.Command, args []string, bconf *Config) {
-	if args[0] == "unlock" {
-		bconf.Extras["forceUnlock"] = true
-		return
-	}
-
 	fbg, err := cmd.Flags().GetBool("force-unlock")
 	if err == nil && fbg {
 		bconf.Extras["forceUnlock"] = true

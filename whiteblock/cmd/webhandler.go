@@ -99,21 +99,22 @@ func buildListener(testnetId string) {
 			util.PrintErrorFatal(args)
 		}
 
+		if status.Error != nil && status.Error["what"] == "There is a build already in progress"{
+			forceUnlock := util.YesNoPrompt("Another build is in progress. Would you like to override?")
+
+			if forceUnlock {
+				build, err := util.JsonRpcCall("get_build", []string{testnetId})
+				fmt.Println(build)
+				fmt.Println(err)
+			}
+		}
+
 		if status.Print() {
 			mutex.Unlock()
 		}
 	})
 
-	if err.Error() == "There is a build already in progress" {
-		forceUnlock := util.YesNoPrompt("Another build is in progress. Would you like to override?")
-		if forceUnlock {
-			build, err := util.JsonRpcCall("get_build", []string{testnetId})
-			fmt.Println(build)
-			fmt.Println(err)
-		}
-	}
-
-	if err != nil && err.Error() != "There is a build already in progress" {
+	if err != nil {
 		util.PrintErrorFatal(err)
 	}
 
