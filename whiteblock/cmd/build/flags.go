@@ -127,6 +127,10 @@ func HandleOptions(cmd *cobra.Command, args []string, bconf *Config, format [][]
 }
 
 func HandleForceUnlockFlag(cmd *cobra.Command, args []string, bconf *Config) {
+	if args[0] == "unlock" {
+		bconf.Extras["forceUnlock"] = true
+		return
+	}
 
 	fbg, err := cmd.Flags().GetBool("force-unlock")
 	if err == nil && fbg {
@@ -294,6 +298,7 @@ func HandleDockerfile(cmd *cobra.Command, args []string, bconf *Config) {
 	if len(filePath) == 0 {
 		return
 	}
+
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		util.PrintErrorFatal(err)
@@ -306,6 +311,7 @@ func HandleDockerfile(cmd *cobra.Command, args []string, bconf *Config) {
 	if _, ok := bconf.Extras["prebuild"]; !ok {
 		bconf.Extras["prebuild"] = map[string]interface{}{}
 	}
+
 	bconf.Extras["prebuild"].(map[string]interface{})["build"] = true
 	bconf.Extras["prebuild"].(map[string]interface{})["dockerfile"] = base64.StdEncoding.EncodeToString(data)
 }

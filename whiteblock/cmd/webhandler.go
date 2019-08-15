@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"encoding/json"
-	"github.com/graarh/golang-socketio"
-	"github.com/whiteblock/cli/whiteblock/cmd/build"
-	"github.com/whiteblock/cli/whiteblock/util"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
 	"syscall"
+
+	"github.com/graarh/golang-socketio"
+	"github.com/whiteblock/cli/whiteblock/cmd/build"
+	"github.com/whiteblock/cli/whiteblock/util"
 )
 
 type BuildStatus struct {
@@ -96,13 +97,23 @@ func buildListener(testnetId string) {
 		if err != nil {
 			util.PrintErrorFatal(args)
 		}
+
 		if status.Print() {
 			mutex.Unlock()
 		}
 	})
-	if err != nil {
+
+	if err.Error() == "There is a build already in progress" {
+		forceUnlock := util.YesNoPrompt("Another build is in progress. Would you like to override?")
+		if forceUnlock {
+			// TODO what happens here
+		}
+	}
+
+	if err != nil && err.Error() != "There is a build already in progress" { 
 		util.PrintErrorFatal(err)
 	}
+
 	c.Emit("build_status", testnetId)
 	mutex.Lock()
 }
