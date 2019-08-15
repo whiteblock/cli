@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
+	"fmt"
 	"sort"
 	"strconv"
 )
@@ -304,6 +305,17 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 	}*/
 }
 
+func getBlockHeightByNode(cmd *cobra.Command, args []string) { // TODO finish this? 
+	for _, node := range args {
+		nodeNum, err := strconv.ParseInt(node, 0, 32)
+		if err != nil {
+			util.PrintStringError(fmt.Sprintf("could not parse int from node: %s", err.Error()))
+		}
+
+		util.JsonRpcCallAndPrint("get_block_number", []int{int(nodeNum)})
+	}
+}
+
 var getBlockCmd = &cobra.Command{
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
@@ -318,9 +330,7 @@ Gets the most recent block number that had been added to the blockchain.
 
 Response: block number
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint("get_block_number", []string{})
-	},
+	Run: getBlockHeightByNode,
 }
 
 var getBlockInfoCmd = &cobra.Command{
@@ -441,6 +451,7 @@ Response: JSON representation of the contract information.
 func init() {
 	getNodesCmd.AddCommand(getNodesExternalCmd)
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
+
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
 		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd)
 
