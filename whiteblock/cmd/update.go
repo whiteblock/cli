@@ -46,6 +46,7 @@ func handleUpdate(branch string) {
 	log.WithFields(log.Fields{"loc": binaryLocation}).Trace("got the binary location")
 	if !strings.Contains(binaryLocation, "/") {
 		binaryLocation, err = bashExec(fmt.Sprintf("which %s", binaryLocation))
+		binaryLocation = strings.Trim(binaryLocation, "\t\n ")
 	} else {
 		binaryLocation, err = filepath.Abs(binaryLocation)
 	}
