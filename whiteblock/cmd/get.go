@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -307,28 +308,42 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 }
 
 func getBlockHeightByNode(cmd *cobra.Command, args []string) {
-	if len(args) > 1 {
-		util.PrintStringError("too many arguments, expected one")
-		return
-	}
+	wg := sync.WaitGroup{}
+	mux := sync.Mutex{}
+
+	util.CheckArguments(cmd, args, 0, 1)
 
 	if len(args) == 0 {
 		nodes := len(GetNodes())
 
+		blockHeights := make([]string, nodes)
+
 		for i := 0; i < nodes; i++ {
-			util.JsonRpcCallAndPrint("get_block_number", i)
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				res, err := util.JsonRpcCall("get_block_number", []interface{}{i})
+				if err != nil {
+					util.PrintErrorFatal(err)
+				}
+
+
+				blockHeights = append(blockHeights, fmt.Sprintf("Node %v: %v", i, res))
+				mux.Lock()
+			}(i)
 		}
+		wg.Wait()
 
 		return
 	}
 
-	node, err := strconv.ParseInt(args[0], 0, 32)
-	if err != nil {
-		util.PrintStringError(fmt.Sprintf("could not parse int from node: %s", err.Error()))
-		return
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		util.JsonRpcCallAndPrint("get_block_number", []interface{}{args[0]})
+	}()
+	wg.Wait()
 
-	util.JsonRpcCallAndPrint("get_block_number", node)
 	return
 }
 
