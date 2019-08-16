@@ -46,15 +46,11 @@ func handleUpdate(branch string) {
 	log.WithFields(log.Fields{"loc": binaryLocation}).Trace("got the binary location")
 	if !strings.Contains(binaryLocation, "/") {
 		binaryLocation, err = BashExec(fmt.Sprintf("which %s"))
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
 	} else {
-		//convert to absolute path
 		binaryLocation, err = filepath.Abs(binaryLocation)
-		if err != nil {
-			util.PrintErrorFatal(err)
-		}
+	}
+	if err != nil {
+		util.PrintErrorFatal(err)
 	}
 
 	binaryLocation, err = filepath.EvalSymlinks(binaryLocation)
@@ -107,9 +103,9 @@ func getUpdateBranch(args []string) string {
 }
 
 var updateCmd = &cobra.Command{
-	Use:   "update",
+	Use:   "update [release]",
 	Short: "Update the CLI",
-	Long:  `Updates the cli binary`,
+	Long:  `Updates the cli binary to either the stable or beta release`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 0, 1)
@@ -118,6 +114,8 @@ var updateCmd = &cobra.Command{
 		switch runtime.GOOS {
 		case "linux":
 			handleUpdate(branch)
+		default:
+			util.Print("sorry, your OS does not support easy updates")
 		}
 	},
 }
