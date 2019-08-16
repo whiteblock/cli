@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"fmt"
+	"sort"
+	"strconv"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"fmt"
-	"sort"
-	"strconv"
 )
 
 func GetNodes() []Node {
@@ -305,15 +306,26 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 	}*/
 }
 
-func getBlockHeightByNode(cmd *cobra.Command, args []string) { // TODO finish this? 
-	for _, node := range args {
-		nodeNum, err := strconv.ParseInt(node, 0, 32)
+func getBlockHeightByNode(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		nodes := GetNodes()
+
+		util.JsonRpcCallAndPrint("get_block_number", nodes)
+		return
+	}
+
+	requestedNodes := []int{}
+
+	for _, arg := range args {
+		nodeNum, err := strconv.ParseInt(arg, 0, 32)
 		if err != nil {
 			util.PrintStringError(fmt.Sprintf("could not parse int from node: %s", err.Error()))
 		}
 
-		util.JsonRpcCallAndPrint("get_block_number", []int{int(nodeNum)})
+		requestedNodes = append(requestedNodes, int(nodeNum))
 	}
+
+	util.JsonRpcCallAndPrint("get_block_number", requestedNodes)
 }
 
 var getBlockCmd = &cobra.Command{
@@ -323,7 +335,7 @@ var getBlockCmd = &cobra.Command{
 }
 
 var getBlockNumCmd = &cobra.Command{
-	Use:   "number",
+	Use:   "number", // TODO can this be number [node(s)] instead?
 	Short: "Get the block number",
 	Long: `
 Gets the most recent block number that had been added to the blockchain.
