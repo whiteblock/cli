@@ -25,8 +25,8 @@ jobs:
       - run: gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
       - attach_workspace:
           at: ~/go/src/github.com/whiteblock/cli/
-      - run: gsutil cp ~/go/src/github.com/whiteblock/cli/whiteblock/whiteblock gs://genesis-public/cli/$CIRCLE_SHA1/bin/macos/amd64/nonce
-      - run: gsutil cp ~/go/src/github.com/whiteblock/cli/whiteblock/whiteblock gs://genesis-public/cli/$CIRCLE_BRANCH/bin/macos/amd64/nonce
+      - run: gsutil cp ~/go/src/github.com/whiteblock/cli/whiteblock/whiteblock gs://genesis-public/cli/$CIRCLE_SHA1/bin/macos/amd64/
+      - run: gsutil cp ~/go/src/github.com/whiteblock/cli/whiteblock/whiteblock gs://genesis-public/cli/$CIRCLE_BRANCH/bin/macos/amd64/
 
 
 workflows:
