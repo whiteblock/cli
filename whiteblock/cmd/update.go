@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-func BashExec(_cmd string) (string, error) {
+func bashExec(_cmd string) (string, error) {
 	cmd := exec.Command("bash", "-c", _cmd)
 
 	var resultsRaw bytes.Buffer
@@ -45,7 +45,7 @@ func handleUpdate(branch string) {
 	binaryLocation := os.Args[0]
 	log.WithFields(log.Fields{"loc": binaryLocation}).Trace("got the binary location")
 	if !strings.Contains(binaryLocation, "/") {
-		binaryLocation, err = BashExec(fmt.Sprintf("which %s"))
+		binaryLocation, err = bashExec(fmt.Sprintf("which %s", binaryLocation))
 	} else {
 		binaryLocation, err = filepath.Abs(binaryLocation)
 	}
