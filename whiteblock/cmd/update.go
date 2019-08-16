@@ -33,12 +33,14 @@ func BashExec(_cmd string) (string, error) {
 }
 
 func handleUpdate(branch string) {
-	endpoint := fmt.Sprintf("https://storage.cloud.google.com/genesis-public/cli/%s/bin/%s/%s/whiteblock",
+	endpoint := fmt.Sprintf("https://storage.googleapis.com/genesis-public/cli/%s/bin/%s/%s/whiteblock",
 		branch, runtime.GOOS, runtime.GOARCH)
+	log.WithFields(log.Fields{"ep": endpoint}).Trace("fetching the binary data")
 	binary, err := util.HttpRequest("GET", endpoint, "")
 	if err != nil {
 		util.PrintErrorFatal(err)
 	}
+	log.WithFields(log.Fields{"size": len(binary)}).Trace("fetched the binary data")
 	//let's find the where this binary is located.
 	binaryLocation := os.Args[0]
 	log.WithFields(log.Fields{"loc": binaryLocation}).Trace("got the binary location")
@@ -81,10 +83,13 @@ func handleUpdate(branch string) {
 func getUpdateBranch(args []string) string {
 	if len(args) == 0 {
 		options := []string{
+			"master",
+			"dev",
+		}
+		return options[util.OptionListPrompt("Which version of the cli would you like to use?", []string{
 			"stable",
 			"beta",
-		}
-		return options[util.OptionListPrompt("Which version of the cli would you like to use?", options)]
+		})]
 	}
 	switch args[0] {
 	case "beta":
