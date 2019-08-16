@@ -313,9 +313,12 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 	}
 
 	if len(args) == 0 {
-		nodes := GetNodes()
+		nodes := len(GetNodes())
 
-		util.JsonRpcCallAndPrint("get_block_number", nodes)
+		for i := 0; i < nodes; i++ {
+			util.JsonRpcCallAndPrint("get_block_number", i)
+		}
+
 		return
 	}
 
