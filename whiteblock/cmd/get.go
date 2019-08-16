@@ -307,6 +307,11 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 }
 
 func getBlockHeightByNode(cmd *cobra.Command, args []string) {
+	if len(args) > 1 {
+		util.PrintStringError("too many arguments, expected one")
+		return
+	}
+
 	if len(args) == 0 {
 		nodes := GetNodes()
 
@@ -314,18 +319,14 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	requestedNodes := []int{}
-
-	for _, arg := range args {
-		nodeNum, err := strconv.ParseInt(arg, 0, 32)
-		if err != nil {
-			util.PrintStringError(fmt.Sprintf("could not parse int from node: %s", err.Error()))
-		}
-
-		requestedNodes = append(requestedNodes, int(nodeNum))
+	node, err := strconv.ParseInt(args[0], 0, 32)
+	if err != nil {
+		util.PrintStringError(fmt.Sprintf("could not parse int from node: %s", err.Error()))
+		return
 	}
 
-	util.JsonRpcCallAndPrint("get_block_number", requestedNodes)
+	util.JsonRpcCallAndPrint("get_block_number", node)
+	return
 }
 
 var getBlockCmd = &cobra.Command{
@@ -335,7 +336,7 @@ var getBlockCmd = &cobra.Command{
 }
 
 var getBlockNumCmd = &cobra.Command{
-	Use:   "number", // TODO can this be number [node(s)] instead?
+	Use:   "number [node]",
 	Short: "Get the block number",
 	Long: `
 Gets the most recent block number that had been added to the blockchain.
