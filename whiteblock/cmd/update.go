@@ -78,26 +78,38 @@ func handleUpdate(branch string) {
 	util.Print("whiteblock cli has been updated.")
 }
 
+func getUpdateBranch(args []string) string {
+	if len(args) == 0 {
+		options := []string{
+			"stable",
+			"beta",
+		}
+		return options[util.OptionListPrompt("Which version of the cli would you like to use?", options)]
+	}
+	switch args[0] {
+	case "beta":
+		fallthrough
+	case "dev":
+		return "dev"
+	case "master":
+		fallthrough
+	case "stable":
+		return "master"
+	default:
+		util.PrintErrorFatal("Invalid argument, specify either beta or stable")
+	}
+	return ""
+}
+
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update the CLI",
 	Long:  `Updates the cli binary`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		util.CheckArguments(cmd, args, 1, 1)
-		var branch string
-		switch args[0] {
-		case "beta":
-			fallthrough
-		case "dev":
-			branch = "dev"
-		case "master":
-			fallthrough
-		case "stable":
-			branch = "master"
-		default:
-			util.PrintErrorFatal("Invalid argument, specify either beta or stable")
-		}
+		util.CheckArguments(cmd, args, 0, 1)
+		branch := getUpdateBranch(args)
+
 		switch runtime.GOOS {
 		case "linux":
 			handleUpdate(branch)
