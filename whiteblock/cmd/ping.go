@@ -29,7 +29,7 @@ Params: sending node, receiving node
 		util.CheckIntegerBounds(cmd, "sending node number", sendingNodeNumber, 0, len(nodes)-1)
 		util.CheckIntegerBounds(cmd, "receiving node number", receivingNodeNumber, 0, len(nodes)-1)
 
-		log.Fatal(unix.Exec("/usr/bin/ssh", []string{
+		log.Fatal(unix.Exec(conf.SSHBinary, []string{
 			"ssh", "-i", conf.SSHPrivateKey, "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y",
 			"root@" + fmt.Sprintf(nodes[sendingNodeNumber].IP), "ping",

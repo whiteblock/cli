@@ -49,7 +49,7 @@ SSH will allow the user to go into the container where the specified node exists
 		sshArgs = append(sshArgs, "root@"+nodes[nodeNumber].IP)
 		sshArgs = append(sshArgs, args[1:]...)
 		log.WithFields(log.Fields{"command": strings.Join(sshArgs, " ")}).Trace("ssh")
-		log.Fatal(unix.Exec("/usr/bin/ssh", sshArgs, os.Environ()))
+		log.Fatal(unix.Exec(conf.SSHBinary, sshArgs, os.Environ()))
 	},
 }
 
