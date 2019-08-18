@@ -129,7 +129,7 @@ func (this SshClient) Close() {
 }
 
 func sshConnect(host string) (*ssh.Client, error) {
-	key, err := ioutil.ReadFile("/home/master-secrets/id.master")
+	key, err := ioutil.ReadFile(conf.SSHPrivateKey)
 	if err != nil {
 		return nil, err
 	}
