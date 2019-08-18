@@ -3,7 +3,6 @@ package util
 import (
 	"errors"
 	"fmt"
-	"github.com/tmc/scp"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"log"
