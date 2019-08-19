@@ -25,7 +25,7 @@ Params: node number, file/dir source, file/dir destination
 		nodeNumber := util.CheckAndConvertInt(args[0], "node")
 		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
-		log.Fatal(unix.Exec("/usr/bin/scp", []string{"scp", "-i", "/home/master-secrets/id.master",
+		log.Fatal(unix.Exec("/usr/bin/scp", []string{"scp", "-i", conf.SSHPrivateKey,
 			"-r", "-o", "UserKnownHostsFile=/dev/null",
 			"-o", "StrictHostKeyChecking no", args[1],
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP) + ":" + args[2]}, os.Environ()))

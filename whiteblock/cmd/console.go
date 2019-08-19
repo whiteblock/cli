@@ -22,7 +22,7 @@ Response: stdout of client console`,
 		nodeNumber := util.CheckAndConvertInt(args[0], "node")
 		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
-		log.Fatal(unix.Exec("/usr/bin/ssh", []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
+		log.Fatal(unix.Exec(conf.SSHBinary, []string{"ssh", "-i", conf.SSHPrivateKey, "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10", "-y", "-t",
 			"root@" + fmt.Sprintf(nodes[nodeNumber].IP), "tmux", "attach", "-t", "whiteblock"}, os.Environ()))
 	},

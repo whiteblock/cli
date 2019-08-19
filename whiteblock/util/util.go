@@ -61,7 +61,7 @@ func HttpRequest(method string, url string, bodyData string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	//req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Host", conf.APIURL)
 	req.Close = true
 	resp, err := http.DefaultClient.Do(req)

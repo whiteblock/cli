@@ -1,0 +1,39 @@
+version: 2
+jobs:
+  build:
+    macos:
+      xcode: "11.0.0" # indicate our selected version of Xcode
+      go: "1.12.6"
+#    docker:
+#      - image: circleci/golang:1.12
+    working_directory: ~/go/src/github.com/whiteblock/cli/
+    steps:
+      - checkout
+      - run: brew install go
+      - run: go get ./...
+      - run: cd whiteblock && go build
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory
+          root: ~/go/src/github.com/whiteblock/cli/
+          paths: [ "./whiteblock"]
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+    working_directory: ~/go/src/github.com/whiteblock/cli/
+    steps:
+      - run: echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+      - run: gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+      - attach_workspace:
+          at: ~/go/src/github.com/whiteblock/cli/
+      - run: gsutil cp ~/go/src/github.com/whiteblock/cli/whiteblock/whiteblock gs://genesis-public/cli/$CIRCLE_SHA1/bin/macos/amd64/
+      - run: gsutil cp ~/go/src/github.com/whiteblock/cli/whiteblock/whiteblock gs://genesis-public/cli/$CIRCLE_BRANCH/bin/macos/amd64/
+
+
+workflows:
+  version: 2
+  deploy_to_gcs:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build

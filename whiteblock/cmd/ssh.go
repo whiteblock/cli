@@ -36,7 +36,7 @@ SSH will allow the user to go into the container where the specified node exists
 		nodeNumber := util.CheckAndConvertInt(args[0], "node")
 		util.CheckIntegerBounds(cmd, "node number", nodeNumber, 0, len(nodes)-1)
 
-		sshArgs := []string{"ssh", "-i", "/home/master-secrets/id.master", "-o", "StrictHostKeyChecking no",
+		sshArgs := []string{"ssh", "-i", conf.SSHPrivateKey, "-o", "StrictHostKeyChecking no",
 			"-o", "UserKnownHostsFile=/dev/null", "-o", "PasswordAuthentication no", "-o", "ConnectTimeout=10"}
 		verbose, err := cmd.Flags().GetBool("verbose")
 
@@ -49,7 +49,7 @@ SSH will allow the user to go into the container where the specified node exists
 		sshArgs = append(sshArgs, "root@"+nodes[nodeNumber].IP)
 		sshArgs = append(sshArgs, args[1:]...)
 		log.WithFields(log.Fields{"command": strings.Join(sshArgs, " ")}).Trace("ssh")
-		log.Fatal(unix.Exec("/usr/bin/ssh", sshArgs, os.Environ()))
+		log.Fatal(unix.Exec(conf.SSHBinary, sshArgs, os.Environ()))
 	},
 }
 
