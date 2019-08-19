@@ -32,6 +32,7 @@
         },
         "geth": {
             "images": {
+                "light": "gcr.io/whiteblock/geth:light",
                 "stable": "gcr.io/whiteblock/geth:1836f48baea2ce49266a27cfcef1b317be869029 ",
                 "latest": "gcr.io/whiteblock/geth:master"
             }
