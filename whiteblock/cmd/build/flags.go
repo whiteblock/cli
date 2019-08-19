@@ -189,15 +189,15 @@ func HandleImageFlag(cmd *cobra.Command, args []string, bconf *Config) {
 		imgDefault = potentialImage[0]
 		log.WithFields(log.Fields{"image": imgDefault}).Debug("given default image")
 	}
-	baseImage := getImage(bconf.Blockchain, "stable", imgDefault)
 
 	for i := 0; i < bconf.Nodes; i++ {
 
-		bconf.Images[i] = baseImage
 		image, exists := images[i]
 		if exists {
 			log.WithFields(log.Fields{"image": image}).Trace("image exists")
-			bconf.Images[i] = image
+			bconf.Images[i] = determineImage(bconf.Blockchain, image)
+		} else {
+			bconf.Images[i] = determineImage(bconf.Blockchain, imgDefault)
 		}
 	}
 }

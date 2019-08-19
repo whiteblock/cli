@@ -8,12 +8,21 @@ import (
 	"io/ioutil"
 	"os/user"
 	"strings"
+	"sync"
 )
 
-func getImage(blockchain string, imageType string, defaultImage string) string {
+var _imageTable map[string]map[string]map[string]map[string]string
+var _imageTableMux = sync.Mutex{}
+
+func getImageTable() (map[string]map[string]map[string]map[string]string, error) {
+	_imageTableMux.Lock()
+	defer _imageTableMux.Unlock()
+	if _imageTable != nil {
+		return _imageTable, nil
+	}
 	usr, err := user.Current()
 	if err != nil {
-		util.PrintErrorFatal(err)
+		return nil, err
 	}
 	b, err := ioutil.ReadFile("/etc/whiteblock.json")
 	if err != nil {
@@ -21,23 +30,54 @@ func getImage(blockchain string, imageType string, defaultImage string) string {
 		if err != nil {
 			b, err = util.HttpRequest("GET", "https://storage.googleapis.com/genesis-public/cli/dev/etc/whiteblock.json", "")
 			if err != nil {
-				util.PrintErrorFatal(err)
+				return nil, err
 			}
 		}
 	}
-	var cont map[string]map[string]map[string]map[string]string
-	err = json.Unmarshal(b, &cont)
+	err = json.Unmarshal(b, &_imageTable)
 	if err != nil {
+		return nil, err
+	}
+	return _imageTable, nil
+}
+
+func determineImage(blockchain string, requested string) string {
+
+	cont, err := getImageTable()
+	if err != nil {
+		if len(requested) > 0 {
+			return requested
+		}
 		util.PrintErrorFatal(err)
 	}
-	//fmt.Printf("%#v\n",cont["blockchains"])
-	if len(defaultImage) > 0 {
+
+	defaultImage := "gcr.io/whiteblock/" + blockchain + ":master"
+
+	log.WithFields(log.Fields{"imageTable": cont}).Trace("parsed the image table")
+
+	if _, ok := cont["blockchains"][blockchain]; !ok {
+		util.Printf("Warning: no entries for %s", blockchain)
+		log.Debug("chose default image due to missing entry")
 		return defaultImage
-	} else if len(cont["blockchains"][blockchain]["images"][imageType]) != 0 {
-		return cont["blockchains"][blockchain]["images"][imageType]
-	} else {
-		return "gcr.io/whiteblock/" + blockchain + ":master"
 	}
+	if _, ok := cont["blockchains"][blockchain]["images"]; !ok {
+		util.Printf("Warning: no entries in image table for %s", blockchain)
+		log.Debug("chose default image due to missing entry")
+		return defaultImage
+	}
+
+	if len(requested) == 0 {
+		if stableImage, ok := cont["blockchains"][blockchain]["images"]["stable"]; ok {
+			return stableImage
+		}
+		util.Printf("Warning: missing default stable image for %s", blockchain)
+		return defaultImage
+	}
+
+	if image, ok := cont["blockchains"][blockchain]["images"][requested]; ok {
+		return image
+	}
+	return requested
 }
 
 func SanitizeBuild(conf *Config) {
