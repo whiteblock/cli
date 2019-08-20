@@ -29,6 +29,14 @@ func GetIntFlagValue(cmd *cobra.Command, flag string) int {
 	return out
 }
 
+func GetFloat64FlagValue(cmd *cobra.Command, flag string) float64 {
+	out, err := cmd.Flags().GetFloat64(flag)
+	if err != nil {
+		PrintErrorFatal(err)
+	}
+	return out
+}
+
 func GetBoolFlagValue(cmd *cobra.Command, flag string) bool {
 	out, err := cmd.Flags().GetBool(flag)
 	if err != nil {
