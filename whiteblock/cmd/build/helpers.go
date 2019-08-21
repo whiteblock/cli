@@ -70,7 +70,7 @@ func determineImage(blockchain string, requested string) string {
 		if stableImage, ok := cont["blockchains"][blockchain]["images"]["stable"]; ok {
 			return stableImage
 		}
-		util.Printf("Warning: missing default stable image for %s", blockchain)
+		log.Debugf("missing default stable image for %s", blockchain)
 		return defaultImage
 	}
 
