@@ -316,23 +316,30 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
 		nodes := len(GetNodes())
 
+		util.Print("len args == 0")
+
 		blockHeights := make([]string, nodes)
 
 		for i := 0; i < nodes; i++ {
 			wg.Add(1)
 			go func(i int) {
 				defer wg.Done()
+
 				res, err := util.JsonRpcCall("get_block_number", []interface{}{i})
 				if err != nil {
 					util.PrintErrorFatal(err)
 				}
 
+				util.Printf("Node %v: %v", i, res)
 
-				blockHeights = append(blockHeights, fmt.Sprintf("Node %v: %v", i, res))
 				mux.Lock()
+				blockHeights = append(blockHeights, fmt.Sprintf("Node %v: %v", i, res))
+				mux.Unlock()
 			}(i)
 		}
 		wg.Wait()
+
+		util.Print(blockHeights)
 
 		return
 	}
