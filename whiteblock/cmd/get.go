@@ -453,6 +453,17 @@ Response: JSON representation of the accounts information.
 	},
 }
 
+var getPrivateKeysCmd = &cobra.Command{
+	Use: "keys",
+	Short: "Get private keys",
+	Long: `
+Gets the private keys of _______________________________.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		util.JsonRpcCallAndPrint("state::info", args)
+	},
+}
+
 var getBiomeCmd = &cobra.Command{
 	Use:   "biome",
 	Short: "Get the biome id",
@@ -487,7 +498,7 @@ func init() {
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
-		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd)
+		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd, getPrivateKeysCmd)
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
