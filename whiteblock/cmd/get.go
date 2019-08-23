@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"fmt"
+	"sort"
+	"strconv"
+	"sync"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/cmd/build"
 	"github.com/whiteblock/cli/whiteblock/util"
-	"sort"
-	"strconv"
 )
 
 func GetNodes() []Node {
@@ -304,6 +307,49 @@ func getBlockCobra(cmd *cobra.Command, args []string) {
 	}*/
 }
 
+func getBlockHeightByNode(cmd *cobra.Command, args []string) {
+	wg := sync.WaitGroup{}
+	mux := sync.Mutex{}
+
+	util.CheckArguments(cmd, args, 0, 1)
+
+	if util.GetBoolFlagValue(cmd, "all") {
+		nodes := len(GetNodes())
+
+		blockHeights := make([]string, nodes)
+
+		for i := 0; i < nodes; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+
+				res, err := util.JsonRpcCall("get_block_number", []interface{}{i})
+				if err != nil {
+					util.PrintErrorFatal(err)
+				}
+
+				mux.Lock()
+				blockHeights[i] = fmt.Sprintf("Node %v: %v", i, res)
+				mux.Unlock()
+			}(i)
+		}
+		wg.Wait()
+
+		util.Print(blockHeights)
+
+		return
+	}
+
+	if len(args) == 0 {
+		util.JsonRpcCallAndPrint("get_block_number", []interface{}{0})
+		return
+	}
+
+	util.JsonRpcCallAndPrint("get_block_number", []interface{}{args[0]})
+
+	return
+}
+
 var getBlockCmd = &cobra.Command{
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
@@ -311,16 +357,14 @@ var getBlockCmd = &cobra.Command{
 }
 
 var getBlockNumCmd = &cobra.Command{
-	Use:   "number",
-	Short: "Get the block number",
+	Use:   "number [node]",
+	Short: "Get the block number of a single node or use --all to get block heights of all nodes",
 	Long: `
 Gets the most recent block number that had been added to the blockchain.
 
 Response: block number
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint("get_block_number", []string{})
-	},
+	Run: getBlockHeightByNode,
 }
 
 var getBlockInfoCmd = &cobra.Command{
@@ -441,14 +485,19 @@ Response: JSON representation of the contract information.
 func init() {
 	getNodesCmd.AddCommand(getNodesExternalCmd)
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
+
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
 		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd)
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd, getBiomeCmd)
+
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
+	getBlockNumCmd.Flags().BoolP("all", "a", false, "output block heights of all nodes")
+
 	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd, getTxRecentCmd)
+
 	getAccountCmd.AddCommand(getAccountInfoCmd)
 
 	RootCmd.AddCommand(getCmd)
