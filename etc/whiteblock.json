@@ -26,6 +26,7 @@
         },
         "ethereum": {
             "images": {
+                "light": "gcr.io/whiteblock/geth:light",
                 "stable": "gcr.io/whiteblock/ethereum:9cd12011c47489df08c55b4fce8f3d5b1fd72542 ",
                 "latest": "gcr.io/whiteblock/ethereum:master"
             }
@@ -51,6 +52,7 @@
         },
         "parity":{
             "images":{
+                "light":"gcr.io/whiteblock/parity:light",
                 "stable":"gcr.io/whiteblock/parity:dev",
                 "latest":"gcr.io/whiteblock/parity:dev"
             }
