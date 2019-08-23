@@ -340,12 +340,7 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		util.JsonRpcCallAndPrint("get_block_number", []interface{}{args[0]})
-	}()
-	wg.Wait()
+	util.JsonRpcCallAndPrint("get_block_number", []interface{}{args[0]})
 
 	return
 }
