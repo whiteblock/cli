@@ -313,7 +313,7 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 
 	util.CheckArguments(cmd, args, 0, 1)
 
-	if args[0] == "all" {
+	if util.GetBoolFlagValue(cmd, "all") {
 		nodes := len(GetNodes())
 
 		blockHeights := make([]string, nodes)
@@ -340,6 +340,11 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	if len(args) == 0 {
+		util.JsonRpcCallAndPrint("get_block_number", []interface{}{0})
+		return
+	}
+
 	util.JsonRpcCallAndPrint("get_block_number", []interface{}{args[0]})
 
 	return
@@ -359,17 +364,7 @@ Gets the most recent block number that had been added to the blockchain.
 
 Response: block number
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if util.GetBoolFlagValue(cmd, "all") {
-			getBlockHeightByNode(cmd, []string{"all"})
-		} else {
-			if len(args) == 0 {
-				util.PrintErrorFatal("not enough arguments")
-			}
-
-			getBlockHeightByNode(cmd, args)
-		}
-	},
+	Run: getBlockHeightByNode,
 }
 
 var getBlockInfoCmd = &cobra.Command{
