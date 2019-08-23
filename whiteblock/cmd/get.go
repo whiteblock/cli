@@ -313,7 +313,7 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 
 	util.CheckArguments(cmd, args, 0, 1)
 
-	if len(args) == 0 {
+	if args[0] == "all" {
 		nodes := len(GetNodes())
 
 		blockHeights := make([]string, nodes)
@@ -358,13 +358,23 @@ var getBlockCmd = &cobra.Command{
 
 var getBlockNumCmd = &cobra.Command{
 	Use:   "number [node]",
-	Short: "Get the block number",
+	Short: "Get the block number of a single node or use --all to get block heights of all nodes",
 	Long: `
 Gets the most recent block number that had been added to the blockchain.
 
 Response: block number
 	`,
-	Run: getBlockHeightByNode,
+	Run: func(cmd *cobra.Command, args []string) {
+		if util.GetBoolFlagValue(cmd, "all") {
+			getBlockHeightByNode(cmd, []string{"all"})
+		} else {
+			if len(args) == 0 {
+				util.PrintErrorFatal("not enough arguments")
+			}
+
+			getBlockHeightByNode(cmd, args)
+		}
+	},
 }
 
 var getBlockInfoCmd = &cobra.Command{
@@ -492,8 +502,12 @@ func init() {
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
 	getCmd.AddCommand(getBlockCmd, getTxCmd, getAccountCmd, getContractsCmd, getBiomeCmd)
+
 	getBlockCmd.AddCommand(getBlockNumCmd, getBlockInfoCmd)
+	getBlockNumCmd.Flags().BoolP("all", "a", false, "output block heights of all nodes")
+
 	getTxCmd.AddCommand(getTxInfoCmd, getTxReceiptCmd, getTxRecentCmd)
+
 	getAccountCmd.AddCommand(getAccountInfoCmd)
 
 	RootCmd.AddCommand(getCmd)
