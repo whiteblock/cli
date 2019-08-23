@@ -316,8 +316,6 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
 		nodes := len(GetNodes())
 
-		util.Print("len args == 0")
-
 		blockHeights := make([]string, nodes)
 
 		for i := 0; i < nodes; i++ {
@@ -330,10 +328,8 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 					util.PrintErrorFatal(err)
 				}
 
-				util.Printf("Node %v: %v", i, res)
-
 				mux.Lock()
-				blockHeights = append(blockHeights, fmt.Sprintf("Node %v: %v", i, res))
+				blockHeights[i] = fmt.Sprintf("Node %v: %v", i, res)
 				mux.Unlock()
 			}(i)
 		}
