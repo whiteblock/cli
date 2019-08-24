@@ -83,8 +83,6 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 		util.PrintErrorFatal(err)
 	}
 
-	build.HandleResources(cmd, args, &buildConf)
-
 	buildOpt := []string{}
 	defOpt := []string{}
 	allowEmpty := []bool{}
@@ -229,6 +227,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 		buildConf.Params["validators"] = validators
 	}
 	build.HandleFreezeBeforeGenesis(cmd, args, &buildConf)
+	build.HandleResources(cmd, args, &buildConf)
 	build.HandleFilesFlag(cmd, args, &buildConf)
 	build.HandleEnv(cmd, args, &buildConf)
 	build.HandleServersFlag(cmd, args, &buildConf)
