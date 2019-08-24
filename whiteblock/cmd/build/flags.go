@@ -15,8 +15,8 @@ func AddBuildFlagsToCommand(cmd *cobra.Command, isAppend bool) {
 	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 	cmd.Flags().StringP("blockchain", "b", "", "specify blockchain")
 	cmd.Flags().IntP("nodes", "n", 0, "specify number of nodes")
-	cmd.Flags().StringP("cpus", "c", "0", "specify number of cpus")
-	cmd.Flags().StringP("memory", "m", "0", "specify memory allocated")
+	cmd.Flags().StringSliceP("cpus", "c", []string{"0"}, "specify number of cpus")
+	cmd.Flags().StringSliceP("memory", "m", []string{"0"}, "specify memory allocated")
 	cmd.Flags().StringP("file", "f", "", "parameters file")
 	cmd.Flags().IntP("validators", "v", -1, "set the number of validators")
 	cmd.Flags().StringSliceP("image", "i", []string{}, "image tag")
@@ -321,20 +321,74 @@ func HandleResources(cmd *cobra.Command, args []string, bconf *Config) (givenCPU
 	givenCPU = cmd.Flags().Changed("cpus")
 	givenMem = cmd.Flags().Changed("memory")
 
-	cpus, err := cmd.Flags().GetString("cpus")
-	if err != nil {
-		util.PrintErrorFatal(err)
+	if len(bconf.Resources) != bconf.Nodes {
+		bconf.Resources = make([]Resources, bconf.Nodes)
 	}
-	memory, err := cmd.Flags().GetString("memory")
-	if err != nil {
-		util.PrintErrorFatal(err)
+
+	if givenCPU {
+		cpus, err := cmd.Flags().GetStringSlice("cpus")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		explicitCpus, defaultCpu, err := util.UnrollStringSliceToMapIntString(cpus, "=")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		log.Trace(explicitCpus, defaultCpu)
+
+		if len(defaultCpu) > 1 {
+			util.PrintErrorFatal("too many default cpus")
+		}
+
+		cpuDefault := ""
+		if len(defaultCpu) == 1 {
+			cpuDefault = defaultCpu[0]
+			log.Trace(cpuDefault)
+		}
+
+		for i := 0; i < bconf.Nodes; i ++ {
+			cpu, exists := explicitCpus[i]
+			if exists {
+				bconf.Resources[i].Cpus = string(cpu)
+			} else {
+				bconf.Resources[i].Cpus = string(cpuDefault)
+			}
+		}
 	}
-	if cpus != "0" {
-		bconf.Resources[0].Cpus = cpus
+
+	if givenMem {
+		memories, err := cmd.Flags().GetStringSlice("memory")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+
+		explicitMems, defaultMem, err := util.UnrollStringSliceToMapIntString(memories, "=")
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		log.Trace(explicitMems, defaultMem)
+
+		if len(defaultMem) > 1 {
+			util.PrintErrorFatal("too many default memory assignemnts")
+		}
+
+		memDefault := ""
+		if len (defaultMem) == 1 {
+			memDefault = defaultMem[0]
+			log.Trace(memDefault)
+		}
+
+		for i := 0; i < bconf.Nodes; i++ {
+			mem, exists := explicitMems[i]
+			if exists {
+				bconf.Resources[i].Memory = string(mem)
+			} else {
+				bconf.Resources[i].Memory = string(memDefault)
+			}
+		}
 	}
-	if memory != "0" {
-		bconf.Resources[0].Memory = memory
-	}
+
 	return
 }
 
