@@ -494,6 +494,14 @@ var getBiomeCmd = &cobra.Command{
 	},
 }
 
+var getBoxCmd = &cobra.Command{
+	Use: "box",
+	Short: "Get box information",
+	Run: func(cmd *cobra.Command, args []string) {
+		util.Print(conf.ServerAddr)
+	},
+}
+
 var getContractsCmd = &cobra.Command{
 	Use:   "contracts",
 	Short: "Get contracts deployed to network.",
@@ -520,7 +528,7 @@ func init() {
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
-		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd, getPrivateKeysCmd)
+		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd, getPrivateKeysCmd, getBoxCmd)
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
