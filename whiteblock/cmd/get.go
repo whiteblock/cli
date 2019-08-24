@@ -478,7 +478,7 @@ Response: JSON representation of the accounts information.
 }
 
 var getPrivateKeysCmd = &cobra.Command{
-	Use: "keys",
+	Use:   "keys",
 	Short: "Get private keys",
 	Long: `
 Gets the private keys of _______________________________.

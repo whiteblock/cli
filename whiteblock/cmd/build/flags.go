@@ -321,7 +321,7 @@ func HandleResources(cmd *cobra.Command, args []string, bconf *Config) (givenCPU
 	givenCPU = cmd.Flags().Changed("cpus")
 	givenMem = cmd.Flags().Changed("memory")
 
-	if len(bconf.Resources) != bconf.Nodes {
+	if len(bconf.Resources) < bconf.Nodes {
 		bconf.Resources = make([]Resources, bconf.Nodes)
 	}
 
@@ -347,7 +347,7 @@ func HandleResources(cmd *cobra.Command, args []string, bconf *Config) (givenCPU
 			log.Trace(cpuDefault)
 		}
 
-		for i := 0; i < bconf.Nodes; i ++ {
+		for i := 0; i < bconf.Nodes; i++ {
 			cpu, exists := explicitCpus[i]
 			if exists {
 				bconf.Resources[i].Cpus = string(cpu)
@@ -374,7 +374,7 @@ func HandleResources(cmd *cobra.Command, args []string, bconf *Config) (givenCPU
 		}
 
 		memDefault := ""
-		if len (defaultMem) == 1 {
+		if len(defaultMem) == 1 {
 			memDefault = defaultMem[0]
 			log.Trace(memDefault)
 		}
