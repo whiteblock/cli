@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"strconv"
 	"sync"
@@ -350,6 +351,29 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 	return
 }
 
+func getPrivateKeys(cmd *cobra.Command, args []string) {
+	res, err := util.JsonRpcCall("state::info", args)
+	if err != nil {
+		util.PrintErrorFatal(err)
+		return
+	}
+
+	privKeys := make([]string, 0)
+
+	for _, keys := range res.(map[string]interface{}) {
+		if reflect.DeepEqual(reflect.TypeOf(keys).String(), "map[string]interface {}") { // TODO is there a cleaner way to do this?
+			for i, val := range keys.(map[string]interface{}) {
+				if i == "privateKey" {
+					privKeys = append(privKeys, val.(string))
+				}
+			}
+		}
+	}
+
+	util.Print(privKeys)
+	return
+}
+
 var getBlockCmd = &cobra.Command{
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
@@ -453,6 +477,15 @@ Response: JSON representation of the accounts information.
 	},
 }
 
+var getPrivateKeysCmd = &cobra.Command{
+	Use: "keys",
+	Short: "Get private keys",
+	Long: `
+Gets the private keys of _______________________________.
+`,
+	Run: getPrivateKeys,
+}
+
 var getBiomeCmd = &cobra.Command{
 	Use:   "biome",
 	Short: "Get the biome id",
@@ -487,7 +520,7 @@ func init() {
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
-		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd)
+		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd, getPrivateKeysCmd)
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
