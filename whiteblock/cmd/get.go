@@ -361,7 +361,7 @@ func getPrivateKeys(cmd *cobra.Command, args []string) {
 	privKeys := make([]string, 0)
 
 	for _, keys := range res.(map[string]interface{}) {
-		if reflect.DeepEqual(reflect.TypeOf(keys).String(), "map[string]interface {}") {
+		if reflect.DeepEqual(reflect.TypeOf(keys).String(), "map[string]interface {}") { // TODO is there a cleaner way to do this?
 			for i, val := range keys.(map[string]interface{}) {
 				if i == "privateKey" {
 					privKeys = append(privKeys, val.(string))
