@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"strconv"
 	"sync"
@@ -350,6 +351,29 @@ func getBlockHeightByNode(cmd *cobra.Command, args []string) {
 	return
 }
 
+func getPrivateKeys(cmd *cobra.Command, args []string) {
+	res, err := util.JsonRpcCall("state::info", args)
+	if err != nil {
+		util.PrintErrorFatal(err)
+		return
+	}
+
+	privKeys := make([]string, 0)
+
+	for _, keys := range res.(map[string]interface{}) {
+		if reflect.DeepEqual(reflect.TypeOf(keys).String(), "map[string]interface {}") {
+			for i, val := range keys.(map[string]interface{}) {
+				if i == "privateKey" {
+					privKeys = append(privKeys, val.(string))
+				}
+			}
+		}
+	}
+
+	util.Print(privKeys)
+	return
+}
+
 var getBlockCmd = &cobra.Command{
 	Use:   "block <command>",
 	Short: "Get information regarding blocks",
@@ -459,9 +483,7 @@ var getPrivateKeysCmd = &cobra.Command{
 	Long: `
 Gets the private keys of _______________________________.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint("state::info", args)
-	},
+	Run: getPrivateKeys,
 }
 
 var getBiomeCmd = &cobra.Command{
