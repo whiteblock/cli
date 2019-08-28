@@ -12,7 +12,7 @@ var storeCommand = &cobra.Command{
 	Hidden: true,
 	Use:    "store",
 	Short:  "store",
-	Long: `store`,
+	Long:   `store`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 1)
 		wg := sync.WaitGroup{}
