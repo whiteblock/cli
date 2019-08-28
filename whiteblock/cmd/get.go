@@ -250,9 +250,8 @@ var statsAllCmd = &cobra.Command{
 	Use:   "all",
 	Short: "Get all stastics of a blockchain",
 	Long: `
-Stats all will allow the user to get all the statistics regarding the network.
-
-Response: JSON representation of network statistics
+	Get some general statistics on the blockchain network.
+	Note: This is will be behind by a few blocks to ensure accuracy.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.JsonRpcCallAndPrint("all_stats", []string{})
