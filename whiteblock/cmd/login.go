@@ -41,10 +41,9 @@ func GetProfileFromJwt(jwt string) (Profile, error) {
 }
 
 var loginCmd = &cobra.Command{
-	Hidden: true,
-	Use:    "login <jwt> [biome id]",
-	Short:  "Authorize the cli using jwt ",
-	Long:   "\nGives the user the ability to specify a jwt, within a file, to be used for authentication\n Can be given a file path or a jwt\n",
+	Use:   "login <jwt> [biome id]",
+	Short: "Authorize the cli using jwt ",
+	Long:  "\nGives the user the ability to specify a jwt, within a file, to be used for authentication\n Can be given a file path or a jwt\n",
 	Run: func(cmd *cobra.Command, args []string) {
 		util.CheckArguments(cmd, args, 1, 2)
 
@@ -80,7 +79,6 @@ var loginCmd = &cobra.Command{
 
 var logoutCmd = &cobra.Command{
 	Aliases: []string{"logout"},
-	Hidden:  true,
 	Use:     "logoff",
 	Short:   "Remove all auth stored",
 	Long:    "\nDeletes all stored auth\n",
