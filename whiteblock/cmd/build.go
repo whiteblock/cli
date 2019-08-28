@@ -246,6 +246,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	}
 	log.WithFields(log.Fields{"build": buildConf, "dest": conf.ServerAddr, "api": conf.APIURL}).Trace("sending the build request")
 	build.SanitizeBuild(&buildConf)
+	build.HandleDebugBuild(cmd, args, &buildConf)
 	buildStart(buildConf, isAppend)
 }
 
