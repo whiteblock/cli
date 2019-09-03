@@ -321,6 +321,21 @@ var buildStopCmd = &cobra.Command{
 	},
 }
 
+var buildStatusCmd = &cobra.Command{
+	Use:     "status",
+	Aliases: []string{"progress"},
+	Short:   "Get the raw status of a build",
+	Long:    "Get the raw status of a build",
+	Run: func(cmd *cobra.Command, args []string) {
+		var buildID string
+		err := util.GetP("in_progress_build_id", &buildID)
+		if err != nil || len(buildID) == 0 {
+			util.PrintErrorFatal("No in-progress build found. Use build command to deploy a blockchain.")
+		}
+		util.JsonRpcCallAndPrint("build_status", []string{buildID})
+	},
+}
+
 var buildFreezeCmd = &cobra.Command{
 	Use:     "freeze",
 	Aliases: []string{"pause"},
@@ -370,6 +385,7 @@ func init() {
 
 	previousCmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
 
-	buildCmd.AddCommand(previousCmd, buildAppendCmd, buildStopCmd, buildAttachCmd, buildFreezeCmd, buildUnfreezeCmd)
+	buildCmd.AddCommand(previousCmd, buildAppendCmd, buildStopCmd, buildAttachCmd,
+		buildFreezeCmd, buildUnfreezeCmd, buildStatusCmd)
 	RootCmd.AddCommand(buildCmd)
 }
