@@ -57,10 +57,16 @@ func determineImage(blockchain string, requested string) string {
 
 	if _, ok := cont["blockchains"][blockchain]; !ok {
 		log.Debug("chose default image due to missing entry")
+		if len(requested) > 0 {
+			return requested
+		}
 		return defaultImage
 	}
 	if _, ok := cont["blockchains"][blockchain]["images"]; !ok {
 		log.Debug("chose default image due to missing entry")
+		if len(requested) > 0 {
+			return requested
+		}
 		return defaultImage
 	}
 

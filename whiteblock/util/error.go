@@ -77,6 +77,7 @@ func FlagNotProvidedError(cmd *cobra.Command, flagName string) {
 
 func PrintErrorFatal(err interface{}) {
 	PrintStringError(fmt.Sprint(err))
+	Print("If you believe this is a bug, please file an issue: https://github.com/whiteblock/cli/issues/new?template=bug_report.md")
 	os.Exit(1)
 }
 

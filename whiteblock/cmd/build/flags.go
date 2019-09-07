@@ -7,12 +7,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/whiteblock/cli/whiteblock/util"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
 func AddBuildFlagsToCommand(cmd *cobra.Command, isAppend bool) {
 	cmd.Flags().IntSliceP("servers", "s", []int{}, "manually choose the server options")
 	cmd.Flags().BoolP("yes", "y", false, "Yes to all prompts. Evokes default parameters.")
+	cmd.Flags().Bool("debug", false, "Yes to all prompts. Evokes default parameters.")
 	cmd.Flags().StringP("blockchain", "b", "", "specify blockchain")
 	cmd.Flags().IntP("nodes", "n", 0, "specify number of nodes")
 	cmd.Flags().StringSliceP("cpus", "c", []string{"0"}, "specify number of cpus")
@@ -497,5 +499,12 @@ func HandleBoundCPUs(cmd *cobra.Command, args []string, bconf *Config) {
 			bconf.Resources[i].BoundCPUs = append(bconf.Resources[i].BoundCPUs, cpuNo)
 			cpuNo++
 		}
+	}
+}
+
+func HandleDebugBuild(cmd *cobra.Command, args []string, bconf *Config) {
+	if util.GetBoolFlagValue(cmd, "debug") {
+		util.Print(*bconf)
+		os.Exit(0)
 	}
 }
