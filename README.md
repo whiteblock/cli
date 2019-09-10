@@ -1,13 +1,19 @@
 # Whiteblock CLI
 [![Maintainability](https://api.codeclimate.com/v1/badges/19632596f75488519c67/maintainability)](https://codeclimate.com/github/Whiteblock/cli/maintainability)
 [![Go Report Card](https://goreportcard.com/badge/github.com/whiteblock/cli)](https://goreportcard.com/report/github.com/whiteblock/cli)
-* Latest Stable Build (Linux AMD64)
+![Docker](https://img.shields.io/badge/Docker%20Image-gcr.io%2Fwhiteblock%2Fcli%3Adev-brightgreen)
 
+* Latest Stable Build (amd64)
+  * Linux
   https://storage.cloud.google.com/genesis-public/cli/master/bin/linux/amd64/whiteblock
+  * Mac
+  https://storage.cloud.google.com/genesis-public/cli/master/bin/macos/amd64/whiteblock
 
-* Latest Dev Build (Linux AMD64)
-
+* Latest Dev Build (AMD64)
+  * Linux
   https://storage.cloud.google.com/genesis-public/cli/dev/bin/linux/amd64/whiteblock
+  * Mac
+  https://storage.cloud.google.com/genesis-public/cli/dev/bin/macos/amd64/whiteblock  
 
 ## ./whiteblock <COMMAND> [FLAGS]
 This application will deploy a blockchain, create nodes, and allow those nodes to interact in the network. Documentation, usages, and exmaples can be found in our [documentation](www.whiteblock.io/docs/cli).
