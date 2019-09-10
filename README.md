@@ -1,7 +1,7 @@
 # Whiteblock CLI
 [![Maintainability](https://api.codeclimate.com/v1/badges/19632596f75488519c67/maintainability)](https://codeclimate.com/github/Whiteblock/cli/maintainability)
 [![Go Report Card](https://goreportcard.com/badge/github.com/whiteblock/cli)](https://goreportcard.com/report/github.com/whiteblock/cli)
-![Docker](https://img.shields.io/badge/Docker%20Image-gcr.io%2Fwhiteblock%2Fcli%3Adev-brightgreen)
+[![Docker](https://img.shields.io/badge/Docker%20Image-gcr.io%2Fwhiteblock%2Fcli%3Adev-brightgreen)](gcr.io/whiteblock/cli:dev)
 
 * Latest Stable Build (amd64)
   * Linux
