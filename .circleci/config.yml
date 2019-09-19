@@ -11,6 +11,7 @@ jobs:
       - checkout
       - run: brew install go
       - run: go get ./...
+      - run: golint ./...
       - run: cd whiteblock && go build
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
