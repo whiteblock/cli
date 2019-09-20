@@ -11,6 +11,7 @@ jobs:
       - checkout
       - run: brew install go
       - run: go get ./...
+      - run: sh /.circleci/fmt.sh
       - run: golint ./...
       - run: cd whiteblock && go build
       - persist_to_workspace:
