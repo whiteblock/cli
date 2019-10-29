@@ -458,7 +458,24 @@ var getAccountCmd = &cobra.Command{
 	Use:     "account",
 	Short:   "Get account information",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint("state::get", []string{"accounts"})
+		out := []interface{}{}
+		stepSize := 50
+		i := 0
+		for {
+			res := []interface{}{}
+			err := util.JsonRpcCallP("state::get_page", []interface{}{"accounts", i, stepSize}, &res)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			out = append(out, res...)
+			log.WithFields(log.Fields{"i": i, "stepSize": stepSize, "results": len(res), "total": len(out)}).Debug("got some accounts")
+			if len(res) != stepSize {
+
+				break
+			}
+			i += stepSize
+		}
+		util.Print(out)
 	},
 }
 
@@ -494,7 +511,7 @@ var getBiomeCmd = &cobra.Command{
 }
 
 var getBoxCmd = &cobra.Command{
-	Use: "box",
+	Use:   "box",
 	Short: "Get box information",
 	Run: func(cmd *cobra.Command, args []string) {
 		util.Print(conf.ServerAddr)
