@@ -459,21 +459,20 @@ var getAccountCmd = &cobra.Command{
 	Short:   "Get account information",
 	Run: func(cmd *cobra.Command, args []string) {
 		out := []interface{}{}
-		stepSize := 50
 		i := 0
 		for {
 			res := []interface{}{}
-			err := util.JsonRpcCallP("state::get_page", []interface{}{"accounts", i, stepSize}, &res)
+			err := util.JsonRpcCallP("state::get_page", []interface{}{"accounts", i, conf.StepSize}, &res)
 			if err != nil {
 				util.PrintErrorFatal(err)
 			}
 			out = append(out, res...)
-			log.WithFields(log.Fields{"i": i, "stepSize": stepSize, "results": len(res), "total": len(out)}).Debug("got some accounts")
-			if len(res) != stepSize {
+			log.WithFields(log.Fields{"i": i, "stepSize": conf.StepSize, "results": len(res), "total": len(out)}).Trace("got some accounts")
+			if len(res) != conf.StepSize {
 
 				break
 			}
-			i += stepSize
+			i += conf.StepSize
 		}
 		util.Print(out)
 	},
@@ -489,7 +488,34 @@ Gets the account information relevant to the currently connected blockchain.
 Response: JSON representation of the accounts information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint("accounts_status", []string{})
+		var accCount int
+		err := util.JsonRpcCallP("account_count", []interface{}{}, &accCount)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		out := []interface{}{}
+		queries := accCount / conf.StepSize
+		if accCount%conf.StepSize != 0 {
+			queries++
+		}
+		statusChan := make(chan []interface{}, queries)
+		for i := 0; i < accCount; i += conf.StepSize {
+			go func(i int) {
+				res := []interface{}{}
+				err := util.JsonRpcCallP("accounts_status", []interface{}{i, conf.StepSize}, &res)
+				if err != nil {
+					util.PrintErrorFatal(err)
+				}
+				statusChan <- res
+				log.WithFields(log.Fields{"i": i, "stepSize": conf.StepSize, "results": len(res), "total": len(out)}).Trace("got some accounts info")
+			}(i)
+		}
+
+		for i := 0; i < queries; i++ {
+			statuses := <-statusChan
+			out = append(out, statuses...)
+		}
+		util.Print(out)
 	},
 }
 

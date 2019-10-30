@@ -21,6 +21,7 @@ type Config struct {
 	RPCRetries        int     `mapstructure:"rpcRetries"`
 	SSHPrivateKey     string  `mapstructure:"sshPrivateKey"`
 	SSHBinary         string  `mapstructure:"sshBinary"`
+	StepSize          int     `mapstructure:"stepSize"`
 }
 
 var conf = new(Config)
@@ -38,6 +39,7 @@ func setViperEnvBindings() {
 	viper.BindEnv("rpcRetries", "RPC_RETRIES")
 	viper.BindEnv("sshPrivateKey", "SSH_PRIVATE_KEY")
 	viper.BindEnv("sshBinary", "SSH_BINARY")
+	viper.BindEnv("stepSize", "STEP_SIZE")
 }
 func setViperDefaults() {
 	viper.SetDefault("apiURL", "https://api.whiteblock.io")
@@ -52,6 +54,7 @@ func setViperDefaults() {
 	viper.SetDefault("rpcRetries", 20)
 	viper.SetDefault("sshPrivateKey", "/home/master-secrets/id.master")
 	viper.SetDefault("sshBinary", "/usr/bin/ssh")
+	viper.SetDefault("stepSize", 100)
 }
 
 func init() {
