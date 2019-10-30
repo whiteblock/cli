@@ -458,7 +458,23 @@ var getAccountCmd = &cobra.Command{
 	Use:     "account",
 	Short:   "Get account information",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint("state::get", []string{"accounts"})
+		out := []interface{}{}
+		i := 0
+		for {
+			res := []interface{}{}
+			err := util.JsonRpcCallP("state::get_page", []interface{}{"accounts", i, conf.StepSize}, &res)
+			if err != nil {
+				util.PrintErrorFatal(err)
+			}
+			out = append(out, res...)
+			log.WithFields(log.Fields{"i": i, "stepSize": conf.StepSize, "results": len(res), "total": len(out)}).Trace("got some accounts")
+			if len(res) != conf.StepSize {
+
+				break
+			}
+			i += conf.StepSize
+		}
+		util.Print(out)
 	},
 }
 
@@ -472,7 +488,34 @@ Gets the account information relevant to the currently connected blockchain.
 Response: JSON representation of the accounts information.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.JsonRpcCallAndPrint("accounts_status", []string{})
+		var accCount int
+		err := util.JsonRpcCallP("account_count", []interface{}{}, &accCount)
+		if err != nil {
+			util.PrintErrorFatal(err)
+		}
+		out := []interface{}{}
+		queries := accCount / conf.StepSize
+		if accCount%conf.StepSize != 0 {
+			queries++
+		}
+		statusChan := make(chan []interface{}, queries)
+		for i := 0; i < accCount; i += conf.StepSize {
+			go func(i int) {
+				res := []interface{}{}
+				err := util.JsonRpcCallP("accounts_status", []interface{}{i, conf.StepSize}, &res)
+				if err != nil {
+					util.PrintErrorFatal(err)
+				}
+				statusChan <- res
+				log.WithFields(log.Fields{"i": i, "stepSize": conf.StepSize, "results": len(res), "total": len(out)}).Trace("got some accounts info")
+			}(i)
+		}
+
+		for i := 0; i < queries; i++ {
+			statuses := <-statusChan
+			out = append(out, statuses...)
+		}
+		util.Print(out)
 	},
 }
 
@@ -490,6 +533,14 @@ var getBiomeCmd = &cobra.Command{
 	Short: "Get the biome id",
 	Run: func(cmd *cobra.Command, args []string) {
 		util.JsonRpcCallAndPrint("get_biome_id", []string{})
+	},
+}
+
+var getBoxCmd = &cobra.Command{
+	Use:   "box",
+	Short: "Get box information",
+	Run: func(cmd *cobra.Command, args []string) {
+		util.Print(conf.ServerAddr)
 	},
 }
 
@@ -519,7 +570,7 @@ func init() {
 	getNodesCmd.Flags().Bool("all", false, "output all of the nodes, even if they are no longer running")
 
 	getCmd.AddCommand(getServerCmd, getNodesCmd, getStatsCmd, getDefaultsCmd,
-		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd, getPrivateKeysCmd)
+		getSupportedCmd, getRunningCmd, getConfigsCmd, getTestnetIDCmd, getBuildCmd, getPrivateKeysCmd, getBoxCmd)
 
 	getStatsCmd.AddCommand(statsByTimeCmd, statsByBlockCmd, statsPastBlocksCmd, statsAllCmd)
 
