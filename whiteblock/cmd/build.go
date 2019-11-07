@@ -58,7 +58,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	blockchainFlag := util.GetStringFlagValue(cmd, "blockchain")
 	nodesFlag := util.GetIntFlagValue(cmd, "nodes")
 	paramsFile := util.GetStringFlagValue(cmd, "file")
-	validators := util.GetIntFlagValue(cmd, "validators")
+	//validators := util.GetIntFlagValue(cmd, "validators")
 
 	buildConf, _ := build.GetPreviousBuild() //Errors are ok with this.
 
@@ -153,6 +153,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 	}
 
 	options := <-optionsChannel //Currently has a negative impact but will be positive in the future
+	/*
 	if validators < 0 && hasParam(options, "validators") && !isAppend {
 		if !util.IsTTY() {
 			util.PrintErrorFatal("missing validators and couldn't prompt")
@@ -167,6 +168,7 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 			util.PrintErrorFatal(err)
 		}
 	}
+	*/
 	build.HandleImageFlag(cmd, args, &buildConf)
 	givenOpts := build.HandleOptions(cmd, args, &buildConf, options)
 
@@ -223,9 +225,11 @@ func Build(cmd *cobra.Command, args []string, isAppend bool) {
 			}
 		}
 	}
+	/*
 	if validators >= 0 {
 		buildConf.Params["validators"] = validators
 	}
+	*/
 	build.HandleFreezeBeforeGenesis(cmd, args, &buildConf)
 	build.HandleResources(cmd, args, &buildConf)
 	build.HandleFilesFlag(cmd, args, &buildConf)
