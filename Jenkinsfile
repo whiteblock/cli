@@ -1,4 +1,5 @@
 def DEFAULT_BRANCH = 'dev'
+def GOLANG_IMAGE = 'golang:1.12'
 
 pipeline {
   options {
