@@ -1,4 +1,3 @@
-// trivial change
 def DEFAULT_BRANCH = 'dev'
 def GOLANG_IMAGE = 'golang:1.12'
 
@@ -78,13 +77,10 @@ pipeline {
               git checkout -b \$BRANCH
               git commit -am 'gofmt'
 
-              cat <<EOF
-              #!/bin/bash
-
-              # this is here to perform automated commit
-              echo username=$GIT_USERNAME
-              echo password=$GIT_PASSWORD
-              EOF > ./credential-helper.sh
+              # used to read creds from environment during git push
+              echo '#!/bin/bash' > ./credential-helper.sh
+              echo 'echo username=$GIT_USERNAME' >> ./credential-helper.sh
+              echo 'echo password=$GIT_PASSWORD' >> ./credential-helper.sh
               chmod 0755 ./credential-helper.sh
 
               git config credential.helper "/bin/bash ${env.WORKSPACE}/credential-helper.sh"
