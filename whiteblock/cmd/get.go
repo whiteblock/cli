@@ -494,7 +494,7 @@ var getBiomeCmd = &cobra.Command{
 }
 
 var getBoxCmd = &cobra.Command{
-	Use: "box",
+	Use:   "box",
 	Short: "Get box information",
 	Run: func(cmd *cobra.Command, args []string) {
 		util.Print(conf.ServerAddr)
