@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func main() {
+function main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	cmd.Execute()
 }
