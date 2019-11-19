@@ -1,4 +1,4 @@
-@Library('whiteblock-dev@go-static-analysis')_
+@Library('whiteblock-dev')_
 
 def DEFAULT_BRANCH = 'dev'
 def GOLANG_IMAGE = 'golang:1.12'
