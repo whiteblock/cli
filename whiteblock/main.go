@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/whiteblock/cli/whiteblock/cmd"
+	"cmd"
 	"log"
 )
 
