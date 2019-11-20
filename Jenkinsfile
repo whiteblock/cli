@@ -1,4 +1,4 @@
-@Library('whiteblock-dev')_
+@Library('whiteblock-dev@go-get-then-go-vet')_
 
 def DEFAULT_BRANCH = 'dev'
 def GOLANG_IMAGE = 'golang:1.12'
