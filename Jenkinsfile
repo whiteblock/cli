@@ -19,7 +19,7 @@ pipeline {
       }
       steps {
         goFmt()
-        goVet('./whiteblock')
+        goVet()
       }
     }
   }
