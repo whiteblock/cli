@@ -59,8 +59,8 @@
         },
         "pantheon":{
             "images":{
-                "stable":"gcr.io/whiteblock/pantheon:master",
-                "latest":"gcr.io/whiteblock/pantheon:dev"
+                "stable":"gcr.io/whiteblock/besu:master",
+                "latest":"gcr.io/whiteblock/besu:dev"
             }
         },
         "artemis":{
