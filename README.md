@@ -6,8 +6,6 @@
 * Latest Stable Build (amd64)
   * Linux
   https://storage.cloud.google.com/genesis-public/cli/master/bin/linux/amd64/whiteblock
-  * Mac
-  https://storage.cloud.google.com/genesis-public/cli/master/bin/macos/amd64/whiteblock
 
 * Latest Dev Build (amd64)
   * Linux
