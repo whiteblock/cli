@@ -94,9 +94,12 @@ func TestHttpRequest(t *testing.T) {
 
 	req, err := http.NewRequest(method, url, strings.NewReader(""))
 	if err != nil {
-		t.Error("could not complete http request", err)
+		t.Error("could not create http request", err)
 	}
 	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Log("http request failed", err)
+	}
 	defer resp.Body.Close()
 
 	buf := new(bytes.Buffer)

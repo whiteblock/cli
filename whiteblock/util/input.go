@@ -65,7 +65,6 @@ func YesNoPrompt(msg string) bool {
 		}
 		return res
 	}
-	panic("should never reach")
 }
 
 func OptionListPrompt(msg string, options []string) int {
@@ -96,7 +95,6 @@ func OptionListPrompt(msg string, options []string) int {
 		}
 		return selection
 	}
-	panic("should never reach")
 }
 
 func ArgsToJSON(args []string) []interface{} {
